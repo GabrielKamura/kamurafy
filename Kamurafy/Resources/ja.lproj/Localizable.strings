@@ -1,0 +1,129 @@
+/* Sidebar */
+"Home" = "ホーム";
+"Clean" = "クリーン";
+"Tools" = "ツール";
+"Uninstaller" = "アンインストーラ";
+"Vault" = "保管庫";
+
+/* Targets */
+"Caches & Logs" = "キャッシュとログ";
+"Developer Junk" = "開発ジャンク";
+"App Leftovers" = "アプリの残骸";
+"Large Files" = "大きなファイル";
+"Duplicates" = "重複ファイル";
+"Trash" = "ゴミ箱";
+"App caches, browser caches and logs that pile up in your Library." = "ライブラリにたまるアプリ・ブラウザのキャッシュとログ。";
+"Rebuildable caches from Xcode, Homebrew, npm, pip and Gradle." = "Xcode・Homebrew・npm・pip・Gradle の再生成可能なキャッシュ。";
+"Preferences and support files from apps you no longer have. Review before removing." = "すでにないアプリの設定やサポートファイル。削除前に確認してください。";
+"Your biggest files in Downloads, Desktop and Documents. Review before removing." = "ダウンロード・デスクトップ・書類にある最大級のファイル。削除前に確認してください。";
+"Identical files in Downloads, Desktop and Documents. The oldest copy is kept." = "ダウンロード・デスクトップ・書類にある同一ファイル。最も古いコピーを残します。";
+"Empties the Trash for good." = "ゴミ箱を完全に空にします。";
+
+/* Home */
+"Overview" = "概要";
+"A clear look at your Mac — and one tap to clean it." = "Mac の状態をひと目で。ワンタップでクリーン。";
+"One-tap sweep" = "ワンタップ一掃";
+"Scan everything at once." = "すべてを一度にスキャン。";
+"Caches, logs, developer junk and Trash — in parallel." = "キャッシュ・ログ・開発ジャンク・ゴミ箱を並列で。";
+"Scanning… %lld/%lld" = "スキャン中… %lld/%lld";
+"%@ ready to free" = "%@ を解放できます";
+"Nothing to sweep ✨" = "一掃するものはありません ✨";
+"%lld safe items" = "安全な項目 %lld 件";
+"+ %@ to review" = "+ 要確認 %@";
+"You're all clean." = "すべてクリーンです。";
+"Sweeping…" = "一掃中…";
+"Freed %@" = "%@ を解放";
+"%lld items" = "%lld 件";
+"Scan" = "スキャン";
+"Sweep" = "一掃";
+"Rescan" = "再スキャン";
+"Undo" = "取り消す";
+"Memory" = "メモリ";
+"Free disk" = "空きディスク";
+"of %@" = "／ %@";
+"Optimize memory" = "メモリを最適化";
+"Frees inactive disk cache from RAM. A real but short-lived effect — no magic." = "RAM から非アクティブなディスクキャッシュを解放します。実際の効果ですが一時的です。";
+"Run purge" = "purge を実行";
+"Done." = "完了。";
+"Memory optimized." = "メモリを最適化しました。";
+"Swept — purge skipped." = "一掃完了 — purge はスキップ。";
+
+/* Target screen */
+"Ready when you are" = "準備ができたらどうぞ";
+"Scan to see what can be freed." = "スキャンして解放できる容量を確認。";
+"All clean" = "すべてクリーン";
+"Nothing to clean here right now." = "今ここにクリーンする項目はありません。";
+"Select all" = "すべて選択";
+"Deselect all" = "すべて解除";
+"%lld selected" = "%lld 件選択中";
+"Clean" = "クリーン";
+"Cleaning…" = "クリーン中…";
+
+/* Confirm */
+"Clean %lld items?" = "%lld 件をクリーンしますか？";
+"Moves %@ to the Vault — restorable for %lld days." = "%@ を保管庫へ移動 — %lld 日間は復元可能。";
+"Permanently deletes %@. This can't be undone." = "%@ を完全に削除します。取り消せません。";
+"Cancel" = "キャンセル";
+"Delete" = "削除";
+
+/* Vault */
+"Safety vault" = "安全保管庫";
+"Vault is empty" = "保管庫は空です";
+"Cleaned items rest here first — restore any of them in one tap." = "クリーンした項目はまずここへ。ワンタップで復元できます。";
+"Cleaned items rest here before they're truly gone." = "クリーンした項目は完全に消える前にここに留まります。";
+"%lld items · %@" = "%lld 件 · %@";
+" · auto-removed after %lld days" = " · %lld 日後に自動削除";
+"Restore all" = "すべて復元";
+"Empty vault" = "保管庫を空にする";
+"Restore" = "復元";
+"Delete permanently" = "完全に削除";
+
+/* Uninstaller */
+"Removes an app and every trace it left — preferences, caches, containers." = "アプリと残されたすべての痕跡（設定・キャッシュ・コンテナ）を削除します。";
+"Search apps" = "アプリを検索";
+"Listing apps…" = "アプリを一覧中…";
+"Uninstall %@" = "%@ をアンインストール";
+"Finding every trace…" = "すべての痕跡を検索中…";
+"Uninstall" = "アンインストール";
+"Uninstalling…" = "アンインストール中…";
+"%@ uninstalled — %@ freed." = "%@ をアンインストール — %@ を解放。";
+"%@: %lld removed, %lld locked (quit it and retry)." = "%@：%lld 件削除、%lld 件ロック中（終了して再試行）。";
+
+/* Menu bar */
+"RAM" = "RAM";
+"Free" = "空き";
+"Scan everything" = "すべてスキャン";
+"Sweep %@" = "%@ を一掃";
+"All clean ✨" = "すべてクリーン ✨";
+"Freed %@ ✨" = "%@ を解放 ✨";
+"Open Kamurafy" = "Kamurafy を開く";
+"Quit" = "終了";
+
+/* Settings */
+"Keep cleaned items for" = "クリーンした項目の保持期間";
+"Delete immediately (no vault)" = "すぐに削除（保管庫なし）";
+"3 days" = "3 日";
+"7 days" = "7 日";
+"30 days" = "30 日";
+"Cleaned items go to a restorable vault until the window closes — space is truly freed when they leave it." = "クリーンした項目は期限まで復元可能な保管庫へ。保管庫から出たときに実際に容量が解放されます。";
+"Auto sweep" = "自動一掃";
+"Sweep safe items automatically" = "安全な項目を自動で一掃";
+"Frequency" = "頻度";
+"Daily" = "毎日";
+"Weekly" = "毎週";
+"Launch Kamurafy at login" = "ログイン時に Kamurafy を起動";
+"Only pre-selected safe items are swept. You get a notification with the amount freed. Purge never runs automatically." = "事前選択された安全な項目のみを一掃します。解放した容量は通知でお知らせします。purge が自動実行されることはありません。";
+"Auto sweep freed %@." = "自動一掃で %@ を解放しました。";
+
+/* Update */
+"Kamurafy %@ is available." = "Kamurafy %@ が利用可能です。";
+"Get it" = "入手";
+
+/* Language picker */
+"Language" = "言語";
+"Interface language" = "インターフェイスの言語";
+"System default" = "システムのデフォルト";
+"Relaunch to apply the new language." = "新しい言語を適用するにはアプリを再起動してください。";
+"Relaunch now" = "今すぐ再起動";
+
+"Settings & Language" = "設定と言語";

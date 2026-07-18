@@ -1,0 +1,137 @@
+/* Sidebar */
+"Home" = "Início";
+"Clean" = "Limpar";
+"Tools" = "Ferramentas";
+"Uninstaller" = "Desinstalador";
+"Vault" = "Cofre";
+
+/* Targets */
+"Caches & Logs" = "Caches e Logs";
+"Developer Junk" = "Lixo de Dev";
+"App Leftovers" = "Sobras de Apps";
+"Large Files" = "Arquivos Grandes";
+"Duplicates" = "Duplicatas";
+"Trash" = "Lixeira";
+"App caches, browser caches and logs that pile up in your Library." = "Caches de apps, de navegador e logs que se acumulam na sua Biblioteca.";
+"Rebuildable caches from Xcode, Homebrew, npm, pip and Gradle." = "Caches recriáveis de Xcode, Homebrew, npm, pip e Gradle.";
+"Preferences and support files from apps you no longer have. Review before removing." = "Preferências e arquivos de suporte de apps que você não tem mais. Revise antes de remover.";
+"Your biggest files in Downloads, Desktop and Documents. Review before removing." = "Seus maiores arquivos em Downloads, Mesa e Documentos. Revise antes de remover.";
+"Identical files in Downloads, Desktop and Documents. The oldest copy is kept." = "Arquivos idênticos em Downloads, Mesa e Documentos. A cópia mais antiga é mantida.";
+"Empties the Trash for good." = "Esvazia a Lixeira de vez.";
+
+/* Home */
+"Overview" = "Visão geral";
+"A clear look at your Mac — and one tap to clean it." = "Uma visão clara do seu Mac — e um toque pra limpá-lo.";
+"One-tap sweep" = "Varredura de um toque";
+"Scan everything at once." = "Escaneie tudo de uma vez.";
+"Caches, logs, developer junk and Trash — in parallel." = "Caches, logs, lixo de dev e Lixeira — em paralelo.";
+"Scanning… %lld/%lld" = "Escaneando… %lld/%lld";
+"%@ ready to free" = "%@ prontos para liberar";
+"Nothing to sweep ✨" = "Nada a varrer ✨";
+"%lld safe items" = "%lld itens seguros";
+"+ %@ to review" = "+ %@ para revisar";
+"You're all clean." = "Está tudo limpo.";
+"Sweeping…" = "Varrendo…";
+"Freed %@" = "Liberado %@";
+"%lld items" = "%lld itens";
+"Scan" = "Escanear";
+"Sweep" = "Varrer";
+"Rescan" = "Escanear de novo";
+"Undo" = "Desfazer";
+"Memory" = "Memória";
+"Free disk" = "Disco livre";
+"of %@" = "de %@";
+"Optimize memory" = "Otimizar memória";
+"Frees inactive disk cache from RAM. A real but short-lived effect — no magic." = "Libera cache de disco inativo da RAM. Efeito real, mas curto — sem mágica.";
+"Run purge" = "Executar purge";
+"Done." = "Pronto.";
+"Memory optimized." = "Memória otimizada.";
+"Swept — purge skipped." = "Varrido — purge pulado.";
+
+/* Target screen */
+"Ready when you are" = "Pronto quando você estiver";
+"Scan to see what can be freed." = "Escaneie para ver o que pode ser liberado.";
+"All clean" = "Tudo limpo";
+"Nothing to clean here right now." = "Nada para limpar aqui agora.";
+"Select all" = "Selecionar tudo";
+"Deselect all" = "Desmarcar tudo";
+"%lld selected" = "%lld selecionados";
+"Clean" = "Limpar";
+"Cleaning…" = "Limpando…";
+
+/* Confirm */
+"Clean %lld items?" = "Limpar %lld itens?";
+"Moves %@ to the Vault — restorable for %lld days." = "Move %@ para o Cofre — restaurável por %lld dias.";
+"Permanently deletes %@. This can't be undone." = "Apaga %@ permanentemente. Não dá pra desfazer.";
+"Cancel" = "Cancelar";
+"Delete" = "Apagar";
+
+/* Vault */
+"Safety vault" = "Cofre de segurança";
+"Vault is empty" = "O cofre está vazio";
+"Cleaned items rest here first — restore any of them in one tap." = "Itens limpos ficam aqui primeiro — restaure qualquer um em um toque.";
+"Cleaned items rest here before they're truly gone." = "Itens limpos ficam aqui antes de sumirem de vez.";
+"%lld items · %@" = "%lld itens · %@";
+" · auto-removed after %lld days" = " · removidos automaticamente após %lld dias";
+"Restore all" = "Restaurar tudo";
+"Empty vault" = "Esvaziar cofre";
+"Restore" = "Restaurar";
+"Delete permanently" = "Apagar permanentemente";
+
+/* Uninstaller */
+"Removes an app and every trace it left — preferences, caches, containers." = "Remove um app e todos os rastros que ele deixou — preferências, caches, containers.";
+"Search apps" = "Buscar apps";
+"Listing apps…" = "Listando apps…";
+"Uninstall %@" = "Desinstalar %@";
+"Finding every trace…" = "Localizando todos os rastros…";
+"Uninstall" = "Desinstalar";
+"Uninstalling…" = "Desinstalando…";
+"%@ uninstalled — %@ freed." = "%@ desinstalado — %@ liberados.";
+"%@: %lld removed, %lld locked (quit it and retry)." = "%@: %lld removidos, %lld travados (feche-o e tente de novo).";
+
+/* Menu bar */
+"RAM" = "RAM";
+"Free" = "Livre";
+"Scan everything" = "Escanear tudo";
+"Sweep %@" = "Varrer %@";
+"All clean ✨" = "Tudo limpo ✨";
+"Freed %@ ✨" = "Liberado %@ ✨";
+"Open Kamurafy" = "Abrir o Kamurafy";
+"Quit" = "Sair";
+
+/* Settings */
+"Keep cleaned items for" = "Manter itens limpos por";
+"Delete immediately (no vault)" = "Apagar imediatamente (sem cofre)";
+"3 days" = "3 dias";
+"7 days" = "7 dias";
+"30 days" = "30 dias";
+"Cleaned items go to a restorable vault until the window closes — space is truly freed when they leave it." = "Itens limpos vão para um cofre restaurável até a janela fechar — o espaço é liberado de fato quando saem dele.";
+"Auto sweep" = "Varredura automática";
+"Sweep safe items automatically" = "Varrer itens seguros automaticamente";
+"Frequency" = "Frequência";
+"Daily" = "Diária";
+"Weekly" = "Semanal";
+"Launch Kamurafy at login" = "Iniciar o Kamurafy no login";
+"Only pre-selected safe items are swept. You get a notification with the amount freed. Purge never runs automatically." = "Só itens seguros pré-selecionados são varridos. Você recebe uma notificação com o total liberado. O purge nunca roda sozinho.";
+"Auto sweep freed %@." = "Varredura automática liberou %@.";
+
+/* Update */
+"Kamurafy %@ is available." = "Kamurafy %@ disponível.";
+"Get it" = "Baixar";
+
+/* Language picker */
+"Language" = "Idioma";
+"Interface language" = "Idioma da interface";
+"System default" = "Padrão do sistema";
+"Relaunch to apply the new language." = "Reabra o app para aplicar o novo idioma.";
+"Relaunch now" = "Reabrir agora";
+
+"Settings & Language" = "Ajustes e Idioma";
+
+/* v1.1 features */
+"Where the space is" = "Onde está o espaço";
+"You've freed %@ across %lld cleanups." = "Você já liberou %@ em %lld limpezas.";
+"Filter by name or path" = "Filtrar por nome ou caminho";
+"Protected items" = "Itens protegidos";
+"Paths here are never touched by any clean." = "Os caminhos aqui nunca são tocados por nenhuma limpeza.";
+"Add folder or file…" = "Adicionar pasta ou ficheiro…";

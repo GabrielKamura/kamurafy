@@ -1,0 +1,129 @@
+/* Sidebar */
+"Home" = "Accueil";
+"Clean" = "Nettoyer";
+"Tools" = "Outils";
+"Uninstaller" = "Désinstalleur";
+"Vault" = "Coffre";
+
+/* Targets */
+"Caches & Logs" = "Caches et journaux";
+"Developer Junk" = "Déchets de développement";
+"App Leftovers" = "Résidus d’apps";
+"Large Files" = "Fichiers volumineux";
+"Duplicates" = "Doublons";
+"Trash" = "Corbeille";
+"App caches, browser caches and logs that pile up in your Library." = "Caches d’apps, de navigateurs et journaux qui s’accumulent dans votre Bibliothèque.";
+"Rebuildable caches from Xcode, Homebrew, npm, pip and Gradle." = "Caches reconstructibles de Xcode, Homebrew, npm, pip et Gradle.";
+"Preferences and support files from apps you no longer have. Review before removing." = "Préférences et fichiers d’apps que vous n’avez plus. Vérifiez avant de supprimer.";
+"Your biggest files in Downloads, Desktop and Documents. Review before removing." = "Vos plus gros fichiers dans Téléchargements, Bureau et Documents. Vérifiez avant de supprimer.";
+"Identical files in Downloads, Desktop and Documents. The oldest copy is kept." = "Fichiers identiques dans Téléchargements, Bureau et Documents. La copie la plus ancienne est conservée.";
+"Empties the Trash for good." = "Vide définitivement la Corbeille.";
+
+/* Home */
+"Overview" = "Aperçu";
+"A clear look at your Mac — and one tap to clean it." = "Une vue claire de votre Mac — et un geste pour le nettoyer.";
+"One-tap sweep" = "Balayage en un geste";
+"Scan everything at once." = "Analysez tout d’un coup.";
+"Caches, logs, developer junk and Trash — in parallel." = "Caches, journaux, déchets de dev et Corbeille — en parallèle.";
+"Scanning… %lld/%lld" = "Analyse… %lld/%lld";
+"%@ ready to free" = "%@ prêts à libérer";
+"Nothing to sweep ✨" = "Rien à balayer ✨";
+"%lld safe items" = "%lld éléments sûrs";
+"+ %@ to review" = "+ %@ à vérifier";
+"You're all clean." = "Tout est propre.";
+"Sweeping…" = "Balayage…";
+"Freed %@" = "Libéré %@";
+"%lld items" = "%lld éléments";
+"Scan" = "Analyser";
+"Sweep" = "Balayer";
+"Rescan" = "Réanalyser";
+"Undo" = "Annuler";
+"Memory" = "Mémoire";
+"Free disk" = "Disque libre";
+"of %@" = "sur %@";
+"Optimize memory" = "Optimiser la mémoire";
+"Frees inactive disk cache from RAM. A real but short-lived effect — no magic." = "Libère le cache disque inactif de la RAM. Effet réel mais bref — sans magie.";
+"Run purge" = "Lancer purge";
+"Done." = "Terminé.";
+"Memory optimized." = "Mémoire optimisée.";
+"Swept — purge skipped." = "Balayé — purge ignorée.";
+
+/* Target screen */
+"Ready when you are" = "Prêt quand vous voulez";
+"Scan to see what can be freed." = "Analysez pour voir ce qui peut être libéré.";
+"All clean" = "Tout est propre";
+"Nothing to clean here right now." = "Rien à nettoyer ici pour l’instant.";
+"Select all" = "Tout sélectionner";
+"Deselect all" = "Tout désélectionner";
+"%lld selected" = "%lld sélectionnés";
+"Clean" = "Nettoyer";
+"Cleaning…" = "Nettoyage…";
+
+/* Confirm */
+"Clean %lld items?" = "Nettoyer %lld éléments ?";
+"Moves %@ to the Vault — restorable for %lld days." = "Déplace %@ vers le Coffre — restaurable pendant %lld jours.";
+"Permanently deletes %@. This can't be undone." = "Supprime définitivement %@. Action irréversible.";
+"Cancel" = "Annuler";
+"Delete" = "Supprimer";
+
+/* Vault */
+"Safety vault" = "Coffre de sécurité";
+"Vault is empty" = "Le coffre est vide";
+"Cleaned items rest here first — restore any of them in one tap." = "Les éléments nettoyés restent ici d’abord — restaurez-en n’importe lequel en un geste.";
+"Cleaned items rest here before they're truly gone." = "Les éléments nettoyés restent ici avant de disparaître vraiment.";
+"%lld items · %@" = "%lld éléments · %@";
+" · auto-removed after %lld days" = " · supprimés automatiquement après %lld jours";
+"Restore all" = "Tout restaurer";
+"Empty vault" = "Vider le coffre";
+"Restore" = "Restaurer";
+"Delete permanently" = "Supprimer définitivement";
+
+/* Uninstaller */
+"Removes an app and every trace it left — preferences, caches, containers." = "Supprime une app et toutes ses traces — préférences, caches, conteneurs.";
+"Search apps" = "Rechercher des apps";
+"Listing apps…" = "Liste des apps…";
+"Uninstall %@" = "Désinstaller %@";
+"Finding every trace…" = "Recherche de toutes les traces…";
+"Uninstall" = "Désinstaller";
+"Uninstalling…" = "Désinstallation…";
+"%@ uninstalled — %@ freed." = "%@ désinstallée — %@ libérés.";
+"%@: %lld removed, %lld locked (quit it and retry)." = "%@ : %lld supprimés, %lld verrouillés (quittez-la et réessayez).";
+
+/* Menu bar */
+"RAM" = "RAM";
+"Free" = "Libre";
+"Scan everything" = "Tout analyser";
+"Sweep %@" = "Balayer %@";
+"All clean ✨" = "Tout est propre ✨";
+"Freed %@ ✨" = "Libéré %@ ✨";
+"Open Kamurafy" = "Ouvrir Kamurafy";
+"Quit" = "Quitter";
+
+/* Settings */
+"Keep cleaned items for" = "Conserver les éléments nettoyés pendant";
+"Delete immediately (no vault)" = "Supprimer immédiatement (sans coffre)";
+"3 days" = "3 jours";
+"7 days" = "7 jours";
+"30 days" = "30 jours";
+"Cleaned items go to a restorable vault until the window closes — space is truly freed when they leave it." = "Les éléments nettoyés vont dans un coffre restaurable jusqu’à la fin de la période — l’espace est vraiment libéré à leur sortie.";
+"Auto sweep" = "Balayage automatique";
+"Sweep safe items automatically" = "Balayer automatiquement les éléments sûrs";
+"Frequency" = "Fréquence";
+"Daily" = "Quotidien";
+"Weekly" = "Hebdomadaire";
+"Launch Kamurafy at login" = "Lancer Kamurafy à l’ouverture de session";
+"Only pre-selected safe items are swept. You get a notification with the amount freed. Purge never runs automatically." = "Seuls les éléments sûrs présélectionnés sont balayés. Vous recevez une notification indiquant l’espace libéré. Le purge ne s’exécute jamais tout seul.";
+"Auto sweep freed %@." = "Le balayage automatique a libéré %@.";
+
+/* Update */
+"Kamurafy %@ is available." = "Kamurafy %@ est disponible.";
+"Get it" = "Obtenir";
+
+/* Language picker */
+"Language" = "Langue";
+"Interface language" = "Langue de l’interface";
+"System default" = "Réglage système";
+"Relaunch to apply the new language." = "Relancez l’app pour appliquer la nouvelle langue.";
+"Relaunch now" = "Relancer maintenant";
+
+"Settings & Language" = "Réglages et langue";

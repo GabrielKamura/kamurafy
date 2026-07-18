@@ -1,0 +1,129 @@
+/* Sidebar */
+"Home" = "主页";
+"Clean" = "清理";
+"Tools" = "工具";
+"Uninstaller" = "卸载器";
+"Vault" = "保险库";
+
+/* Targets */
+"Caches & Logs" = "缓存与日志";
+"Developer Junk" = "开发垃圾";
+"App Leftovers" = "应用残留";
+"Large Files" = "大文件";
+"Duplicates" = "重复文件";
+"Trash" = "废纸篓";
+"App caches, browser caches and logs that pile up in your Library." = "堆积在“资源库”中的应用缓存、浏览器缓存和日志。";
+"Rebuildable caches from Xcode, Homebrew, npm, pip and Gradle." = "来自 Xcode、Homebrew、npm、pip 和 Gradle 的可重建缓存。";
+"Preferences and support files from apps you no longer have. Review before removing." = "已卸载应用留下的偏好设置和支持文件。删除前请检查。";
+"Your biggest files in Downloads, Desktop and Documents. Review before removing." = "“下载”“桌面”和“文稿”中最大的文件。删除前请检查。";
+"Identical files in Downloads, Desktop and Documents. The oldest copy is kept." = "“下载”“桌面”和“文稿”中内容相同的文件。保留最早的副本。";
+"Empties the Trash for good." = "彻底清空废纸篓。";
+
+/* Home */
+"Overview" = "概览";
+"A clear look at your Mac — and one tap to clean it." = "一目了然地查看你的 Mac —— 一键清理。";
+"One-tap sweep" = "一键清扫";
+"Scan everything at once." = "一次扫描全部。";
+"Caches, logs, developer junk and Trash — in parallel." = "缓存、日志、开发垃圾和废纸篓 —— 并行处理。";
+"Scanning… %lld/%lld" = "扫描中… %lld/%lld";
+"%@ ready to free" = "可释放 %@";
+"Nothing to sweep ✨" = "无需清扫 ✨";
+"%lld safe items" = "%lld 个安全项目";
+"+ %@ to review" = "+ %@ 待检查";
+"You're all clean." = "一切都很干净。";
+"Sweeping…" = "清扫中…";
+"Freed %@" = "已释放 %@";
+"%lld items" = "%lld 个项目";
+"Scan" = "扫描";
+"Sweep" = "清扫";
+"Rescan" = "重新扫描";
+"Undo" = "撤销";
+"Memory" = "内存";
+"Free disk" = "可用磁盘";
+"of %@" = "/ %@";
+"Optimize memory" = "优化内存";
+"Frees inactive disk cache from RAM. A real but short-lived effect — no magic." = "从内存中释放不活跃的磁盘缓存。效果真实但短暂 —— 并非魔法。";
+"Run purge" = "运行 purge";
+"Done." = "完成。";
+"Memory optimized." = "内存已优化。";
+"Swept — purge skipped." = "已清扫 —— 跳过 purge。";
+
+/* Target screen */
+"Ready when you are" = "随时可以开始";
+"Scan to see what can be freed." = "扫描以查看可释放的空间。";
+"All clean" = "全部干净";
+"Nothing to clean here right now." = "此处暂时无需清理。";
+"Select all" = "全选";
+"Deselect all" = "取消全选";
+"%lld selected" = "已选 %lld 个";
+"Clean" = "清理";
+"Cleaning…" = "清理中…";
+
+/* Confirm */
+"Clean %lld items?" = "清理 %lld 个项目？";
+"Moves %@ to the Vault — restorable for %lld days." = "将 %@ 移入保险库 —— %lld 天内可恢复。";
+"Permanently deletes %@. This can't be undone." = "永久删除 %@。此操作无法撤销。";
+"Cancel" = "取消";
+"Delete" = "删除";
+
+/* Vault */
+"Safety vault" = "安全保险库";
+"Vault is empty" = "保险库为空";
+"Cleaned items rest here first — restore any of them in one tap." = "清理的项目会先保留在此 —— 一键即可恢复任意一项。";
+"Cleaned items rest here before they're truly gone." = "清理的项目会在彻底消失前保留在此。";
+"%lld items · %@" = "%lld 个项目 · %@";
+" · auto-removed after %lld days" = " · %lld 天后自动移除";
+"Restore all" = "全部恢复";
+"Empty vault" = "清空保险库";
+"Restore" = "恢复";
+"Delete permanently" = "永久删除";
+
+/* Uninstaller */
+"Removes an app and every trace it left — preferences, caches, containers." = "删除应用及其留下的所有痕迹 —— 偏好设置、缓存、容器。";
+"Search apps" = "搜索应用";
+"Listing apps…" = "正在列出应用…";
+"Uninstall %@" = "卸载 %@";
+"Finding every trace…" = "正在查找所有痕迹…";
+"Uninstall" = "卸载";
+"Uninstalling…" = "正在卸载…";
+"%@ uninstalled — %@ freed." = "已卸载 %@ —— 释放 %@。";
+"%@: %lld removed, %lld locked (quit it and retry)." = "%@：已删除 %lld 个，%lld 个被占用（请退出后重试）。";
+
+/* Menu bar */
+"RAM" = "内存";
+"Free" = "可用";
+"Scan everything" = "扫描全部";
+"Sweep %@" = "清扫 %@";
+"All clean ✨" = "全部干净 ✨";
+"Freed %@ ✨" = "已释放 %@ ✨";
+"Open Kamurafy" = "打开 Kamurafy";
+"Quit" = "退出";
+
+/* Settings */
+"Keep cleaned items for" = "清理项目的保留时长";
+"Delete immediately (no vault)" = "立即删除（不使用保险库）";
+"3 days" = "3 天";
+"7 days" = "7 天";
+"30 days" = "30 天";
+"Cleaned items go to a restorable vault until the window closes — space is truly freed when they leave it." = "清理的项目会进入可恢复的保险库，直到期限结束 —— 项目离开保险库时才真正释放空间。";
+"Auto sweep" = "自动清扫";
+"Sweep safe items automatically" = "自动清扫安全项目";
+"Frequency" = "频率";
+"Daily" = "每天";
+"Weekly" = "每周";
+"Launch Kamurafy at login" = "登录时启动 Kamurafy";
+"Only pre-selected safe items are swept. You get a notification with the amount freed. Purge never runs automatically." = "仅清扫预先选定的安全项目。你会收到已释放空间的通知。purge 绝不会自动运行。";
+"Auto sweep freed %@." = "自动清扫释放了 %@。";
+
+/* Update */
+"Kamurafy %@ is available." = "Kamurafy %@ 已发布。";
+"Get it" = "获取";
+
+/* Language picker */
+"Language" = "语言";
+"Interface language" = "界面语言";
+"System default" = "系统默认";
+"Relaunch to apply the new language." = "重新启动应用以应用新语言。";
+"Relaunch now" = "立即重启";
+
+"Settings & Language" = "设置与语言";

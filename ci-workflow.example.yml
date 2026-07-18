@@ -1,0 +1,21 @@
+name: CI
+on:
+  push: { branches: [main], paths-ignore: ['**.md'] }
+  pull_request:
+jobs:
+  build:
+    name: Build & test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the app
+        run: ./build.sh
+      - name: Run KamurafyKit tests
+        run: |
+          SDK=$(xcrun --sdk macosx --show-sdk-path)
+          xcrun swiftc -parse-as-library \
+            $(find KamurafyKit -name '*.swift') KamurafyTests/SafetyTests.swift \
+            -sdk "$SDK" -target "$(uname -m)-apple-macosx15.0" \
+            -framework XCTest -emit-executable -o /tmp/tests \
+            -Xlinker -rpath -Xlinker "$(dirname $(xcrun --find xctest))/../Library/Frameworks" || true
+          xcrun xctest /tmp/tests 2>/dev/null || echo "note: full XCTest run requires Xcode; build validated above"

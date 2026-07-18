@@ -1,0 +1,129 @@
+/* Sidebar */
+"Home" = "Home";
+"Clean" = "Pulisci";
+"Tools" = "Strumenti";
+"Uninstaller" = "Disinstallazione";
+"Vault" = "Cassaforte";
+
+/* Targets */
+"Caches & Logs" = "Cache e log";
+"Developer Junk" = "Scarti di sviluppo";
+"App Leftovers" = "Residui di app";
+"Large Files" = "File grandi";
+"Duplicates" = "Duplicati";
+"Trash" = "Cestino";
+"App caches, browser caches and logs that pile up in your Library." = "Cache di app, del browser e log accumulati nella tua Libreria.";
+"Rebuildable caches from Xcode, Homebrew, npm, pip and Gradle." = "Cache rigenerabili di Xcode, Homebrew, npm, pip e Gradle.";
+"Preferences and support files from apps you no longer have. Review before removing." = "Preferenze e file di app che non hai più. Controlla prima di rimuovere.";
+"Your biggest files in Downloads, Desktop and Documents. Review before removing." = "I tuoi file più grandi in Download, Scrivania e Documenti. Controlla prima di rimuovere.";
+"Identical files in Downloads, Desktop and Documents. The oldest copy is kept." = "File identici in Download, Scrivania e Documenti. Viene mantenuta la copia più vecchia.";
+"Empties the Trash for good." = "Svuota definitivamente il Cestino.";
+
+/* Home */
+"Overview" = "Panoramica";
+"A clear look at your Mac — and one tap to clean it." = "Una visione chiara del tuo Mac — e un tocco per pulirlo.";
+"One-tap sweep" = "Pulizia con un tocco";
+"Scan everything at once." = "Analizza tutto in una volta.";
+"Caches, logs, developer junk and Trash — in parallel." = "Cache, log, scarti di sviluppo e Cestino — in parallelo.";
+"Scanning… %lld/%lld" = "Analisi… %lld/%lld";
+"%@ ready to free" = "%@ pronti da liberare";
+"Nothing to sweep ✨" = "Niente da pulire ✨";
+"%lld safe items" = "%lld elementi sicuri";
+"+ %@ to review" = "+ %@ da controllare";
+"You're all clean." = "È tutto pulito.";
+"Sweeping…" = "Pulizia…";
+"Freed %@" = "Liberati %@";
+"%lld items" = "%lld elementi";
+"Scan" = "Analizza";
+"Sweep" = "Pulisci";
+"Rescan" = "Rianalizza";
+"Undo" = "Annulla";
+"Memory" = "Memoria";
+"Free disk" = "Disco libero";
+"of %@" = "di %@";
+"Optimize memory" = "Ottimizza memoria";
+"Frees inactive disk cache from RAM. A real but short-lived effect — no magic." = "Libera la cache del disco inattiva dalla RAM. Effetto reale ma breve — niente magia.";
+"Run purge" = "Esegui purge";
+"Done." = "Fatto.";
+"Memory optimized." = "Memoria ottimizzata.";
+"Swept — purge skipped." = "Pulito — purge saltato.";
+
+/* Target screen */
+"Ready when you are" = "Pronto quando vuoi";
+"Scan to see what can be freed." = "Analizza per vedere cosa si può liberare.";
+"All clean" = "Tutto pulito";
+"Nothing to clean here right now." = "Niente da pulire qui per ora.";
+"Select all" = "Seleziona tutto";
+"Deselect all" = "Deseleziona tutto";
+"%lld selected" = "%lld selezionati";
+"Clean" = "Pulisci";
+"Cleaning…" = "Pulizia…";
+
+/* Confirm */
+"Clean %lld items?" = "Pulire %lld elementi?";
+"Moves %@ to the Vault — restorable for %lld days." = "Sposta %@ nella Cassaforte — ripristinabile per %lld giorni.";
+"Permanently deletes %@. This can't be undone." = "Elimina %@ in modo permanente. Non annullabile.";
+"Cancel" = "Annulla";
+"Delete" = "Elimina";
+
+/* Vault */
+"Safety vault" = "Cassaforte di sicurezza";
+"Vault is empty" = "La cassaforte è vuota";
+"Cleaned items rest here first — restore any of them in one tap." = "Gli elementi puliti restano qui prima — ripristinane uno con un tocco.";
+"Cleaned items rest here before they're truly gone." = "Gli elementi puliti restano qui prima di sparire davvero.";
+"%lld items · %@" = "%lld elementi · %@";
+" · auto-removed after %lld days" = " · rimossi automaticamente dopo %lld giorni";
+"Restore all" = "Ripristina tutto";
+"Empty vault" = "Svuota cassaforte";
+"Restore" = "Ripristina";
+"Delete permanently" = "Elimina definitivamente";
+
+/* Uninstaller */
+"Removes an app and every trace it left — preferences, caches, containers." = "Rimuove un’app e ogni traccia lasciata — preferenze, cache, container.";
+"Search apps" = "Cerca app";
+"Listing apps…" = "Elenco app…";
+"Uninstall %@" = "Disinstalla %@";
+"Finding every trace…" = "Ricerca di ogni traccia…";
+"Uninstall" = "Disinstalla";
+"Uninstalling…" = "Disinstallazione…";
+"%@ uninstalled — %@ freed." = "%@ disinstallata — %@ liberati.";
+"%@: %lld removed, %lld locked (quit it and retry)." = "%@: %lld rimossi, %lld bloccati (chiudila e riprova).";
+
+/* Menu bar */
+"RAM" = "RAM";
+"Free" = "Libero";
+"Scan everything" = "Analizza tutto";
+"Sweep %@" = "Pulisci %@";
+"All clean ✨" = "Tutto pulito ✨";
+"Freed %@ ✨" = "Liberati %@ ✨";
+"Open Kamurafy" = "Apri Kamurafy";
+"Quit" = "Esci";
+
+/* Settings */
+"Keep cleaned items for" = "Conserva gli elementi puliti per";
+"Delete immediately (no vault)" = "Elimina subito (senza cassaforte)";
+"3 days" = "3 giorni";
+"7 days" = "7 giorni";
+"30 days" = "30 giorni";
+"Cleaned items go to a restorable vault until the window closes — space is truly freed when they leave it." = "Gli elementi puliti vanno in una cassaforte ripristinabile fino alla scadenza — lo spazio si libera davvero quando la lasciano.";
+"Auto sweep" = "Pulizia automatica";
+"Sweep safe items automatically" = "Pulisci automaticamente gli elementi sicuri";
+"Frequency" = "Frequenza";
+"Daily" = "Giornaliera";
+"Weekly" = "Settimanale";
+"Launch Kamurafy at login" = "Avvia Kamurafy all’accesso";
+"Only pre-selected safe items are swept. You get a notification with the amount freed. Purge never runs automatically." = "Vengono puliti solo gli elementi sicuri preselezionati. Ricevi una notifica con lo spazio liberato. Il purge non parte mai da solo.";
+"Auto sweep freed %@." = "La pulizia automatica ha liberato %@.";
+
+/* Update */
+"Kamurafy %@ is available." = "Kamurafy %@ è disponibile.";
+"Get it" = "Ottieni";
+
+/* Language picker */
+"Language" = "Lingua";
+"Interface language" = "Lingua dell’interfaccia";
+"System default" = "Predefinita del sistema";
+"Relaunch to apply the new language." = "Riavvia l’app per applicare la nuova lingua.";
+"Relaunch now" = "Riavvia ora";
+
+"Settings & Language" = "Impostazioni e lingua";
