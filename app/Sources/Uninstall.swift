@@ -67,9 +67,8 @@ enum Uninstall {
                 guard let b = Bundle(url: u) else { continue }
                 let bid = b.bundleIdentifier
                 if bid != nil && bid == myBundle { continue }
-                let name = (b.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
-                    ?? (b.object(forInfoDictionaryKey: "CFBundleName") as? String)
-                    ?? u.deletingPathExtension().lastPathComponent
+                // o nome que o Finder mostra ("Visual Studio Code", não "Code")
+                let name = (FileManager.default.displayName(atPath: u.path) as NSString).deletingPathExtension
                 let m = CleanScan.measure(u, deadline: deadline)
                 let isOpen = running.contains { $0.bundleURL?.standardizedFileURL == u.standardizedFileURL || ($0.bundleIdentifier != nil && $0.bundleIdentifier == bid) }
                 let app = InstalledApp(

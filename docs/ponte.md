@@ -223,8 +223,17 @@ e morrem ao serem limpos. No terminal (`--cmd`/`--seq`) e no modo foto, limpar s
 - `parcial` (opcional, planejado: a interface já entende): `true` quando parte da pasta não deu
   pra ler e `bytes` é só o mínimo. A linha mostra "parte sem acesso" e "pelo menos X".
 - `appAberto: true` → o Swift **recusa** limpar (a interface deve desabilitar e dizer "feche o app").
-- `tipo` (downloads/grandes/duplicados): `instalador` · `compactado` · `video` · `audio` ·
-  `imagem` · `documento` · `pasta` · `outro`.
+- `tipo` (downloads/grandes/duplicados): `instalador` · `imagem-disco` · `imagem-protegida` ·
+  `app` · `compactado` · `video` · `audio` · `imagem` · `documento` · `pasta` · `outro`.
+- `parcial: true` = parte não deu pra ler (o tamanho é mínimo). `vinculo` (duplicados/grandes):
+  `"link"` = mesmo arquivo com outro nome (apagar não libera espaço), `"clone"` = cópia do APFS
+  que divide o espaço (libera quase nada). Nenhum dos dois conta no `desperdicio`.
+- `CleanCategory.aviso`: quando a pasta da categoria não está no lugar exato (virou atalho),
+  ela fica de fora e o motivo vem aqui.
+- `DupGroup.nota`: aviso fixo do grupo (programas que usam o arquivo pelo caminho). A cópia
+  que o Swift sugere manter vem **primeiro** (fora de Downloads/Mesa, a mais antiga, sem "cópia").
+- Política do que vem marcado: só cache de app conhecido, fechado e sem mexida na última hora
+  (15 min nos de programação); o que não volta sozinho vem desmarcado e com o custo na nota.
 - Duplicados: o Swift recusa se o pedido deixaria um grupo sem nenhuma cópia; a interface
   deve impedir marcar todas (sugestão: manter a mais antiga, que vem primeiro).
 - `nome`, `caminho` e `app` vêm de fora: só textContent. Na tela, caracteres que mudam a direção
@@ -239,3 +248,56 @@ e morrem ao serem limpos. No terminal (`--cmd`/`--seq`) e no modo foto, limpar s
   e Downloads avisam antes de mandar ela também).
 - Ganchos de teste da interface (`K.faxina.scan/clean/purge/emptyTrash…`, com `semConfirmar`)
   só existem na build de desenvolvimento: com `app.version.publico` eles somem.
+
+## optimize.* (Otimizar)
+
+Nada aqui apaga arquivo. No terminal e no modo foto, as ações que mudam algo são recusadas.
+
+| comando | args | resposta |
+|---|---|---|
+| `optimize.startup` | — | `[StartupItem]` (ver abaixo), ~1 s |
+| `optimize.startupToggle` | `{id, ligar}` | `{id, ligado, rodando}` — liga/desliga pelo launchctl (enable/disable + bootstrap/bootout); reversível |
+| `optimize.heavy` | `{limite: 12}` | `[HeavyApp]` — CPU e memória somadas por app responsável |
+| `optimize.quit` | `{id, forcar?}` | `{ok, mensagem}` — app: pede pra fechar (ele pode perguntar se quer salvar); forçar só se o usuário escolher |
+| `optimize.tasks` | — | `[{id, titulo, descricao, quando, precisaSenha, demora}]` |
+| `optimize.run` | `{id, confirmado: true}` | `{ok, mensagem}` — `dns` e `spotlight` pedem a senha pelo próprio macOS; `abrircom`, `dock`, `finder` não |
+
+`StartupItem`: `{id, label, nome, app?, icon?, origem, ligado, rodando, editavel, arquivo?, programa?, nota?}`.
+`origem`: `ajudante` (item de início de app, do launchd) · `agente` (~/Library/LaunchAgents) ·
+`sistema` (/Library/Launch*, só leitura: mexer pede senha → `open.settings {painel:'itens-login'}`).
+
+`HeavyApp`: `{id, nome, pid, cpu, memBytes, processos, app, sistema, proprio, icon?, respondendo}`.
+`cpu` é % de um núcleo (pode passar de 100). `sistema: true` = o Kamurafy não encerra
+(Finder, Dock, WindowServer, processos do macOS). `proprio: true` = o Kamurafy.
+
+## uninstall.* (Desinstalar)
+
+| comando | args | resposta |
+|---|---|---|
+| `uninstall.apps` | — | `[InstalledApp]`, maior primeiro (~8 s: mede cada app) |
+| `uninstall.leftovers` | `{id}` | `CleanCategory` com `categoria: "restos"` (itens registrados como os da Faxina) |
+| `uninstall.run` | `{id, restos: [ids], confirmado: true}` | `{app, appLixeiraId?, restos?: CleanResult, mensagem}` |
+
+`InstalledApp`: `{id, nome, bundleId?, versao?, caminho, bytes, usado?, icon?, appStore, apple, aberto, local}`.
+- App aberto é recusado ("feche antes"). App instalado pelo administrador (App Store, .pkg) vai
+  pela Lixeira do Finder, que pede a senha.
+- Sobras: só nomes **exatos** — pelo bundle id (vêm marcadas) ou pelo nome do app (vêm
+  desmarcadas, "achado pelo nome: confira"). Pastas: Application Support, Caches, Preferences
+  (+ByHost), Saved Application State, Logs, HTTPStorages, WebKit, Containers, Application
+  Scripts, Cookies, LaunchAgents.
+- O app desinstalado entra no `cleanup.moved` (categoria `app`) e o `cleanup.restore` devolve
+  ele pra pasta Aplicativos.
+
+## menubar.* (barra de menus)
+
+| comando | args | resposta |
+|---|---|---|
+| `menubar.status` | — | `{abrirNoLogin, barra, porcentagem, soNaBarra}`; `abrirNoLogin`: `ligado` · `desligado` · `precisa-aprovar` · `indisponivel` |
+| `menubar.loginItem` | `{ligar}` | mesmo formato (SMAppService: abrir o Kamurafy junto com o Mac) |
+| `app.show` | `{rota?}` | abre a janela principal (na rota, se vier) e fecha o balão |
+| `menubar.resize` | `{altura}` | ajusta a altura do balão (200–700) |
+
+Configurações novas em `settings.*`: `iconeNaBarra` (padrão true), `porcentagemNaBarra` (true),
+`soNaBarra` (false: com true, fechar a janela tira o Kamurafy do Dock e ele fica só no ícone).
+O balão carrega `ui/menubar.html` (340 px de largura) com a mesma ponte (`K.api`); ele pode
+chamar `K.menubar.refresh()` quando é aberto.

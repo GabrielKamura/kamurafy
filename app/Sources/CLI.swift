@@ -22,7 +22,16 @@ enum CLI {
                 guard let cmd = step.first as? String else { exit(64) }
                 var args = (step.count > 1 ? step[1] as? [String: Any] : nil) ?? [String: Any]()
                 for (k, v) in args {
-                    guard let ref = v as? String, ref.hasPrefix("$ids:") || ref.hasPrefix("$sel:"),
+                    guard let ref = v as? String else { continue }
+                    // "$pick:N:Nome" = id do primeiro objeto com nome == Nome na resposta N
+                    if ref.hasPrefix("$pick:") {
+                        let parts = ref.dropFirst(6).split(separator: ":", maxSplits: 1).map(String.init)
+                        if parts.count == 2, let n = Int(parts[0]), n < results.count {
+                            args[k] = CLI.pick(results[n], name: parts[1]) ?? ""
+                        }
+                        continue
+                    }
+                    guard ref.hasPrefix("$ids:") || ref.hasPrefix("$sel:"),
                           let n = Int(ref.dropFirst(5)), n < results.count else { continue }
                     args[k] = CLI.collectIDs(results[n], onlySelected: ref.hasPrefix("$sel:"))
                 }
@@ -42,6 +51,16 @@ enum CLI {
         }
         RunLoop.main.run()
         exit(0)
+    }
+
+    static func pick(_ obj: Any, name: String) -> String? {
+        if let d = obj as? [String: Any] {
+            if d["nome"] as? String == name, let id = d["id"] as? String { return id }
+            for v in d.values { if let r = pick(v, name: name) { return r } }
+        } else if let a = obj as? [Any] {
+            for v in a { if let r = pick(v, name: name) { return r } }
+        }
+        return nil
     }
 
     static func collectIDs(_ obj: Any, onlySelected: Bool) -> [String] {

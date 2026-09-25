@@ -64,9 +64,12 @@ enum Startup {
         var parts = label.split(separator: ".").map(String.init)
         while parts.count >= 2 {
             let bid = parts.joined(separator: ".")
-            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
-                let name = (FileManager.default.displayName(atPath: url.path) as NSString).deletingPathExtension
-                return (name, CleanScan.iconData(NSWorkspace.shared.icon(forFile: url.path)))
+            if let found = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bid) {
+                // ajudante dentro de outro app (…/Spotify.app/Contents/Library/LoginItems/…): mostra o app de fora
+                let p = found.path
+                let outer = p.components(separatedBy: ".app/").count > 1 ? p.components(separatedBy: ".app/")[0] + ".app" : p
+                let name = (FileManager.default.displayName(atPath: outer) as NSString).deletingPathExtension
+                return (name, CleanScan.iconData(NSWorkspace.shared.icon(forFile: outer)))
             }
             parts.removeLast()
         }
@@ -237,8 +240,10 @@ enum Heavy {
             }
             let path = app?.bundleURL?.path ?? (owner == p.pid ? p.path : "")
             let name = app?.localizedName ?? (path as NSString).lastPathComponent
-            let system = path.hasPrefix("/System/") || path.hasPrefix("/usr/") || path.hasPrefix("/sbin/")
-                || p.uid != getuid() || protectedNames.contains(name)
+            // app com janela pode ser fechado (Música, Safari...), menos os que seguram o macOS;
+            // processo solto só se for do usuário e fora das pastas do sistema
+            let systemPath = path.hasPrefix("/System/") || path.hasPrefix("/usr/") || path.hasPrefix("/sbin/") || path.hasPrefix("/Library/Apple/")
+            let system = protectedNames.contains(name) || (app == nil && (systemPath || p.uid != getuid()))
             let item = HeavyApp(id: UUID().uuidString, nome: name.isEmpty ? "Processo \(owner)" : name, pid: Int(owner),
                                 cpu: p.cpu, memBytes: p.rss, processos: 1, app: app != nil, sistema: system,
                                 proprio: owner == me, icon: app.flatMap { $0.icon }.flatMap { CleanScan.iconData($0) },
