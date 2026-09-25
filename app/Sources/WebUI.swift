@@ -147,6 +147,10 @@ enum WebUI {
     }
 
     static func startURL(route: String?) -> URL {
+        // página avulsa (ex.: "menubar.html", o balão da barra de menus) em vez de uma rota
+        if let r = route, r.hasSuffix(".html"), r.range(of: #"^[a-z0-9-]+\.html$"#, options: .regularExpression) != nil {
+            return URL(string: "\(UIScheme.scheme)://app/\(r)")!
+        }
         let base = "\(UIScheme.scheme)://app/index.html"
         guard let r = route, !r.isEmpty,
               let frag = r.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed),
