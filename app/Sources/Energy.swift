@@ -56,7 +56,7 @@ enum Energy {
     }
 
     /// Nomes amigáveis pros processos do sistema que mais aparecem.
-    private static let friendly: [String: String] = [
+    static let friendly: [String: String] = [
         "WindowServer": "Tela e janelas (WindowServer)",
         "kernel_task": "Núcleo do macOS (kernel_task)",
         "mds": "Spotlight (mds)", "mds_stores": "Spotlight (mds_stores)", "mdworker": "Spotlight (mdworker)",
@@ -80,8 +80,10 @@ enum Energy {
 
     private static func owner(of pid: pid_t, fallbackComm: String) -> (key: String, name: String, app: NSRunningApplication?, system: Bool)? {
         if let app = NSRunningApplication(processIdentifier: pid), app.activationPolicy != .prohibited {
-            let path = app.bundleURL?.path ?? ""
-            return (app.bundleIdentifier ?? "pid\(pid)", app.localizedName ?? "App", app, isSystemPath(path))
+            // app com janela é "app", mesmo sendo da Apple (Safari, Música); só os que seguram o macOS contam como sistema
+            let name = app.localizedName ?? "App"
+            let system = app.activationPolicy != .regular && isSystemPath(app.bundleURL?.path ?? "")
+            return (app.bundleIdentifier ?? "pid\(pid)", name, app, system || Heavy.protectedNames.contains(name))
         }
         let path = processPath(pid)
         if let appRange = path.range(of: ".app/", options: .caseInsensitive) {
@@ -132,7 +134,7 @@ enum Energy {
         return r > 0 ? r : nil
     }
 
-    private static func processPath(_ pid: pid_t) -> String {
+    static func processPath(_ pid: pid_t) -> String {
         guard let f = procPidPath else { return "" }
         var buf = [CChar](repeating: 0, count: 4096)
         let n = buf.withUnsafeMutableBytes { f(pid, $0.baseAddress, UInt32(4096)) }

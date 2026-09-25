@@ -36,7 +36,7 @@
 
   const THERMAL_ORDER = ['normal', 'morno', 'quente', 'critico'];
   const THERMAL = {
-    normal: { label: 'Normal', tone: 'good', icon: 'snow',
+    normal: { label: 'Fresco', tone: 'good', icon: 'snow',
       text: 'Fresco e tranquilo. Nada está segurando o desempenho.' },
     morno: { label: 'Morno', tone: 'warn', icon: 'thermo',
       text: 'Um pouco aquecido, o que é comum com o Mac trabalhando ou carregando. Por enquanto o desempenho não muda.' },
@@ -59,15 +59,11 @@
 
   /* ---------- formatação ---------- */
 
-  /** Memória em base 2, como o Monitor de Atividade e a Apple ("16 GB"). Disco usa K.fmt.bytes (base 10). */
-  function mem(v, casas) {
-    if (!isNum(v)) return '—';
-    const u = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let i = 0, n = v;
-    while (n >= 1000 && i < u.length - 1) { n /= 1024; i++; }
-    const c = casas != null ? casas : (i >= 3 && n < 100 ? 1 : 0);
-    return K.fmt.num(n, c) + ' ' + u[i];
-  }
+  /** Memória em base 2, como o Monitor de Atividade e a Apple ("16 GB"): a mesma função das outras
+      telas (K.fmt.mem). Disco usa K.fmt.bytes (base 10). */
+  const mem = (v, casas) => K.fmt.mem(v, casas);
+  /* começa assim, apagado, até a primeira leitura (nunca um travessão preto) */
+  const WAIT = 'medindo…';
   const pctTxt = (v) => (isNum(v) ? K.fmt.pct(v, v > 0 && v < 10 ? 1 : 0) : '—');
   const pct0 = (v) => (isNum(v) ? K.fmt.pct(v, 0) : '—');
 
@@ -200,14 +196,15 @@
         K.el('p', null, 'O seu Mac agora, ao vivo. Os números se atualizam sozinhos a cada 2 segundos.')),
       K.el('div', { class: 'pn-head-right' }, R.live, R.pauseBtn)));
 
-    R.error = K.el('div', { class: 'error-box pn-error', hidden: true });
+    /* erro de leitura: o mesmo cartão das outras telas, na versão compacta (a página tenta de novo sozinha) */
+    R.error = K.el('div', { class: 'pn-error', hidden: true });
     el.appendChild(R.error);
 
     const grid = K.el('div', { class: 'pn-grid' });
     el.appendChild(grid);
 
     /* ----- processador ----- */
-    R.cpuSub = K.el('div', { class: 'card-sub' }, 'Lendo o chip…');
+    R.cpuSub = K.el('div', { class: 'card-sub no-read-sub' }, 'lendo o chip…');
     const cpu = card('cpu', 'cpu', 'Processador', R.cpuSub, 0);
     R.cores = K.el('span', { class: 'sticker pn-cores', hidden: true });
     cpu.side.appendChild(R.cores);
@@ -218,7 +215,7 @@
     const splitNum = (cls, ref, name, note) => K.el('div', { class: 'pn-sn' },
       K.el('i', { class: 'pn-sw ' + cls }),
       K.el('div', null,
-        R[ref] = K.el('div', { class: 'pn-sn-v num' }, '—'),
+        R[ref] = K.el('div', { class: 'pn-sn-v num no-read' }, WAIT),
         K.el('div', { class: 'pn-sn-name' }, name),
         K.el('div', { class: 'pn-sn-note' }, note)));
     R.peak = K.el('span', { class: 'pn-mini-note num' }, '');
@@ -233,7 +230,7 @@
         splitNum('s2', 'sys', 'Sistema', 'o próprio macOS'),
         splitNum('idle', 'idle', 'Parado', 'folga pra usar')));
     cpu.c.appendChild(K.el('div', { class: 'pn-cpu-body' },
-      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, 'Média de todos os núcleos: 100% seria todos no máximo ao mesmo tempo.')),
+      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, 'Média do chip todo: 100% seria todos os núcleos no máximo ao mesmo tempo.')),
       side));
 
     /* temperatura (estado térmico do macOS) */
@@ -258,14 +255,14 @@
     /* ----- bateria (resumo): a saúde é o número grande; a carga vai numa linha menor ----- */
     const bat = card('bat', 'battery', 'Bateria', null, 70);
     R.mascotEl = K.el('div', { class: 'pn-bat-m' });
-    R.batHealthBig = K.el('div', { class: 'pn-big num' }, '—');
+    R.batHealthBig = K.el('div', { class: 'pn-big num no-read' }, WAIT);
     R.batHealthLab = K.el('div', { class: 'stat-label' }, 'de saúde');
     R.batPill = K.el('div', { class: 'pn-pill' });
     R.batState = K.el('div', { class: 'pn-bat-state' }, 'Lendo a bateria…');
     R.batSub = K.el('div', { class: 'pn-bat-sub' }, '');
-    R.batCycles = K.el('div', { class: 'pn-kv-v num' }, '—');
+    R.batCycles = K.el('div', { class: 'pn-kv-v num no-read' }, WAIT);
     R.batCyclesSub = K.el('div', { class: 'pn-kv-sub' }, '');
-    R.batTemp = K.el('div', { class: 'pn-kv-v num' }, '—');
+    R.batTemp = K.el('div', { class: 'pn-kv-v num no-read' }, WAIT);
     R.batTempSub = K.el('div', { class: 'pn-kv-sub' }, '');
     R.batRows = K.el('div', { class: 'pn-bat-rows' },
       K.el('div', { class: 'pn-kv2' },
@@ -277,15 +274,22 @@
     });
     R.batLink.insertBefore(K.el('span', null, 'Ver tudo da bateria'), R.batLink.firstChild);
     R.batRetry = K.el('button', {
-      class: 'btn small pn-bat-retry', type: 'button', html: K.icon('cycle'), hidden: true,
+      class: 'btn small gold pn-bat-retry', type: 'button', html: K.icon('cycle'), hidden: true,
       onclick: () => { K.sound.plop(); txt(R.batState, 'Tentando de novo…'); if (S) pollBattery(S, true); },
     }, 'Tentar de novo');
+    /* a carga das últimas 24 h enche o cartão (sem vão amarelo embaixo de Ciclos e Temperatura) */
+    R.batChartEl = K.el('div', { class: 'pn-bat-chart' }, K.el('div', { class: 'loading pn-bat-chart-wait' }, 'Juntando a carga do dia…'));
+    R.batChart = K.el('div', { class: 'pn-bat-24' },
+      K.el('div', { class: 'pn-mini-head' }, K.el('span', { class: 'pn-mini-title' }, 'Carga em 24 h'),
+        K.el('span', { class: 'pn-bat-key' }, K.el('i', { 'aria-hidden': 'true' }), 'na tomada')),
+      R.batChartEl);
     bat.c.appendChild(K.el('div', { class: 'pn-bat-body' },
       K.el('div', { class: 'pn-bat-hero' },
         R.mascotEl,
         K.el('div', { class: 'pn-bat-num' }, R.batHealthBig, R.batHealthLab, R.batPill)),
       K.el('div', { class: 'pn-bat-status' }, R.batState, R.batSub),
       R.batRows,
+      R.batChart,
       R.batLink, R.batRetry));
     grid.appendChild(bat.c);
 
@@ -294,11 +298,11 @@
     const mm = card('mem', 'memory', 'Memória', R.memSub, 140);
     R.memPill = K.el('div', { class: 'pn-pill' });
     mm.side.appendChild(R.memPill);
-    R.memUsed = K.el('span', { class: 'pn-big num' }, '—');
+    R.memUsed = K.el('span', { class: 'pn-big num no-read' }, WAIT);
     R.memOf = K.el('span', { class: 'pn-of' }, '');
     R.pressText = K.el('div', { class: 'stat-sub' }, '');
-    R.memReady = K.el('div', { class: 'pn-kpi-v num' }, '—');
-    R.swap = K.el('div', { class: 'pn-kpi-v num' }, '—');
+    R.memReady = K.el('div', { class: 'pn-kpi-v num no-read' }, WAIT);
+    R.swap = K.el('div', { class: 'pn-kpi-v num no-read' }, WAIT);
     R.swapText = K.el('div', { class: 'pn-kpi-sub' }, '');
     mm.c.appendChild(K.el('div', { class: 'pn-mem-top' },
       K.el('div', { class: 'pn-mem-used' },
@@ -326,7 +330,7 @@
     R.diskPill = K.el('div', { class: 'pn-pill' });
     dk.side.appendChild(R.diskPill);
     R.ringEl = K.el('div', { class: 'pn-ring' });
-    R.diskFree = K.el('span', { class: 'pn-big num' }, '—');
+    R.diskFree = K.el('span', { class: 'pn-big num no-read' }, WAIT);
     R.diskPurge = K.el('div', { class: 'pn-disk-line' }, '');
     R.diskAvail = K.el('div', { class: 'stat-sub' }, '');
     dk.c.appendChild(K.el('div', { class: 'pn-disk-body' },
@@ -359,7 +363,7 @@
       K.el('span', { class: 'pn-sys-ico', html: K.icon(icon) }),
       K.el('div', { class: 'pn-sys-t' },
         K.el('div', { class: 'pn-sys-k' }, k),
-        R[ref] = K.el('div', { class: 'pn-sys-v selectable' }, '—'),
+        R[ref] = K.el('div', { class: 'pn-sys-v selectable no-read' }, 'lendo…'),
         subRef ? (R[subRef] = K.el('div', { class: 'pn-sys-sub selectable' }, '')) : null));
     sy.c.appendChild(K.el('div', { class: 'pn-sys-list' },
       row('laptop', 'Modelo', 'model', 'modelId'),
@@ -372,6 +376,17 @@
       K.el('p', null, 'Mais de uma semana sem reiniciar. Um reinício fecha processos esquecidos e termina atualizações; não é mágica, mas ajuda.'));
     sy.c.appendChild(R.upTip);
     grid.appendChild(sy.c);
+  }
+
+  /** leitura falhou: cartão de erro compacto (o mesmo desenho das outras telas), sem parênteses dentro de parênteses */
+  function showError(R, msg) {
+    const m = String(msg == null ? '' : msg).trim().replace(/[.!\s]+$/, '') || 'o macOS não respondeu';
+    const text = `Não deu pra ler o Mac agora: ${m}. Tento de novo sozinho em instantes.`;
+    if (!R.errCard) {
+      R.errCard = K.errorCard({ compact: true, title: 'Sem leitura agora', text, retryLabel: 'Tentar agora',
+        retry: () => { if (S && !S.dead) for (const j of S.jobs) j.kick(); } });
+      R.error.appendChild(R.errCard);
+    } else txt(R.errCard.querySelector('.kerr-text p'), text);
   }
 
   function paintPause(R) {
@@ -415,7 +430,7 @@
       if (S !== me || me.dead) return;
       S.failing = true;
       S.R.error.hidden = false;
-      txt(S.R.error, 'Não deu pra ler o Mac agora (' + (e && e.message || e) + '). Tentando de novo em instantes.');
+      showError(S.R, e && e.message || e);
     }
     paintLive();
   }
@@ -475,18 +490,19 @@
     tween(R.sys, sys, pctTxt, 500);
     tween(R.idle, idle, pctTxt, 500);
 
-    const cores = num(c.cores);
+    const coresTxt = K.fmt.cores(c);
     const chip = c.chip || null;
+    R.cpuSub.classList.remove('no-read-sub');
     txt(R.cpuSub, chip || 'Chip não identificado');
-    R.cores.hidden = !cores;
-    if (cores) {
-      txt(R.cores, `${cores} núcleos`);
-      R.cores.title = /intel/i.test(chip || '') ? 'Contando os núcleos lógicos: no Intel com Hyper-Threading, cada núcleo físico vale por dois.' : '';
+    R.cores.hidden = !coresTxt;
+    if (coresTxt) {
+      /* o mesmo texto do "Este Mac" e da Varredura: núcleos de verdade, e as linhas de execução entre parênteses */
+      txt(R.cores, coresTxt);
+      R.cores.title = isNum(c.physicalCores) && isNum(c.cores) && c.cores > c.physicalCores
+        ? `No Intel com Hyper-Threading, cada núcleo roda duas linhas de execução ao mesmo tempo: o Monitor de Atividade conta ${c.cores} "núcleos".` : '';
     }
     if (usage != null && usage > 90) txt(R.cpuNote, 'Normal enquanto algo pesado roda. Se ficar assim com o Mac parado, veja quem está puxando.');
-    else txt(R.cpuNote, cores
-      ? `Média dos ${cores} núcleos: 100% seria todos no máximo ao mesmo tempo.`
-      : 'Média de todos os núcleos: 100% seria todos no máximo ao mesmo tempo.');
+    else txt(R.cpuNote, 'Média do chip todo: 100% seria todos os núcleos no máximo ao mesmo tempo.');
   }
 
   function paintSpark() {
@@ -665,7 +681,7 @@
     txt(R.modelId, s.model && s.modelId ? s.modelId : '');
     const c = s.cpu || {};
     K.readOr(R.chip, c.chip || null, (v) => v);
-    txt(R.chipSub, isNum(c.cores) ? `${c.cores} núcleos` : '');
+    txt(R.chipSub, K.fmt.cores(c));
     const m = s.memory || {}, d = s.disk || {};
     K.readOr(R.ram, num(m.totalBytes), (v) => mem(v, 0));
     K.readOr(R.storage, num(d.totalBytes), (v) => K.fmt.bytes(v));
@@ -690,6 +706,7 @@
 
   function batWords(b) {
     if (b.isCharging == null && b.pluggedIn == null) return ['Tomada sem leitura', 'O Mac não informou se está no carregador agora.'];
+    if (K.batTopping(b)) return ['Terminando de encher', 'Na tomada, entrando devagar na bateria até completar.'];
     if (!b.isCharging && b.pluggedIn && (b.fullyCharged || b.percent >= 99)) {
       return ['Cheia na tomada', 'O carregador alimenta o Mac direto e a bateria descansa.'];
     }
@@ -717,10 +734,11 @@
       S.mascot.set({ pct: null, tone: 'none', face: 'worried', charging: false, plugged: false, full: false, hot: false });
       txt(R.batHealthBig, '');
       txt(R.batState, 'Não deu pra ler a bateria');
-      txt(R.batSub, 'Às vezes o macOS demora pra responder logo depois de acordar.' + (err ? ` (${String(err.message || err)})` : ''));
+      txt(R.batSub, 'Às vezes o macOS demora pra responder logo depois de acordar.' + (err ? ` O motivo: ${String(err.message || err).trim().replace(/[.!\s]+$/, '')}.` : ''));
       pill(R.batPill, null, '');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
+      R.batChart.hidden = true;
       return;
     }
     if (!b.present) {
@@ -732,15 +750,18 @@
       pill(R.batPill, null, 'Sem bateria', 'plug');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
+      R.batChart.hidden = true;
       return;
     }
     R.bat.classList.remove('pn-nobat');
     R.batRows.hidden = false;
     R.batLink.hidden = false;
+    R.batChart.hidden = false;
+    if (!S.histAsked) setTimeout(() => { if (S && !S.dead) loadBatHistory(S); }, snap() ? 0 : 1200);
     const st = K.batStatus(b);
     const pct = num(b.percent);
     const h = num(b.healthPct);
-    const full = !!(b.pluggedIn && !b.isCharging && pct != null && pct >= 99);
+    const full = !!(b.pluggedIn && !b.isCharging && pct != null && pct >= 99) && !K.batTopping(b);
     S.mascot.set({
       pct, tone: st.tone, face: null, charging: !!b.isCharging, plugged: !!b.pluggedIn, full,
       hot: isNum(b.temperatureC) && b.temperatureC >= 40,
@@ -762,6 +783,34 @@
     R.batTemp.classList.toggle('no-read', tc == null);
     txt(R.batTempSub, tc == null ? '' : tc >= 40 ? 'quente: deixe esfriar' : tc >= 35 ? 'morna, tudo bem' : 'tranquila');
     if (!S.sys || !S.sys.thermalState) applyThermal(b.thermalState || null);
+  }
+
+  /** carga das últimas 24 h no cartão da bateria (battery.history: o mesmo cache da tela Bateria) */
+  async function loadBatHistory(me) {
+    if (me.histAsked) return;
+    me.histAsked = true;
+    let h = null;
+    try { h = await K.cached('battery.history', { dias: 7 }, 600000); } catch (e) { h = null; }
+    if (S !== me || me.dead) return;
+    const R = me.R;
+    const now = Date.now() / 1000;
+    const pts = ((h && h.carga) || []).filter((p) => p && isNum(p.t) && p.t >= now - 86400 - 7200);
+    R.batChartEl.textContent = '';
+    const ch = K.charts.area(R.batChartEl, {
+      name: 'Carga',
+      points: pts.map((p) => ({ x: p.t, y: isNum(p.pct) ? p.pct : null, plugged: p.plugged })),
+      yMin: 0, yMax: 100, yTicks: 1,
+      yFormat: (v) => K.fmt.pct(v, 0),
+      xMin: now - 86400, xMax: now,
+      bands: K.charts.runs(pts, (p) => p.plugged, { label: 'Na tomada' }),
+      bandStyle: 'track',
+      legend: false,
+      height: 84,
+      table: false,
+      empty: h ? 'O macOS ainda não anotou a carga das últimas 24 horas.' : 'Não consegui ler o histórico agora.',
+      ariaLabel: 'Carga da bateria nas últimas 24 horas',
+    });
+    me.charts.push(ch);
   }
 
   /* =========================================================
@@ -793,7 +842,7 @@
       else {
         S.failing = true;
         R.error.hidden = false;
-        txt(R.error, 'Não deu pra ler o Mac agora (' + (s.reason && s.reason.message || s.reason) + '). Tentando de novo em instantes.');
+        showError(R, s.reason && s.reason.message || s.reason);
         applyThermal(null);
       }
       if (b.status === 'fulfilled') applyBattery(b.value);

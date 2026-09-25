@@ -20,8 +20,33 @@
 .side-bat-dot.crit { background: var(--st-crit); }
 .side-bat-dot.none { background: #6b7280; }
 .side-bat-sub { font-size: 13px; color: #d1d5db; margin-top: 4px; }
-.side-sound { font-size: 15px; color: #d1d5db; }
-.side-sound svg { width: 20px; height: 20px; }
+/* rodapé: "Ajustes" (com a engrenagem) e o som num botão só de ícone, lado a lado */
+.side-tools { display: flex; align-items: stretch; gap: 6px; }
+.side-link { flex: 1; min-width: 0; font-size: 16px; color: #e5e7eb; padding-top: 9px; padding-bottom: 9px; }
+.side-link svg { width: 22px; height: 22px; transition: transform .45s var(--bounce); }
+.side-link:hover svg { transform: rotate(60deg); }
+.side-link.active svg { transform: rotate(30deg); }
+.side-sound {
+  width: 48px;
+  flex: none;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  color: #d1d5db;
+}
+.side-sound svg { width: 22px; height: 22px; }
+.side-sound.is-off { color: #9ca3af; }
+/* o texto fica só pro leitor de tela (o botão tem aria-label e dica ao passar o mouse) */
+.side-sound .side-sound-t {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.side-sound { position: relative; }
+@media (prefers-reduced-motion: reduce) { .side-link svg { transition: none; } .side-link:hover svg { transform: none; } }
 
 .soon-card {
   max-width: 820px;

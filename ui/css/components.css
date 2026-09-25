@@ -82,6 +82,8 @@
 .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
 .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: var(--shadow-xs); }
+/* ocupado, mas com o foco: aria-disabled em vez de disabled (o leitor de tela não perde o lugar) */
+.btn[aria-disabled="true"] { opacity: .6; cursor: progress; transform: none; box-shadow: var(--shadow-xs); }
 .btn.gold { background: var(--gold); }
 .btn.ink { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--gold); }
 .btn.ink:hover { box-shadow: 6px 6px 0 var(--gold); }
@@ -118,7 +120,8 @@
 .status.big { font-size: 20px; padding: 6px 16px 6px 10px; box-shadow: var(--shadow-sm); }
 .status.big svg { width: 24px; height: 24px; }
 
-/* figurinha torta (destaques) */
+/* figurinha torta (destaques). No canto direito do cabeçalho só entram duas peças: .sticker (ouro,
+   -3°) pra um fato ("15 apps · 9,0 GB", "modo de teste") e .live-badge pra o que é ao vivo */
 .sticker {
   display: inline-block;
   padding: 4px 12px;
@@ -129,6 +132,10 @@
   transform: rotate(-3deg);
   font-size: 14px;
 }
+.sticker.has-ic { display: inline-flex; align-items: center; gap: 6px; padding-left: 9px; }
+.sticker[hidden], .sticker.has-ic[hidden] { display: none; }
+.sticker svg { width: 17px; height: 17px; flex: none; }
+.page-head .sticker { font-size: 15px; padding-top: 5px; padding-bottom: 5px; white-space: nowrap; }
 
 /* selo "Ao vivo" (Bateria e Painel): bolinha verde piscando; .paused / .stale / .off */
 .live-badge {
@@ -478,3 +485,87 @@
 }
 .kmodal-foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
 .snap .kmodal-back, .snap .kmodal { animation: none !important; }
+
+/* ===== abas em pílula (Faxina e Otimizar; grudam no topo ao rolar) =====
+   .ktabs > .ktab (+ .on) > svg + texto + .ktab-badge (+ .warn). A Bateria usa .btn.small como
+   índice (rola a página, não troca o conteúdo), de propósito com outra cara. */
+.ktabs {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 -36px;
+  padding: 10px 36px 14px;
+  background: var(--paper);
+  border-bottom: 2px dashed var(--line);
+}
+.ktab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform .12s var(--ease), box-shadow .12s var(--ease), background .15s;
+}
+.ktab svg { width: 20px; height: 20px; flex: none; }
+.ktab:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.ktab:active { transform: translate(1px, 1px); box-shadow: 0 0 0 var(--ink); }
+.ktab.on { background: var(--gold); box-shadow: var(--shadow-sm); transform: translate(-2px, -2px); }
+.ktab-badge {
+  min-width: 22px;
+  padding: 3px 8px 4px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1;
+  text-align: center;
+}
+.ktab-badge[hidden] { display: none; }
+.ktab.on .ktab-badge { background: #fff; color: var(--ink); border: 2px solid var(--ink); padding: 1px 7px 2px; }
+.ktab-badge.warn, .ktab.on .ktab-badge.warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--st-warn-soft);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 1px 7px 2px 5px;
+}
+.ktab-badge.warn svg { width: 13px; height: 13px; color: #b77800; }
+.ktab-badge.warn[hidden] { display: none; }
+
+/* ===== cartão de erro (K.errorCard): o mesmo em todas as telas ===== */
+.kerr {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  padding: 22px 28px 22px 20px;
+  background: var(--st-crit-soft);
+  width: 100%;
+}
+.kerr-art { display: grid; place-items: center; }
+.kerr-art .km { transform: rotate(-5deg); }
+.kerr-text { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.kerr-text h2 { font-size: 27px; }
+.kerr-text h3 { font-size: 19px; }
+.kerr-text p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ink-2); max-width: 40em; overflow-wrap: anywhere; }
+.kerr-act { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-top: 2px; }
+.kerr-hint { font-size: 14px; color: var(--ink-3); }
+.kerr.is-compact { grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; padding: 14px 18px 16px 14px; box-shadow: var(--shadow-sm); }
+.kerr.is-compact .kerr-text { gap: 6px; }
+.kerr.is-compact .kerr-text p { font-size: 15px; }
+@media (max-width: 1100px) {
+  .kerr { grid-template-columns: 130px minmax(0, 1fr); gap: 18px; }
+  .kerr-art .km { transform: rotate(-5deg) scale(.87); }
+}

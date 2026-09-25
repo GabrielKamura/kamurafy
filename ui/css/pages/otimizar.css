@@ -1,0 +1,567 @@
+/* Kamurafy — Otimizar (#/otimizar). Prefixo ot-. Abas em .page-otimizar[data-tab]:
+   login (abrem com o Mac), pesando (ao vivo a cada 5 s), manutencao.
+   As abas em pílula são as mesmas da Faxina (.ktabs em components.css). */
+
+.page-otimizar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ===================== cabeçalho ===================== */
+.ot-head { align-items: center; margin-bottom: 18px; }
+.ot-head-text { min-width: 0; }
+.ot-head-side { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 10px 12px; flex: none; max-width: 46%; }
+
+/* ===================== abas em pílula: .ktabs/.ktab (components.css) ===================== */
+
+.ot-panel { padding-top: 26px; flex: 1; display: flex; flex-direction: column; gap: 22px; }
+.ot-panel > * { flex: none; }
+
+/* ===================== peças comuns ===================== */
+.ot-ic {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.ot-ic svg { width: 22px; height: 22px; }
+.ot-ic.is-app { border: 0; background: transparent; }
+.ot-ic img { width: 40px; height: 40px; object-fit: contain; }
+.ot-icwrap { display: grid; }
+
+.ot-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ot-top { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; min-width: 0; }
+/* nomes vêm de fora: a direção do texto deles nunca vaza pro resto da linha */
+.ot-name { font-size: 17px; line-height: 1.2; overflow-wrap: anywhere; unicode-bidi: isolate; }
+.ot-meta { display: flex; flex-direction: column; gap: 1px; font-size: 13px; color: var(--ink-3); line-height: 1.3; min-width: 0; }
+.ot-meta[hidden] { display: none; }
+.ot-meta-note { color: var(--ink-2); }
+.ot-tech { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; unicode-bidi: isolate; }
+
+.ot-tags { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; }
+.ot-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 2px 5px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-size: 12.5px;
+  line-height: 1.25;
+  white-space: nowrap;
+  background: var(--card);
+  color: var(--ink);
+}
+.ot-tag svg { width: 13px; height: 13px; flex: none; }
+.ot-tag.good { background: var(--st-good-soft); }
+.ot-tag.good svg { color: var(--st-good); }
+.ot-tag.warn { background: var(--st-warn-soft); }
+.ot-tag.warn svg { color: #b77800; }
+.ot-tag.none { background: var(--panel); color: var(--ink-2); }
+.ot-tag.keep { background: var(--gold); padding-left: 8px; }
+.ot-tag.plain { padding-left: 8px; background: var(--panel); border-color: var(--line); color: var(--ink-2); }
+/* "rodando agora": bolinha verde piscando no lugar do ícone */
+.ot-tag.run { padding-left: 7px; }
+.ot-tag.run::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--st-good);
+  border: 1.5px solid var(--ink);
+  animation: ot-blink 1.8s ease-in-out infinite;
+}
+@keyframes ot-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* recado curto numa linha (depois de mexer) */
+.ot-msg {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 5px;
+  padding: 3px 10px 4px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.ot-msg[hidden] { display: none; }
+.ot-msg svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+.ot-msg.good { background: var(--st-good-soft); }
+.ot-msg.good svg { color: var(--st-good); }
+.ot-msg.warn { background: var(--st-warn-soft); }
+.ot-msg.warn svg { color: #b77800; }
+.ot-msg.crit { background: var(--st-crit-soft); }
+.ot-msg.crit svg { color: var(--st-crit); }
+.ot-msg.none svg { color: var(--ink-2); }
+
+.ot-note { align-items: center; }
+.ot-note p { flex: 1; min-width: 0; line-height: 1.4; }
+.ot-note p b { font-weight: 400; }
+.ot-note.warn { background: var(--st-warn-soft); }
+.ot-note.warn > svg { color: #b77800; }
+.ot-note[hidden] { display: none; }
+.ot-note-act { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.ot-blind { background: var(--panel); }
+.ot-settings-err { font-size: 12.5px; color: var(--st-crit); max-width: 22em; text-align: right; line-height: 1.3; }
+
+/* balão do mascote (aponta pra baixo) */
+.ot-bubble {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 0;
+  width: max-content;
+  max-width: 210px;
+  padding: 7px 13px 8px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xs);
+  font-size: 14.5px;
+  line-height: 1.2;
+  text-align: center;
+  transform: translateX(-50%) rotate(-3deg);
+  animation: ot-bob 3.6s ease-in-out infinite;
+}
+.ot-bubble:empty { display: none; }
+.ot-bubble::before, .ot-bubble::after { content: ""; position: absolute; width: 0; height: 0; border-style: solid; }
+.ot-bubble::before { left: 42%; bottom: -17px; border-width: 16px 4px 0 13px; border-color: var(--ink) transparent transparent transparent; transform: skewX(24deg); }
+.ot-bubble::after { left: calc(42% + 3px); bottom: -9px; border-width: 9px 2px 0 8px; border-color: var(--card) transparent transparent transparent; transform: skewX(24deg); }
+@keyframes ot-bob { 0%, 100% { transform: translateX(-50%) rotate(-3deg) translateY(0); } 50% { transform: translateX(-50%) rotate(-2deg) translateY(-3px); } }
+
+/* carregando: esqueleto de linhas */
+.ot-loadcard { padding: 18px 22px 20px; }
+.ot-loadcard .loading { padding: 2px 0 16px; }
+.ot-skel { list-style: none; margin: 0; padding: 14px 0 0; display: flex; flex-direction: column; gap: 16px; border-top: 2px dashed var(--line); }
+.ot-skel li { display: flex; align-items: center; gap: 14px; }
+.ot-sk-ic, .ot-sk-lines i, .ot-sk-end {
+  display: block;
+  background: linear-gradient(90deg, var(--panel) 0%, #ebe7dc 50%, var(--panel) 100%) 0 0 / 200% 100%;
+  animation: ot-shimmer 1.4s linear infinite;
+}
+.ot-sk-ic { width: 40px; height: 40px; flex: none; border-radius: 12px; }
+.ot-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.ot-sk-lines i { height: 11px; border-radius: 99px; }
+.ot-sk-lines i:first-child { width: 38%; }
+.ot-sk-lines i:last-child { width: 62%; height: 9px; }
+.ot-skel li:nth-child(2) .ot-sk-lines i:first-child { width: 26%; }
+.ot-skel li:nth-child(3) .ot-sk-lines i:first-child { width: 44%; }
+.ot-skel li:nth-child(4) .ot-sk-lines i:first-child { width: 31%; }
+.ot-sk-end { width: 58px; height: 30px; flex: none; border-radius: 999px; }
+@keyframes ot-shimmer { to { background-position: -200% 0; } }
+
+/* erro: K.errorCard (components.css) */
+
+/* vazio */
+.ot-empty {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 18px 22px;
+  border: 2px dashed var(--ink-3);
+  border-radius: var(--radius);
+  /* a largura toda do painel, alinhada com os cartões e a dica de baixo */
+  width: 100%;
+}
+.ot-empty-art { width: 96px; flex: none; transform: rotate(-5deg); }
+.ot-empty h3 { font-size: 22px; }
+.ot-empty p { margin: 4px 0 0; font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+
+/* ===================== Abrem com o Mac ===================== */
+.ot-sum {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px 26px;
+  align-items: center;
+  padding: 18px 24px 20px 20px;
+}
+.ot-sum-art { position: relative; width: 156px; padding-top: 56px; display: grid; justify-items: center; }
+.ot-sum-art .ot-bubble { top: 0; max-width: 176px; }
+.ot-sum-mascot { width: 116px; transform: rotate(-5deg); }
+.ot-sum-badge {
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow-xs);
+  transform: rotate(9deg);
+}
+.ot-sum-badge svg { width: 26px; height: 26px; }
+.ot-sum-text { min-width: 0; }
+.ot-sum-num { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 2px 14px; }
+.ot-big { font-size: 72px; line-height: .9; letter-spacing: -1px; }
+.ot-big-lab { display: flex; flex-direction: column; font-size: 26px; line-height: 1.05; padding-bottom: 6px; }
+.ot-big-lab small { font-size: 15px; color: var(--ink-2); margin-top: 3px; }
+.ot-sum-sub { margin: 10px 0 0; font-size: 16px; color: var(--ink-2); }
+.ot-promise {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 8px 14px 9px 10px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 14px;
+  font-size: 15px;
+  line-height: 1.35;
+  max-width: 34em;
+}
+.ot-promise svg { width: 20px; height: 20px; flex: none; color: var(--st-good); margin-top: 1px; }
+.ot-sum-act { align-self: start; }
+.ot-again.is-busy svg { animation: spin 1s linear infinite; }
+
+.ot-group { padding: 18px 20px 10px; }
+.ot-group-head { display: flex; align-items: center; gap: 14px; }
+.ot-group-text { flex: 1; min-width: 0; }
+.ot-group-text h2 { font-size: 22px; }
+.ot-group-text .card-sub { font-size: 14px; line-height: 1.35; max-width: 46em; margin-top: 3px; }
+.ot-count {
+  flex: none;
+  align-self: flex-start;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  padding: 2px 11px 3px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+.ot-list { list-style: none; margin: 14px 0 0; padding: 0; border-top: 2px dashed var(--line); }
+.ot-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 6px 12px 4px;
+  border-bottom: 1.5px solid var(--line);
+}
+.ot-row:last-child { border-bottom: 0; }
+.ot-row.is-off .ot-ic { opacity: .55; }
+.ot-row.is-off .ot-ic img { filter: grayscale(1); }
+.ot-row.is-off .ot-name { color: var(--ink-2); }
+.ot-state { font-size: 14px; color: var(--ink-2); text-align: right; white-space: nowrap; min-width: 88px; }
+.ot-row.is-off .ot-state { color: var(--ink-3); }
+.ot-switch:disabled { cursor: progress; }
+.ot-switch.is-busy::after { border-top-color: var(--gold); border-right-color: var(--gold); animation: ot-knob .8s linear infinite; }
+@keyframes ot-knob { to { rotate: 360deg; } }
+.ot-row.is-sys .ot-state { color: var(--ink-3); }
+
+/* ===================== Pesando agora ===================== */
+.ot-now {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 10px 0;
+  align-items: center;
+  padding: 16px 24px 18px 16px;
+}
+.ot-now-art { position: relative; width: 150px; padding-top: 50px; display: grid; justify-items: center; margin-right: 8px; }
+.ot-now-mascot { width: 104px; transform: rotate(-5deg); }
+.ot-stat { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 4px 0 4px 24px; margin-left: 20px; border-left: 2px dashed var(--line); }
+.ot-stat-t { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--ink-2); }
+.ot-stat-t svg { width: 19px; height: 19px; flex: none; color: var(--ink); }
+.ot-stat-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+.ot-stat-v { font-size: 42px; line-height: 1; }
+.ot-stat-s { font-size: 13.5px; line-height: 1.35; color: var(--ink-2); }
+.ot-stat-pill .status { font-size: 14px; padding: 3px 11px 3px 7px; }
+.ot-stat-pill .status svg { width: 16px; height: 16px; }
+
+.ot-hvcard { padding: 18px 20px 12px; }
+.ot-hv-head { align-items: flex-start; flex-wrap: wrap; }
+.ot-hv-title { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 320px; }
+.ot-hv-title h2 { font-size: 22px; }
+.ot-hv-title .card-sub { line-height: 1.35; }
+.ot-hv-side { display: flex; align-items: center; gap: 10px; flex: none; }
+.ot-hv-side .btn svg { width: 16px; height: 16px; }
+.ot-closed { align-items: center; background: var(--st-good-soft); margin-bottom: 12px; }
+.ot-closed[hidden] { display: none; }
+.ot-closed > svg { color: var(--st-good); }
+.ot-stale { margin-bottom: 12px; }
+
+/* colunas: ícone · app · CPU · memória · botão */
+.ot-cols, .ot-hv {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) 116px;
+  column-gap: 18px;
+  align-items: center;
+}
+.ot-cols {
+  padding: 0 6px 8px 4px;
+  border-bottom: 2px solid var(--ink);
+  font-size: 12.5px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ot-key { display: inline-flex; align-items: center; gap: 7px; }
+.ot-sw { width: 16px; height: 10px; border-radius: 3px; border: 2px solid var(--ink); flex: none; }
+.ot-sw.cpu { background: var(--s2); }
+.ot-sw.mem { background: var(--s1); }
+.ot-hv-list { list-style: none; margin: 0; padding: 0; }
+.ot-hv {
+  position: relative;
+  row-gap: 0;
+  padding: 11px 6px 11px 4px;
+  border-bottom: 1.5px solid var(--line);
+  background: var(--card);
+  overflow: hidden;
+}
+.ot-hv:last-child { border-bottom: 0; }
+.ot-hv.is-sys .ot-name { color: var(--ink-2); }
+.ot-hv.is-sys .ot-ic:not(.is-app) { border-color: var(--ink-3); color: var(--ink-2); }
+.ot-hv.is-closing { background: #fffaea; }
+.ot-hv .ot-meta { flex-direction: row; }
+.ot-cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; border-radius: 8px; outline-offset: 5px; cursor: default; }
+.ot-val { display: flex; align-items: baseline; gap: 7px; line-height: 1.1; white-space: nowrap; min-width: 0; }
+.ot-val b { font-weight: 400; font-size: 17px; }
+.ot-val small { font-size: 12.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; }
+.ot-bar {
+  position: relative;
+  height: 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.ot-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-right: 2.5px solid var(--ink);
+  border-radius: 999px;
+  transition: width .7s var(--ease);
+}
+.ot-fill.is-zero { border-right: 0; }
+.ot-cpu .ot-fill { background: var(--s2); }
+.ot-mem .ot-fill { background: var(--s1); }
+.ot-ticks { position: absolute; inset: 0; pointer-events: none; }
+.ot-tick { position: absolute; top: 1px; bottom: 1px; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--ink); opacity: .3; }
+.ot-act { display: flex; justify-content: flex-end; }
+.ot-act .btn svg { width: 17px; height: 17px; }
+.ot-act .btn.is-busy svg { animation: spin 1s linear infinite; }
+.ot-na { display: inline-flex; align-items: center; gap: 5px; font-size: 13.5px; color: var(--ink-3); white-space: nowrap; }
+.ot-na svg { width: 15px; height: 15px; flex: none; }
+.ot-hv-msg { grid-column: 2 / -1; margin-top: 8px; }
+.ot-hv-empty { margin: 14px 0 6px; }
+.ot-hv-empty[hidden] { display: none; }
+/* lista vazia: o cabeçalho de colunas (APP · CPU · MEMÓRIA) sai junto */
+.ot-cols[hidden] { display: none; }
+/* processos do macOS tranquilos: recolhidos numa linha só */
+.ot-calm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.ot-calm[hidden] { display: none; }
+.ot-calm > svg { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+.ot-calm > span { flex: 1; min-width: 220px; }
+.ot-calm .btn { flex: none; }
+
+.ot-how { padding: 18px 20px 20px; }
+.ot-how h3 { font-size: 20px; margin-bottom: 14px; }
+.ot-how-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.ot-how-item { display: flex; gap: 11px; align-items: flex-start; min-width: 0; }
+.ot-how-ic {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid var(--ink);
+  border-radius: 11px;
+  background: var(--card);
+}
+.ot-how-ic svg { width: 20px; height: 20px; }
+.ot-how-item b { display: block; font-weight: 400; font-size: 16.5px; line-height: 1.2; margin-bottom: 4px; }
+.ot-how-item p { margin: 0; font-size: 14px; line-height: 1.42; color: var(--ink-2); }
+
+/* ===================== Manutenção ===================== */
+.ot-tk-intro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 14px 26px 14px 20px;
+  background: var(--gold-soft);
+  box-shadow: var(--shadow-sm);
+}
+.ot-tk-art { position: relative; width: 104px; transform: rotate(-5deg); }
+.ot-tk-badge {
+  position: absolute;
+  right: -10px;
+  bottom: -6px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  border: var(--bw) solid var(--ink);
+  border-radius: 13px;
+  box-shadow: var(--shadow-xs);
+  transform: rotate(14deg);
+}
+.ot-tk-badge svg { width: 23px; height: 23px; }
+.ot-tk-text h2 { font-size: 25px; }
+.ot-tk-text p { margin: 6px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--ink-2); max-width: 44em; }
+
+.ot-tasks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.ot-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "ic head" "body body" "foot foot";
+  gap: 14px 14px;
+  padding: 18px 20px 18px;
+}
+.ot-task-ic { grid-area: ic; align-self: start; }
+.ot-task-head { grid-area: head; min-width: 0; align-self: center; }
+.ot-task-head h3 { font-size: 20px; line-height: 1.15; }
+.ot-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.ot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px 3px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 13px;
+  line-height: 1.25;
+}
+.ot-chip svg { width: 14px; height: 14px; flex: none; }
+.ot-chip.warn { background: var(--st-warn-soft); }
+.ot-chip.warn svg { color: #b77800; }
+.ot-task-body { grid-area: body; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ot-task-desc { margin: 0; font-size: 15px; line-height: 1.45; }
+.ot-when {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 9px 12px 10px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+}
+.ot-when svg { width: 20px; height: 20px; flex: none; margin-top: 1px; color: #b77800; }
+.ot-when > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ot-when-t { font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-3); }
+.ot-when-d { font-size: 14.5px; line-height: 1.38; color: var(--ink); }
+.ot-task-warn { background: var(--st-warn-soft); padding: 9px 12px; border-width: 2px; }
+.ot-task-warn svg { width: 20px; height: 20px; color: #b77800; }
+.ot-task-warn p { font-size: 14px; line-height: 1.38; }
+.ot-task-foot { grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+.ot-res { flex: 1; min-width: 0; }
+.ot-res-line { display: inline-flex; align-items: flex-start; gap: 6px; font-size: 14px; line-height: 1.35; color: var(--ink-2); }
+.ot-res-line svg { width: 17px; height: 17px; flex: none; margin-top: 1px; }
+.ot-res-line.good { color: var(--ink); }
+.ot-res-line.good svg { color: var(--st-good); }
+.ot-res-line.crit { color: var(--ink); }
+.ot-res-line.crit svg { color: var(--st-crit); }
+.ot-res-at { color: var(--ink-3); white-space: nowrap; }
+.ot-run { flex: none; }
+.ot-run svg { width: 18px; height: 18px; }
+.ot-run.is-busy svg { animation: ot-wobble .8s ease-in-out infinite; }
+@keyframes ot-wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+.ot-task.is-done { box-shadow: 6px 6px 0 var(--st-good); }
+/* o último, sozinho na fileira: deitado, com o botão do lado */
+.ot-task.is-wide {
+  grid-column: 1 / -1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  grid-template-areas: "ic head foot" "ic body foot";
+  column-gap: 18px;
+}
+.ot-task.is-wide .ot-task-foot { flex-direction: column; align-items: flex-end; justify-content: center; align-self: center; max-width: 240px; }
+.ot-task.is-wide .ot-res { text-align: right; }
+
+/* resumo dentro do modal de confirmação */
+.kmodal .ot-cf { list-style: none; margin: 0; padding: 4px 12px; display: flex; flex-direction: column; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--panel); }
+.kmodal .ot-cf li { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-bottom: 1.5px solid var(--line); font-size: 14.5px; line-height: 1.35; }
+.kmodal .ot-cf li:last-child { border-bottom: 0; }
+.kmodal .ot-cf svg { width: 17px; height: 17px; flex: none; margin-top: 1px; }
+.kmodal .ot-cf-stats { font-size: 15px; color: var(--ink); padding: 8px 12px; background: var(--panel); border-radius: var(--radius-sm); }
+
+/* ===================== tamanhos ===================== */
+@media (max-width: 1100px) {
+  .ot-head-side { max-width: 40%; }
+  .ot-head-side .ot-safe { display: none; }
+  .ot-sum { grid-template-columns: auto minmax(0, 1fr); }
+  .ot-sum-act { grid-column: 2; }
+  .ot-sum-art { width: 136px; }
+  .ot-sum-mascot { width: 104px; }
+  .ot-big { font-size: 62px; }
+  .ot-big-lab { font-size: 23px; }
+  .ot-row { gap: 12px; }
+  .ot-state { min-width: 0; }
+  .ot-now { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); padding-right: 18px; }
+  .ot-now-art { width: 122px; margin-right: 0; }
+  .ot-now-mascot { width: 92px; }
+  .ot-now-art .ot-bubble, .ot-sum-art .ot-bubble { max-width: 136px; font-size: 13.5px; }
+  .ot-sum-art { padding-top: 60px; }
+  .ot-now-art { padding-top: 56px; }
+  .ot-stat { margin-left: 14px; padding-left: 16px; }
+  .ot-stat-v { font-size: 34px; }
+  .ot-cols, .ot-hv { grid-template-columns: 36px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto; column-gap: 12px; }
+  .ot-ic, .ot-ic img { width: 36px; height: 36px; }
+  .ot-name { font-size: 16px; }
+  .ot-val b { font-size: 16px; }
+  .ot-how-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .ot-tasks { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .ot-task.is-wide { grid-column: auto; }
+  .ot-task, .ot-task.is-wide {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    grid-template-areas: "ic head foot" "ic body body";
+    column-gap: 16px;
+  }
+  .ot-task-foot, .ot-task.is-wide .ot-task-foot { flex-direction: column-reverse; align-items: flex-end; justify-content: flex-start; align-self: start; max-width: 200px; gap: 6px; }
+  .ot-task .ot-res { text-align: right; }
+}
+@media (max-height: 760px) {
+  .ot-panel { padding-top: 20px; gap: 18px; }
+  .ot-sum { padding-top: 12px; padding-bottom: 14px; }
+  .ot-sum-art { padding-top: 50px; }
+  .ot-sum-mascot { width: 96px; }
+  .ot-big { font-size: 58px; }
+  .ot-promise { margin-top: 10px; }
+  .ot-now { padding-top: 10px; padding-bottom: 12px; }
+  .ot-now-art { padding-top: 46px; }
+  .ot-now-mascot { width: 84px; }
+  .ot-row { padding-top: 9px; padding-bottom: 9px; }
+  .ot-hv { padding-top: 9px; padding-bottom: 9px; }
+  .ot-tk-intro { padding-top: 10px; padding-bottom: 10px; }
+  .ot-tk-art { width: 86px; }
+}
+
+/* modo foto: sem animação nem transição (o relógio para com a janela escondida) */
+.snap .page-otimizar [class*="ot-"],
+.snap .page-otimizar [class*="ot-"]::before,
+.snap .page-otimizar [class*="ot-"]::after,
+.snap .kmodal [class*="ot-"] { animation: none !important; transition: none !important; }
+
+/* caminho do programa no modal de ligar: quebra onde precisar */
+.ot-cf-stats b { font-weight: 400; overflow-wrap: anywhere; color: var(--ink); }

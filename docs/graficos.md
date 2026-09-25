@@ -179,7 +179,7 @@ Mostrador semicircular desenhado à mão, ponteiro animado (com pulinho), zonas 
 
 | opção | tipo | padrão | o que faz |
 |---|---|---|---|
-| `value` | número \| null | — | `null` = ponteiro apagado e "—" |
+| `value` | número \| null | — | `null` = ponteiro apagado e o texto de `empty` (ou "sem leitura") apagado no lugar do número, nunca um "—" preto |
 | `min`, `max` | número | 0, 100 | escala |
 | `zones` | `[{to, tone, label?, icon?}]` | uma zona `s1` | em ordem crescente de `to`; `tone` = `good\|warn\|serious\|crit` |
 | `format` | `fn(v)` | `"10%"` | número grande |
@@ -188,7 +188,7 @@ Mostrador semicircular desenhado à mão, ponteiro animado (com pulinho), zonas 
 | `pill` | bool | `true` | etiqueta de status (ícone + texto) da zona atual |
 | `fill` | bool | `true` | pinta o arco até o valor na cor da zona (desligue pra ver as zonas inteiras) |
 | `size` | px | 240 | largura máxima |
-| `empty` | string | — | texto quando `value` é null |
+| `empty` | string | — | texto quando `value` é null (ex.: "Medindo…"): vai no lugar do número, em `.no-read` |
 
 Chamar `update({value})` a cada leitura só gira o ponteiro do valor anterior pro novo.
 

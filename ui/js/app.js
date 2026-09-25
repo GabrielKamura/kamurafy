@@ -4,15 +4,23 @@
 'use strict';
 
 (function () {
+  /* engrenagem do botão "Ajustes" (a casca usa, então mora aqui) */
+  if (!K.ICONS.gear) {
+    K.ICONS.gear = '<path d="M9.3 5.6 9.5 2.6h5l.2 3 1.5.8 2.7-1.2 2.5 4.3-2.5 1.6v1.8l2.5 1.6-2.5 4.3-2.7-1.2-1.5.8-.2 3h-5l-.2-3-1.5-.8-2.7 1.2-2.5-4.3 2.5-1.6v-1.8L2.6 9.5l2.5-4.3 2.7 1.2Z"/><circle cx="12" cy="12" r="3"/>';
+  }
+
+  /* soon: ainda não existe (selo "em breve"; some na versão pública) · hidden: fora do menu ·
+     dev: só na build de desenvolvimento · foot: botão no rodapé da barra lateral, não no menu */
   const ROUTES = [
     { id: 'inicio', label: 'Varredura', icon: 'scan' },
     { id: 'bateria', label: 'Bateria', icon: 'battery', star: true },
     { id: 'painel', label: 'Painel', icon: 'gauge' },
     { section: 'Limpeza e cuidado' },
     { id: 'faxina', label: 'Faxina', icon: 'broom' },
-    { id: 'otimizar', label: 'Otimizar', icon: 'rocket', soon: true },
-    { id: 'desinstalar', label: 'Desinstalar', icon: 'box', soon: true },
-    { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true },  // só pra testes
+    { id: 'otimizar', label: 'Otimizar', icon: 'rocket' },
+    { id: 'desinstalar', label: 'Desinstalar', icon: 'box' },
+    { id: 'ajustes', label: 'Ajustes', icon: 'gear', hidden: true, foot: true },
+    { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true, dev: true },  // só pra testes
   ];
 
   let current = null;
@@ -20,9 +28,16 @@
   /* versão pra distribuir: esconde os módulos que ainda não existem (a casca diz com app.version.publico) */
   let publico = false;
 
+  /** a versão pública não abre o que ainda é "em breve" nem as telas de teste */
+  const allowed = (r) => !!r && !r.section && !(publico && (r.soon || r.dev));
+
   function routeFromHash() {
     const id = (location.hash || '').replace(/^#\/?/, '').split('?')[0];
-    return ROUTES.find((r) => r.id === id) ? id : 'inicio';
+    return allowed(ROUTES.find((r) => r.id === id)) ? id : 'inicio';
+  }
+
+  function goTo(id) {
+    if (location.hash !== '#/' + id) { K.sound.plop(); location.hash = '#/' + id; }
   }
 
   function buildSidebar() {
@@ -50,7 +65,7 @@
       const item = K.el('button', {
         class: 'nav-item' + (r.soon ? ' is-soon' : ''), dataset: { route: r.id }, html: K.icon(r.icon),
         title: r.soon ? `${r.label}: chega numa próxima versão` : null,
-        onclick: () => { if (location.hash !== '#/' + r.id) { K.sound.plop(); location.hash = '#/' + r.id; } },
+        onclick: () => goTo(r.id),
       }, K.el('span', null, r.label));
       if (r.star) item.appendChild(K.el('span', { class: 'star', html: K.icon('star') }));
       nav.appendChild(item);
@@ -60,8 +75,16 @@
     const foot = K.el('div', { class: 'sidebar-foot' });
     foot.appendChild(K.el('div', { id: 'side-battery', class: 'side-battery', role: 'button', tabindex: 0, 'aria-label': 'Ver a bateria' },
       K.el('span', { class: 'side-bat-wait' }, 'Lendo a bateria…')));
-    const soundBtn = K.el('button', { class: 'nav-item side-sound', id: 'side-sound', onclick: toggleSound });
-    foot.appendChild(soundBtn);
+    /* Ajustes (com a engrenagem) e, do lado, o som num botão só de ícone */
+    const tools = K.el('div', { class: 'side-tools' });
+    for (const r of ROUTES) {
+      if (!r.foot || !allowed(r)) continue;
+      tools.appendChild(K.el('button', {
+        class: 'nav-item side-link', type: 'button', dataset: { route: r.id }, html: K.icon(r.icon), onclick: () => goTo(r.id),
+      }, K.el('span', null, r.label)));
+    }
+    tools.appendChild(K.el('button', { class: 'nav-item side-sound', id: 'side-sound', type: 'button', onclick: toggleSound }));
+    foot.appendChild(tools);
     side.appendChild(foot);
     paintSound();
   }
@@ -70,22 +93,52 @@
     const b = K.$('#side-sound');
     if (!b) return;
     const on = K.sound.enabled;
+    const label = on ? 'Som ligado' : 'Som desligado';
     b.innerHTML = K.icon(on ? 'soundOn' : 'soundOff');
-    b.appendChild(K.el('span', null, on ? 'Som ligado' : 'Som desligado'));
+    b.appendChild(K.el('span', { class: 'side-sound-t' }, label));
     b.setAttribute('aria-pressed', String(on));
+    b.setAttribute('aria-label', label);
+    b.title = on ? 'Som ligado (clique pra desligar)' : 'Som desligado (clique pra ligar)';
+    b.classList.toggle('is-off', !on);
+  }
+
+  /**
+   * Liga/desliga o som e salva (a barra lateral e a tela de Ajustes usam a mesma função).
+   * Se o Swift não salvar, volta como estava e a exceção sobe pra quem chamou.
+   */
+  async function setSound(on) {
+    const before = K.sound.enabled;
+    K.sound.enabled = !!on;
+    paintSound();
+    try {
+      await K.settings.set({ som: !!on });
+    } catch (e) {
+      K.sound.enabled = before;
+      paintSound();
+      throw e;
+    } finally {
+      announce();
+    }
+  }
+
+  /** avisa quem estiver ouvindo (a tela de Ajustes) que as configurações mudaram */
+  function announce() {
+    try { window.dispatchEvent(new CustomEvent('kamurafy:settings', { detail: K.settings.value })); } catch (e) { /* ninguém ouvindo */ }
   }
 
   async function toggleSound() {
-    K.sound.enabled = !K.sound.enabled;
-    paintSound();
-    K.sound.plop();
-    try { await K.settings.set({ som: K.sound.enabled }); } catch (e) { console.warn('som:', e.message); }
+    const on = !K.sound.enabled;
+    const saving = setSound(on);     // já liga/desliga aqui (a parte que espera é só o salvar)
+    if (on) K.sound.plop();
+    try { await saving; } catch (e) { console.warn('som:', e.message); K.sound.oops(); }
   }
+
+  K.shell = { setSound, paintSound, announce };
 
   async function paintSideBattery() {
     const box = K.$('#side-battery');
     if (!box) return;
-    const open = () => { if (location.hash !== '#/bateria') { K.sound.plop(); location.hash = '#/bateria'; } };
+    const open = () => goTo('bateria');
     box.onclick = open;
     box.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
     try {
@@ -133,12 +186,13 @@
     view.appendChild(host);
     const page = K.pages[id] || K.pages.embreve;
     current = { id, page };
-    document.title = `${(ROUTES.find((r) => r.id === id) || {}).label || 'Kamurafy'} · Kamurafy`;
+    const route = ROUTES.find((r) => r.id === id);
+    document.title = `${(route || {}).label || 'Kamurafy'} · Kamurafy`;
     try {
-      await page.render(host, { id, route: ROUTES.find((r) => r.id === id) });
+      await page.render(host, { id, route });
     } catch (e) {
       console.error('render ' + id + ': ' + (e && (e.stack || e.message) || e));
-      host.appendChild(K.el('div', { class: 'error-box' }, 'Algo deu errado nesta tela: ' + (e && e.message || e)));
+      host.appendChild(K.errorCard({ title: 'Algo deu errado nesta tela', reason: String(e && e.message || e), retry: () => { go(); }, retryHint: 'Abro a tela de novo.' }));
     }
     if (!readySent) {
       readySent = true;
@@ -199,6 +253,8 @@
     setInterval(paintSideBattery, 30000);
     window.addEventListener('hashchange', go);
     await go();
+    /* primeira abertura: três passos de boas-vindas (nunca no modo foto) */
+    if (K.boasVindas) K.boasVindas.maybe();
   }
 
   document.addEventListener('DOMContentLoaded', boot);

@@ -53,6 +53,10 @@ A permissão é pedida ao abrir o app. O banner aparece mesmo com o Kamurafy na 
 { "aviso80": true, "limiteAviso": 80, "avisoQuente": true, "som": true }
 ```
 
+- `boasVindas` (planejado; a interface já manda): `true` depois que a pessoa passa pelas boas-vindas
+  (`ui/js/boasvindas.js`). Hoje o Swift ignora o campo e a marca fica só no `localStorage` do
+  WKWebView (que persiste entre aberturas); guardando no Swift, vale também depois de reinstalar.
+
 - `aviso80`: notifica quando a carga **cruza** `limiteAviso` (50–100) com o carregador ligado,
   uma vez por carga. Não avisa se o Carregamento Otimizado está segurando a carga. Mudar o
   limite rearma o aviso.
@@ -62,7 +66,9 @@ A permissão é pedida ao abrir o app. O banner aparece mesmo com o Kamurafy na 
 
 ## battery.now
 
-Leitura instantânea (rápida, pode chamar a cada 2 s). Exemplo real (MacBook Pro 16" 2019):
+Leitura instantânea (rápida, pode chamar a cada 2 s). Na interface, `K.batTopping(b)` (na tomada,
+`isCharging: false`, `fullyCharged: false` e `watts > 0,3`) vira "terminando de encher" em todas as
+telas, nunca "descansando" com energia entrando. Exemplo real (MacBook Pro 16" 2019):
 
 ```json
 {
@@ -157,6 +163,9 @@ Kamurafy em si aparece com `isSelf: true`.
 
 `power` é o "impacto energético" do Monitor de Atividade (sem unidade; só compara entre si).
 `name` vem de fora: **sempre textContent**, nunca innerHTML.
+Na interface (`K.energyItems`): `isApp` ganha de `isSystem`. App com janela que mora em
+/System/Applications (Terminal, Notas, Finder) aparece como "app da Apple", nunca "do sistema";
+"do sistema" fica pro que roda escondido. Nome de processo sem app passa por `K.procName`.
 
 ## system.now
 
@@ -262,13 +271,26 @@ Nada aqui apaga arquivo. No terminal e no modo foto, as ações que mudam algo s
 | `optimize.tasks` | — | `[{id, titulo, descricao, quando, precisaSenha, demora}]` |
 | `optimize.run` | `{id, confirmado: true}` | `{ok, mensagem}` — `dns` e `spotlight` pedem a senha pelo próprio macOS; `abrircom`, `dock`, `finder` não |
 
-`StartupItem`: `{id, label, nome, app?, icon?, origem, ligado, rodando, editavel, arquivo?, programa?, nota?}`.
+`StartupItem`: `{id, label, nome, app?, icon?, origem, ligado, rodando, editavel, arquivo?, programa?, nota?, quando?}`.
 `origem`: `ajudante` (item de início de app, do launchd) · `agente` (~/Library/LaunchAgents) ·
 `sistema` (/Library/Launch*, só leitura: mexer pede senha → `open.settings {painel:'itens-login'}`).
+- A interface não confia em `ligado`/`rodando` dos itens `sistema` (o Swift de hoje fixa `ligado: true`
+  e o `rodando` vem do `launchctl list` do usuário, que não lista daemons): eles ficam fora do número
+  grande e da etiqueta "N ligados", e a linha diz "veja nos Ajustes".
+- `quando` (opcional, planejado; a interface já entende): texto curto pra agente que não abre no login,
+  só de tempos em tempos (`StartInterval`, `StartCalendarInterval`, `WatchPaths`), ex. `"de tempos em
+  tempos"`. A linha ganha a etiqueta "roda de vez em quando".
+- Label `com.apple.*` fica sem interruptor na interface ("é do macOS"), porque o toggle recusa.
+- Ligar um item cujo app não foi encontrado pede confirmação ("pode rodar na hora").
 
 `HeavyApp`: `{id, nome, pid, cpu, memBytes, processos, app, sistema, proprio, icon?, respondendo}`.
 `cpu` é % de um núcleo (pode passar de 100). `sistema: true` = o Kamurafy não encerra
 (Finder, Dock, WindowServer, processos do macOS). `proprio: true` = o Kamurafy.
+- A interface pede `limite: 40` e mostra os 12 que mais pesam, sem os processos do macOS tranquilos
+  (`sistema` com menos de 5% de CPU e de 200 MB), que ficam numa linha "Deixei de fora N…" com
+  "Mostrar também". `memBytes` vai na tela em base 2 (`K.fmt.mem`), como o Painel.
+- `nome` de processo solto (sem `app`) passa por `K.procName` (util.js), a mesma tabela do
+  `Energy.friendly` e mais alguns: "WindowServer" vira "Tela e janelas (WindowServer)".
 
 ## uninstall.* (Desinstalar)
 
@@ -287,6 +309,11 @@ Nada aqui apaga arquivo. No terminal e no modo foto, as ações que mudam algo s
   Scripts, Cookies, LaunchAgents.
 - O app desinstalado entra no `cleanup.moved` (categoria `app`) e o `cleanup.restore` devolve
   ele pra pasta Aplicativos.
+- App da App Store vai pela Lixeira do Finder (pede senha): o modal não promete o Desfazer daqui pro
+  app, só pras sobras ("o app volta pela Lixeira do Finder, com Devolver"). App de .pkg (dono root)
+  a interface ainda não distingue: falta o Swift dizer (ver openIssues do Desinstalar).
+- Sobras só por nome exato: a gaveta avisa que alguns apps guardam dados com outro nome (VS Code
+  → "Code") e que dá pra conferir a pasta Biblioteca.
 
 ## menubar.* (barra de menus)
 

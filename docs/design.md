@@ -28,20 +28,50 @@ módulos com marca, textos ou paleta do CleanMyMac. Queremos a mesma qualidade, 
 | sombra dura | `--shadow` / `-sm` / `-xs` | 6/4/2px deslocada, sem desfoque |
 | cantos | `--radius` / `--radius-sm` | 20px / 12px |
 
-Fonte: `var(--font)` = More Sugar (só na build local) → Fredoka (livre) → sistema. Um peso
-só, sem negrito falso: hierarquia vem de **tamanho**, não de peso.
+Fonte: `var(--font)` = More Sugar (só na build local) → Fredoka (livre, é a que vai na versão
+pública `PUBLICO=1`) → sistema. Hierarquia vem de **tamanho**. Sem negrito falso:
+`html { font-synthesis: none }` (a More Sugar tem um peso só). Títulos (`h1`–`h3`), números
+grandes, botões, abas e o nome na barra lateral ficam em **600** (lista em `base.css`): na
+Fredoka isso usa o arquivo 600 de verdade e o cartum não fica fino; na More Sugar não muda nada.
+Texto corrido fica no 400 do CSS (o arquivo 500 da Fredoka). Número grande novo? Ponha a classe
+dele na lista do `base.css`.
+
+**Toda tela é aprovada nas duas fontes.** Quem baixa o app vê a Fredoka: tire as fotos também
+com `tools/cenarios/fredoka.js` (injeta `--font: 'Fredoka'`):
+`tools/foto.sh bateria x.png 1180x2000 "$(sed 's/__EXTRA__//' tools/cenarios/fredoka.js)"`.
 
 ## Componentes (ui/css/components.css)
 
 Use antes de inventar: `.card` (+ `.gold`, `.ink`, `.panel`, `.flat`), `.card-head`, `.btn`
-(+ `.gold`, `.ink`, `.small`, `.ghost`), `.status` (+ `.good/.warn/.serious/.crit`, `.big`)
-**sempre com ícone + texto** (`K.statusPill`), `.sticker`, `.stat-label/.stat-value/.stat-sub`,
+(+ `.gold`, `.ink`, `.small`, `.ghost`, `.danger`; ocupado sem perder o foco: `aria-disabled="true"`),
+`.status` (+ `.good/.warn/.serious/.crit`, `.big`) **sempre com ícone + texto** (`K.statusPill`),
+`.sticker` (+ `.has-ic` com ícone), `.live-badge`, `.stat-label/.stat-value/.stat-sub`,
 `.hero-value`, `.tile` + `.tile-icon`, `.meter` + `.meter-fill`, `.switch` (`aria-checked`),
-`.setting`, `.tip`, `.table`, `.legend`, `.loading`, `.empty`, `.error-box`, grade
-`.grid.cols-2/3/4`, `.span-2`, `.row`, `.stack`.
+`.setting`, `.tip`, `.table`, `.legend`, `.loading`, `.empty`, `.no-read`, abas `.ktabs > .ktab`
+(+ `.ktab-badge`, `.warn`), grade `.grid.cols-2/3/4`, `.span-2`, `.row`, `.stack`.
 
 Página: `<header class="page-head" data-drag>` com `h1` (44px) + `p`, depois conteúdo.
-`data-drag` marca áreas vazias por onde se arrasta a janela.
+`data-drag` marca áreas vazias por onde se arrasta a janela. No canto direito do cabeçalho só
+entram **duas peças**: `.sticker` (ouro, −3°) pra um fato ("15 apps · 9,0 GB · 4 abertos",
+"modo de teste", o modelo do Mac) e `.live-badge` pro que é ao vivo. Promessa ("nada aqui apaga
+arquivo seu") vai no subtítulo.
+
+Estados (iguais em todas as telas):
+- **erro**: `K.errorCard({title, reason, retry, retryHint})` — rosa, mascote preocupado, "O motivo:
+  X. Nada foi mexido." e botão ouro "Tentar de novo" com a dica de quanto demora. Dentro de um
+  cartão, `compact: true` (sem mascote). Tela que só lê e tenta sozinha passa `text` próprio
+  ("… Tento de novo sozinho em instantes."). Nunca parênteses dentro de parênteses.
+- **sem leitura**: `K.readOr` / `.no-read` ("medindo…", "sem leitura" apagado), nunca "—" preto.
+- **vazio**: caixa tracejada com mascote, na largura toda do painel.
+- **recarregar**: "Escanear de novo" só na Varredura; nas listas, "Procurar de novo".
+- Tela que se refaz inteira com o foco dentro dela: `K.keepFocus(raiz, pintar, fallback)`.
+
+Nomes que valem pra todas as telas: a lista do que o app mandou pra Lixeira é "O que o Kamurafy
+mandou" (em Faxina › Lixeira); "Lixeira" sozinha é só a do macOS. Memória sempre em base 2
+(`K.fmt.mem`: "16 GB", como a Apple); disco e arquivos em base 10 (`K.fmt.bytes`, como o Finder).
+Núcleos: `K.fmt.cores` ("6 núcleos (12 linhas de execução)"). Processo do macOS com nome técnico:
+`K.procName` ("Tela e janelas (WindowServer)"). App com janela é app, mesmo sendo da Apple
+("app da Apple"), nunca "do sistema".
 
 JS: monte DOM com `K.el(tag, attrs, ...filhos)` (texto vai por textContent). Ícone:
 `K.icon('nome')` (lista em `ui/js/icons.js`; pode acrescentar ícones no mesmo traço:

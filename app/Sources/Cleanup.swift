@@ -65,6 +65,7 @@ struct MovedItem: Codable {
     var dev: Int32? = nil        // identidade de verdade (disco + inode) do item na Lixeira
     var ino: UInt64? = nil
     var root: String? = nil      // pasta permitida de onde saiu (o desfazer só volta pra dentro dela)
+    var peloFinder: Bool? = nil  // app que foi pela Lixeira do Finder (do administrador): volta por lá
 }
 
 enum RunMode {
@@ -235,6 +236,10 @@ enum CleanGuard {
     /// Conferência de antes (a definitiva acontece no SafeFS, por descritor).
     static func check(_ e: CleanRegistry.Entry) throws {
         let home = CleanEnv.home.path
+        let comps = (e.url.path as NSString).pathComponents + (e.root as NSString).pathComponents
+        guard !comps.contains("."), !comps.contains(".."), !e.name.isEmpty, !e.name.contains("/") else {
+            throw Failure.reason("caminho inválido")
+        }
         guard inside(e.root, home) || e.root == home else { throw Failure.reason("pasta fora da pasta do usuário") }
         guard e.parent == e.root || inside(e.parent, e.root) else { throw Failure.reason("saiu da pasta permitida") }
         guard SafeFS.isLiteralDir(e.root) else { throw Failure.reason("a pasta mudou (virou atalho ou sumiu)") }
@@ -403,6 +408,10 @@ enum Cleanup {
             guard let i = list.firstIndex(where: { $0.id == id }) else { continue }
             let m = list[i]
             guard let ident = trashIdent(m) else { falhas.append(.init(id: id, nome: m.nome, motivo: "não está mais na Lixeira")); continue }
+            if m.peloFinder == true {
+                falhas.append(.init(id: id, nome: m.nome, motivo: "esse foi pela Lixeira do Finder: lá, clique com o botão direito › Colocar de volta"))
+                continue
+            }
             let to = URL(fileURLWithPath: m.original)
             let parent = to.deletingLastPathComponent().path
             let allowed: Bool
@@ -421,7 +430,11 @@ enum Cleanup {
                 ok += 1
                 bytes += m.bytes
             } catch {
-                falhas.append(.init(id: id, nome: m.nome, motivo: friendly(error)))
+                var motivo = friendly(error)
+                if m.categoria == "app" && motivo.contains("permissão") {
+                    motivo = "o macOS não deixou devolver daqui: na Lixeira do Finder, clique com o botão direito › Colocar de volta"
+                }
+                falhas.append(.init(id: id, nome: m.nome, motivo: motivo))
             }
         }
         saveMoved(list)

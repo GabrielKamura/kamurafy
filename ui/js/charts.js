@@ -1059,11 +1059,11 @@
       sv('circle', { cx: cx - 3, cy: cy - 3, r: 2.6, class: 'kg-hub-glint' }, svg);
 
       wrap.appendChild(svg);
+      /* sem leitura: o texto de espera ("Medindo…") vai apagado no lugar do número, nunca um "—" preto */
       const txt = K.el('div', { class: 'kg-text' },
-        K.el('div', { class: 'kg-val' }, has ? fmt(v) : '—'));
+        K.el('div', { class: 'kg-val' + (has ? '' : ' no-read') }, has ? fmt(v) : (opts.empty || 'sem leitura')));
       if (opts.label) txt.appendChild(K.el('div', { class: 'kg-label' }, opts.label));
       if (zone && zone.label && opts.pill !== false) txt.appendChild(K.statusPill(zone.tone, zone.label, zone.icon));
-      else if (!has && opts.empty) txt.appendChild(K.el('div', { class: 'kg-label muted' }, opts.empty));
       wrap.appendChild(txt);
       h.el.appendChild(wrap);
 
@@ -1079,7 +1079,7 @@
       /* dica: explica as faixas */
       const tip = () => {
         const r = svg.getBoundingClientRect();
-        const rows = [{ value: has ? fmt(v) : '—', name: opts.label || '', color: zone ? col(zone.tone) : null }];
+        const rows = [{ value: has ? fmt(v) : 'sem leitura', name: opts.label || '', color: zone ? col(zone.tone) : null }];
         for (const z of zones) if (z.label) rows.push({ value: `${fmtNum(z.from, 0)}–${endFmt(z.to)}`, name: z.label, color: col(z.tone) });
         h.tip(r.left + r.width / 2, r.top + 8, opts.tipTitle || opts.label || 'Faixas', rows);
       };

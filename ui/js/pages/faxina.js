@@ -282,7 +282,7 @@
   function paintShell() {
     host.innerHTML = '';
     host.dataset.tab = S.tab;
-    V.sandbox = K.el('span', { class: 'sticker fx-sandbox', html: K.icon('fxFlask'),
+    V.sandbox = K.el('span', { class: 'sticker has-ic fx-sandbox', html: K.icon('fxFlask'),
       title: 'Caixa de areia: a Faxina está mexendo numa pasta de mentira, com uma Lixeira de mentira. Nada seu é tocado.' },
       'modo de teste');
     host.appendChild(K.el('header', { class: 'page-head fx-head', 'data-drag': true },
@@ -291,11 +291,11 @@
         K.el('p', null, 'Acho o que sobra no Mac e mostro tudo antes. Só vai pra Lixeira o que você marcar.')),
       K.el('div', { class: 'fx-head-side' }, V.sandbox)));
 
-    const nav = K.el('nav', { class: 'fx-tabs', role: 'tablist', 'aria-label': 'Partes da Faxina' });
+    const nav = K.el('nav', { class: 'ktabs fx-tabs', role: 'tablist', 'aria-label': 'Partes da Faxina' });
     V.tabs = {};
     for (const t of TABS) {
-      const badge = K.el('span', { class: 'fx-tab-badge num' });
-      const b = K.el('button', { class: 'fx-tab', type: 'button', role: 'tab', dataset: { tab: t.id }, html: K.icon(t.icon),
+      const badge = K.el('span', { class: 'ktab-badge fx-tab-badge num' });
+      const b = K.el('button', { class: 'ktab fx-tab', type: 'button', role: 'tab', dataset: { tab: t.id }, html: K.icon(t.icon),
         onclick: () => { if (S.tab !== t.id) { K.sound.plop(); setTab(t.id); } } },
       K.el('span', { class: 'fx-tab-label' }, t.label), badge);
       V.tabs[t.id] = { b, badge };
@@ -918,7 +918,7 @@
       const b = (d.itens || []).filter((it) => st.sel.has(it.id) && selectable(it)).reduce((a, it) => a + (it.bytes || 0), 0);
       segs.push({ name: catInfo(s.id).titulo, value: b, color: CATS[s.id].color });
     }
-    return { segments: segs, total, restName: 'Fica (não marcado)', restColor: 'var(--panel)', format: fmtB, height: 30,
+    return { segments: segs, total, restName: 'Não marcado (você decide)', restColor: 'var(--panel)', format: fmtB, height: 30,
       ariaLabel: 'O que está marcado pra limpar, por tipo', empty: 'Nada pra dividir aqui.' };
   }
 
@@ -1278,14 +1278,10 @@
   function paintSearchError(kind) {
     const st = S[kind];
     const t = INTRO[kind];
-    V.panel.appendChild(K.el('section', { class: 'card fx-search is-err pop-in' },
-      K.el('span', { class: 'head-ic crit', html: K.icon('alert') }),
-      K.el('div', { class: 'fx-search-text' },
-        K.el('h2', null, 'Não consegui terminar a procura'),
-        K.el('p', null, `O motivo que o Mac deu: ${why(st.err)}. Nada foi mexido.`),
-        K.el('div', { class: 'fx-intro-act' },
-          K.el('button', { class: 'btn gold', type: 'button', html: K.icon('cycle'), onclick: () => { search(kind); } }, 'Tentar de novo'),
-          K.el('span', { class: 'muted' }, t.wait)))));
+    /* o mesmo cartão de erro das outras telas */
+    const c = K.errorCard({ title: 'Não consegui terminar a procura', reason: why(st.err), retry: () => { search(kind); }, retryHint: t.wait });
+    c.classList.add('pop-in');
+    V.panel.appendChild(c);
   }
 
   function search(kind) {
@@ -1676,10 +1672,10 @@
     if (moved.length && !d.undo && !(d.purge && d.purge.res && d.purge.res.ok)) {
       acts.appendChild(K.el('button', { class: 'btn', type: 'button', html: K.icon('fxUndo'), disabled: !!busy, onclick: () => { undoKind(kind); } },
         busy === 'undo' ? 'Devolvendo…' : 'Desfazer'));
-      acts.appendChild(K.el('button', { class: 'btn danger', type: 'button', html: K.icon('flame'), disabled: !!busy, onclick: () => { purgeKind(kind); } },
-        busy === 'purge' ? 'Apagando…' : 'Apagar de vez agora'));
     }
-    acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('fxTrash'), disabled: !!busy, onclick: () => { K.sound.plop(); setTab('lixeira'); } }, 'Ver a Lixeira'));
+    /* no momento do alívio, nada de "apagar de vez" em destaque: isso fica na aba Lixeira, com
+       confirmação. Mesma ordem do Desinstalar: Desfazer · Ver na Lixeira · Procurar de novo */
+    acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('fxTrash'), disabled: !!busy, onclick: () => { K.sound.plop(); setTab('lixeira'); } }, 'Ver na Lixeira'));
     acts.appendChild(K.el('button', { class: 'btn ghost', type: 'button', html: K.icon('cycle'), disabled: !!busy,
       onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, 'Procurar de novo'));
     const sticker = (S.sandbox || r.caixaDeAreia ? 'modo de teste · Lixeira de mentira · ' : '') + `feito às ${K.fmt.time(d.at)}`;
@@ -1867,22 +1863,25 @@
       total.append(K.el('span', { class: 'fx-lix-big num' }, fmtB(info.bytes)),
         K.el('span', { class: 'fx-lix-lab' }, `na Lixeira, em ${plural(info.itens, 'item', 'itens')}`));
     } else if (legivel) {
-      total.append(K.el('span', { class: 'fx-lix-big' }, 'Vazia'), K.el('span', { class: 'fx-lix-lab' }, 'não tem nada na Lixeira agora'));
+      total.append(K.el('span', { class: 'fx-lix-big' }, 'Vazia'), K.el('span', { class: 'fx-lix-lab' }, 'nada esperando pra ser apagado'));
     } else {
       total.append(K.el('span', { class: 'fx-lix-big no-read' }, 'sem leitura'),
         K.el('span', { class: 'fx-lix-lab' }, 'o tamanho da Lixeira toda'));
     }
+    /* Lixeira vazia: o mascote tira um cochilo no lugar da lata */
+    const lixArt = K.el('div', { class: 'fx-lix-art' + (legivel && !info.itens ? ' is-sleep' : '') },
+      legivel && !info.itens ? null : K.el('span', { class: 'fx-lix-can', html: K.icon('fxTrash') }));
     const nowCard = K.el('section', { class: 'card fx-lix-now pop-in' },
-      K.el('div', { class: 'fx-lix-art' }, K.el('span', { class: 'fx-lix-can', html: K.icon('fxTrash') })),
+      lixArt,
       K.el('div', { class: 'fx-lix-text' },
         K.el('h2', null, 'Na Lixeira agora'),
         total,
         K.el('ul', { class: 'fx-lix-facts' },
-          K.el('li', { html: K.icon('broom') }, still.length ? `${fmtB(fromFax)} disso veio da Faxina (${plural(still.length, 'item', 'itens')})` : 'Nada ali veio da Faxina'),
+          K.el('li', { html: K.icon('broom') }, still.length ? `${fmtB(fromFax)} disso veio do Kamurafy (${plural(still.length, 'item', 'itens')})` : 'Nada ali veio do Kamurafy'),
           !legivel || info.itens ? K.el('li', { html: K.icon('info') }, 'Enquanto está na Lixeira, ainda ocupa espaço no disco.') : null),
         !legivel && !reading ? K.el('div', { class: 'tip fx-perm', html: K.icon('lock') },
-          K.el('p', null, L.infoErr ? `Não consegui olhar a Lixeira toda (${L.infoErr}). O que a Faxina mandou eu sei, porque anoto.`
-            : 'O macOS só deixa eu ver a Lixeira toda com Acesso Total ao Disco. O que a Faxina mandou eu sei, porque anoto.'),
+          K.el('p', null, L.infoErr ? `Não consegui olhar a Lixeira toda: ${String(L.infoErr).replace(/[.!\s]+$/, '')}. O que eu mandei eu sei, porque anoto.`
+            : 'O macOS só deixa eu ver a Lixeira toda com Acesso Total ao Disco. O que eu mandei eu sei, porque anoto.'),
           K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, 'Abrir Ajustes')) : null));
     const emptyNow = legivel && !info.itens;
     const busyEmpty = L.busy === 'empty';
@@ -1893,11 +1892,12 @@
         busyEmpty ? 'Esvaziando…' : emptyNow ? 'A Lixeira já está vazia' : 'Esvaziar a Lixeira toda'),
       K.el('span', { class: 'fx-lix-danger-note muted' }, 'Na primeira vez, o macOS pode perguntar se o Kamurafy pode pedir isso ao Finder.'));
     V.panel.appendChild(K.el('div', { class: 'fx-lix-top' }, nowCard, dangerCard));
+    if (lixArt.classList.contains('is-sleep')) addMascot(lixArt, 112, { face: 'sleep', pct: 100 });
 
-    /* o que a Faxina mandou */
+    /* o que o Kamurafy mandou (Faxina e Desinstalar): "Lixeira" sozinha é só a do macOS */
     const head = K.el('div', { class: 'fx-lix-list-head' },
-      K.el('div', null, K.el('h2', null, 'O que a Faxina mandou'),
-        K.el('p', null, 'Fica aqui até a Lixeira ser esvaziada. Dá pra devolver cada item pro lugar de onde saiu.')));
+      K.el('div', null, K.el('h2', null, 'O que o Kamurafy mandou'),
+        K.el('p', null, 'Tudo que a Faxina e o Desinstalar mandaram pra Lixeira. Fica aqui até ela ser esvaziada, e dá pra devolver cada item pro lugar de onde saiu.')));
     if (still.length) {
       head.appendChild(K.el('div', { class: 'fx-lix-list-act' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('fxUndo'), disabled: !!L.busy, onclick: () => { restoreMoved(still.map((m) => m.id)); } },
@@ -1906,13 +1906,13 @@
           'Apagar de vez tudo isso')));
     }
     const listCard = K.el('section', { class: 'card fx-lix-list pop-in', style: { animationDelay: '120ms' } }, head);
-    if (L.movedErr && !L.moved) listCard.appendChild(K.el('div', { class: 'error-box' }, `Não consegui ler a lista (${L.movedErr}).`));
-    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, 'A Faxina ainda não mandou nada pra Lixeira. Quando mandar, aparece aqui.'));
+    if (L.movedErr && !L.moved) listCard.appendChild(K.errorCard({ compact: true, title: 'Não consegui ler a lista', reason: L.movedErr, retry: () => { L.moved = null; L.movedErr = null; loadLixeira(); paintTab(); } }));
+    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, 'Nada que eu mandei pra Lixeira ainda. Quando a Faxina ou o Desinstalar mandarem, aparece aqui.'));
     else {
       /* o que ainda está na Lixeira vem primeiro; o que já saiu fica recolhido (é só histórico) */
       const gone = moved.filter((m) => !m.naLixeira);
       const rows = still.concat(L.showGone ? gone : []);
-      if (!still.length) listCard.appendChild(K.el('div', { class: 'empty fx-lix-none' }, 'Nada do que a Faxina mandou continua na Lixeira agora.'));
+      if (!still.length) listCard.appendChild(K.el('div', { class: 'empty fx-lix-none' }, 'Nada do que eu mandei continua na Lixeira agora.'));
       const ul = K.el('ul', { class: 'fx-items fx-lix-items' });
       rows.slice(0, L.shown).forEach((m) => ul.appendChild(movedRow(m)));
       if (rows.length > L.shown) {

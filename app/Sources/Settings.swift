@@ -9,6 +9,7 @@ struct AppSettings: Codable {
     var iconeNaBarra: Bool     // ícone da bateria na barra de menus
     var porcentagemNaBarra: Bool
     var soNaBarra: Bool        // janela fechada = some do Dock, fica só na barra
+    var boasVindas: Bool = false // já viu a tela de boas-vindas
 
     static let defaults = AppSettings(aviso80: true, limiteAviso: 80, avisoQuente: true, som: true,
                                       iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false)
@@ -30,6 +31,7 @@ struct AppSettings: Codable {
         iconeNaBarra = try c.decodeIfPresent(Bool.self, forKey: .iconeNaBarra) ?? d.iconeNaBarra
         porcentagemNaBarra = try c.decodeIfPresent(Bool.self, forKey: .porcentagemNaBarra) ?? d.porcentagemNaBarra
         soNaBarra = try c.decodeIfPresent(Bool.self, forKey: .soNaBarra) ?? d.soNaBarra
+        boasVindas = try c.decodeIfPresent(Bool.self, forKey: .boasVindas) ?? false
     }
 }
 
@@ -56,6 +58,7 @@ enum Settings {
         if let v = args.bool("iconeNaBarra") { s.iconeNaBarra = v }
         if let v = args.bool("porcentagemNaBarra") { s.porcentagemNaBarra = v }
         if let v = args.bool("soNaBarra") { s.soNaBarra = v }
+        if let v = args.bool("boasVindas") { s.boasVindas = v }
         current = s
         return s
     }

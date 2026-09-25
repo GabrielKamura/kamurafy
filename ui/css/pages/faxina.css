@@ -14,62 +14,8 @@
 .fx-head { align-items: center; margin-bottom: 18px; }
 .fx-head-text { min-width: 0; }
 .fx-head-side { display: flex; align-items: center; gap: 10px; flex: none; }
-.fx-sandbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #d9f3ea;
-  transform: rotate(3deg);
-  font-size: 15px;
-  padding: 5px 12px 5px 9px;
-}
-.fx-sandbox[hidden] { display: none; }
-.fx-sandbox svg { width: 18px; height: 18px; }
 
-/* ===================== abas em pílula (grudam no topo) ===================== */
-.fx-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 -36px;
-  padding: 10px 36px 14px;
-  background: var(--paper);
-  border-bottom: 2px dashed var(--line);
-}
-.fx-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px 8px 12px;
-  border: var(--bw) solid var(--ink);
-  border-radius: 999px;
-  background: var(--card);
-  box-shadow: var(--shadow-xs);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform .12s var(--ease), box-shadow .12s var(--ease), background .15s;
-}
-.fx-tab svg { width: 20px; height: 20px; flex: none; }
-.fx-tab:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
-.fx-tab:active { transform: translate(1px, 1px); box-shadow: 0 0 0 var(--ink); }
-.fx-tab.on { background: var(--gold); box-shadow: var(--shadow-sm); transform: translate(-2px, -2px); }
-.fx-tab-badge {
-  min-width: 22px;
-  padding: 3px 8px 4px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 12.5px;
-  line-height: 1;
-  text-align: center;
-}
-.fx-tab-badge[hidden] { display: none; }
-.fx-tab.on .fx-tab-badge { background: #fff; color: var(--ink); border: 2px solid var(--ink); padding: 1px 7px 2px; }
+/* ===================== abas em pílula: .ktabs/.ktab (components.css) ===================== */
 
 .fx-panel { padding-top: 26px; flex: 1; display: flex; flex-direction: column; gap: 22px; }
 .fx-panel > * { flex: none; }
@@ -367,7 +313,7 @@
 .fx-hero.is-none { color: var(--ink-2); }
 .fx-hero-lab { display: flex; flex-direction: column; font-size: 24px; line-height: 1.05; padding-bottom: 6px; }
 .fx-hero-lab small { font-size: 14px; color: var(--ink-2); margin-top: 3px; }
-.fx-sum-title { font-size: 42px; line-height: 1.03; margin: 0; font-weight: 400; text-wrap: balance; }
+.fx-sum-title { font-size: 42px; line-height: 1.03; margin: 0; text-wrap: balance; }
 .fx-sum-title:focus { outline: none; }
 .fx-sum p { margin: 10px 0 0; font-size: 16.5px; line-height: 1.4; max-width: 40em; }
 .fx-sum-act { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; }
@@ -714,6 +660,9 @@
 /* ===================== Lixeira ===================== */
 .fx-lix-top { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 22px; align-items: stretch; }
 .fx-lix-now { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: start; }
+/* Lixeira vazia: o mascote cochilando ocupa o lado, centrado na altura do cartão */
+.fx-lix-now:has(.fx-lix-art.is-sleep) { align-items: center; }
+.fx-lix-art.is-sleep { width: 112px; transform: rotate(-4deg); }
 .fx-lix-can {
   width: 84px;
   height: 84px;

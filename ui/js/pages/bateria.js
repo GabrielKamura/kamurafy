@@ -99,7 +99,8 @@
       else t = 'calculando o tempo…';
       r = { key: 'charging', icon: 'bolt', title: 'Carregando', sub: t, bubble: 'Enchendo o tanque!' };
     } else if (b.pluggedIn) {
-      if (b.fullyCharged || (isNum(pct) && pct >= 99)) r = { key: 'full', icon: 'moon', title: 'Cheia e na tomada', sub: 'descansando', bubble: 'Zzz… tô cheia.' };
+      if (K.batTopping(b)) r = { key: 'topping', icon: 'bolt', title: 'Na tomada', sub: 'terminando de encher, devagar', bubble: 'Quase cheia!' };
+      else if (b.fullyCharged || (isNum(pct) && pct >= 99)) r = { key: 'full', icon: 'moon', title: 'Cheia e na tomada', sub: 'descansando', bubble: 'Zzz… tô cheia.' };
       else if (b.optimizedChargingEngaged) r = { key: 'held', icon: 'plug', title: 'Na tomada', sub: 'o macOS segurou a carga', bubble: 'Segurando aqui.' };
       else r = { key: 'plugged', icon: 'plug', title: 'Na tomada', sub: 'sem carregar agora', bubble: 'Só descansando.' };
     } else {
@@ -279,7 +280,7 @@
     function update(b, first) {
       const st = statusOf(b);
       const s = stateOf(b);
-      const full = !!(b.pluggedIn && !b.isCharging && isNum(b.percent) && b.percent >= 99);
+      const full = !!(b.pluggedIn && !b.isCharging && isNum(b.percent) && b.percent >= 99) && !K.batTopping(b);
       p.mascot.set({
         pct: isNum(b.percent) ? b.percent : null, tone: st.tone,
         charging: !!b.isCharging, plugged: !!b.pluggedIn, full,
@@ -599,7 +600,7 @@
           }
         }
         if (!p.live.paused) draw();
-        const k = b.isCharging ? 'c' : b.pluggedIn ? 'p' : b.pluggedIn == null ? 'x' : 'b';
+        const k = b.isCharging || K.batTopping(b) ? 'c' : b.pluggedIn ? 'p' : b.pluggedIn == null ? 'x' : 'b';
         if (k !== lastNote) {
           lastNote = k;
           note.textContent = k === 'c' ? 'Acima do zero é energia entrando. Perto de cheia, o macOS vai diminuindo a força pra poupar a bateria.'
@@ -737,9 +738,10 @@
       node: c,
       fail(e) {
         box.textContent = '';
-        box.appendChild(K.el('div', { class: 'error-box bt-err' },
-          K.el('span', null, 'Não consegui ler o histórico agora. ' + ((e && e.message) || '')),
-          K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); box.textContent = ''; box.appendChild(K.el('div', { class: 'loading' }, 'Tentando de novo…')); loadHistory(p); } }, 'Tentar de novo')));
+        /* o mesmo cartão de erro das outras telas, na versão compacta (cabe dentro do cartão) */
+        box.appendChild(K.errorCard({ compact: true, title: 'Não consegui ler o histórico agora', reason: (e && e.message) || 'o macOS não respondeu',
+          retry: () => { box.textContent = ''; box.appendChild(K.el('div', { class: 'loading' }, 'Tentando de novo…')); loadHistory(p); },
+          retryHint: 'Leva uns 4 segundos.' }));
       },
       draw(h, b) {
         box.textContent = '';
@@ -813,7 +815,8 @@
       if (h > 80 && isNum(pj.cyclesTo80) && pj.cyclesTo80 > 0) {
         const end = cy + pj.cyclesTo80;
         series.push({ name: 'No ritmo de hoje', dash: true, points: [{ x: cy, y: h }, { x: end, y: 80, tag: 'previsao' }],
-          endLabel: `~${K.fmt.num(pj.cyclesTo80)} ciclos`, format: (v) => '≈ ' + K.fmt.pct(v, 0) });
+          /* o ponto fica em ~420 no eixo: o rótulo diz onde ele está (o "faltam ~171" fica no cartão Previsão) */
+          endLabel: `80% em ~${K.fmt.num(end)} ciclos`, format: (v) => '≈ ' + K.fmt.pct(v, 0) });
         xMax = end * 1.04;
       }
       sub.textContent = 'Saúde × ciclos: de quando era nova até hoje, e o ritmo até os 80%.';
@@ -943,7 +946,7 @@
           K.el('div', { class: 'bt-notif-top' }, K.el('span', null, 'Kamurafy'), K.el('span', { class: 'bt-notif-when' }, 'agora')),
           nTitle, nBody)));
     const paintT1 = () => {
-      t1.textContent = `Me avisa quando chegar em ${s.limiteAviso}%`;
+      t1.textContent = K.avisosTxt.carga(s.limiteAviso);
       /* mesmo texto que o Swift manda (Sampler.swift) */
       nTitle.textContent = `Chegou em ${s.limiteAviso}%!`;
       nBody.textContent = `Pode tirar da tomada. Parar por volta de ${s.limiteAviso}% ajuda a bateria a durar mais.`;
@@ -1025,13 +1028,13 @@
     c.append(
       K.el('div', { class: 'setting bt-setting' },
         K.el('div', { class: 'setting-text' }, t1,
-          K.el('span', null, 'Com o carregador ligado, aviso quando a carga passar do limite, pra você tirar da tomada se quiser.')),
+          K.el('span', null, K.avisosTxt.cargaSub)),
         sw1),
       K.el('div', { class: 'bt-limrow' }, K.el('span', { class: 'bt-limrow-l' }, 'Avisar em'), lims),
       preview,
       K.el('div', { class: 'setting bt-setting' },
-        K.el('div', { class: 'setting-text' }, K.el('b', null, 'Me avisa se esquentar'),
-          K.el('span', null, 'Se a bateria passar de 45 °C em duas leituras seguidas, eu te chamo.')),
+        K.el('div', { class: 'setting-text' }, K.el('b', null, K.avisosTxt.quente),
+          K.el('span', null, K.avisosTxt.quenteSub)),
         sw2),
       notif,
       err,
@@ -1127,20 +1130,20 @@
   }
 
   function renderFail(p, e) {
-    const c = card('bt-nobat bt-fail', 0);
-    const art = K.el('div', { class: 'bt-nobat-art' });
-    c.appendChild(art);
-    p.mascot = K.mascot(art, { size: 180, state: { pct: null, face: 'worried' } });
-    c.append(
-      K.el('h2', null, 'Não consegui ler a bateria agora'),
-      K.el('p', null, 'Às vezes o macOS demora pra responder logo depois de acordar. ' + ((e && e.message) || '')),
-      K.el('button', { class: 'btn gold', type: 'button', onclick: () => {
-        K.sound.plop();
+    /* o mesmo cartão de erro de todas as telas (K.errorCard) */
+    const c = K.errorCard({
+      title: 'Não consegui ler a bateria agora',
+      text: `Às vezes o macOS demora pra responder logo depois de acordar. O motivo: ${String((e && e.message) || 'o macOS não respondeu').trim().replace(/[.!\s]+$/, '')}. Nada foi mexido.`,
+      retry: () => {
         const el = p.el;
         K.pages.bateria.destroy();
         el.textContent = '';
         K.pages.bateria.render(el);
-      } }, K.el('span', { html: K.icon('cycle') }), 'Tentar de novo'));
+      },
+      retryHint: 'Leva um segundo.',
+      mascot: { pct: null, tone: 'none' },   // sem leitura: o mascote fica cinza, sem carga inventada
+    });
+    c.classList.add('pop-in');
     p.el.appendChild(c);
     K.sound.oops();
   }

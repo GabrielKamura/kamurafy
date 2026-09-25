@@ -23,6 +23,8 @@
   const GB = 1e9;                // base 10, como o Finder e o K.fmt.bytes
   const DIRT_TIP = GB;           // até aqui a sujeira é "tranquilo"; acima vira sugestão (nunca alarme)
   const DIRT_CAT_MS = 9000;      // cada categoria que passa disso fica de fora (as outras seguem)
+  const STARTUP_MIN = 3;         // itens de início: até 2 é o normal; a partir daqui vira atalho pro Otimizar
+  const STARTUP_MS = 8000;       // a leitura dos itens de início roda por fora: demorou, fica sem o atalho
 
   const STEPS = [
     { id: 'bateria', name: 'Bateria', icon: 'battery', desc: 'saúde, ciclos e carga', doing: 'Olhando a bateria…', route: 'bateria', run: stepBattery },
@@ -53,12 +55,9 @@
   const nowS = () => Date.now() / 1000;
   const go = (route) => { K.sound.plop(); location.hash = '#/' + route; };
 
-  /** memória em base 2, como o Monitor de Atividade ("16 GB", não "17,2 GB") */
-  function gib(v, casas) {
-    if (v == null) return '—';
-    const g = v / 1073741824;
-    return K.fmt.num(g, casas != null ? casas : g < 100 ? 1 : 0) + ' GB';
-  }
+  /** memória em base 2, como o Monitor de Atividade ("16 GB", não "17,2 GB"): a mesma função do
+      Painel, do Otimizar e do balão */
+  const gib = (v, casas) => K.fmt.mem(v, casas);
 
   function greeting() {
     const h = new Date().getHours();
@@ -177,10 +176,39 @@
     return anDirt(d, ctx.disk);
   }
 
+  /* ---------- itens de início (Otimizar): leitura à parte, nunca segura a varredura ---------- */
+  /** Começa a ler optimize.startup (só leitura) e devolve {done, value, p}. Falhou ou demorou: value null. */
+  function startupPeek() {
+    const box = { done: false, value: null, p: null };
+    box.p = withTimeout(K.api('optimize.startup'), STARTUP_MS)
+      .then(anStartup)
+      .catch((e) => { console.warn('varredura/itens de início: ' + (e && e.message)); return null; })
+      .then((v) => { box.done = true; box.value = v; return v; });
+    return box;
+  }
+
+  /** Conta o que abre sozinho com o Mac e que dá pra desligar pelo Otimizar (sem senha).
+      Ajudantes do mesmo app contam uma vez só. Nome vem de fora: quem mostrar usa textContent. */
+  function anStartup(list) {
+    if (!Array.isArray(list)) return null;
+    const groups = new Map();
+    for (const it of list) {
+      if (!it || !it.ligado || !it.editavel) continue;
+      const raw = String(it.app || it.nome || it.label || '').trim();
+      if (!raw) continue;
+      const name = raw.replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '\uFFFD');
+      const key = name.toLowerCase();
+      if (!groups.has(key)) groups.set(key, { name, named: !!it.app });
+    }
+    const all = Array.from(groups.values());
+    return { n: all.length, names: all.filter((g) => g.named).map((g) => g.name) };
+  }
+
   function chargeText(b) {
-    const p = num(b.percent) != null ? K.fmt.pct(b.percent, 0) : '—';
+    const p = num(b.percent) != null ? K.fmt.pct(b.percent, 0) : 'carga sem leitura';
     if (b.isCharging == null && b.pluggedIn == null) return `${p}, sem leitura da tomada`;
     if (b.isCharging) return `${p}, carregando` + (num(b.minutesToFull) ? ` (cheia em ${K.fmt.mins(b.minutesToFull)})` : '');
+    if (K.batTopping(b)) return `${p}, terminando de encher`;
     if (b.pluggedIn && (b.fullyCharged || b.percent >= 99)) return `${p}, cheia na tomada`;
     if (b.pluggedIn) return `${p}, na tomada sem carregar`;
     return `${p}, na bateria` + (num(b.minutesToEmpty) ? ` (uns ${K.fmt.mins(b.minutesToEmpty)})` : '');
@@ -220,7 +248,7 @@
 
     let tip = null;
     if (hot) tip = { icon: 'thermo', text: `Está quente (${K.fmt.temp(b.temperatureC)}), e calor é o que mais desgasta bateria. Deixe o Mac numa superfície dura, com as saídas de ar livres.` };
-    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { icon: 'leaf', text: 'Ficar em 100% o tempo todo desgasta um pouco mais. Se o Mac vive na tomada, deixe ligado o Carregamento otimizado (Ajustes do Sistema › Bateria).' };
+    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { id: 'otimizado', icon: 'leaf', text: 'Ficar em 100% o tempo todo desgasta um pouco mais. Se o Mac vive na tomada, deixe ligado o Carregamento otimizado (Ajustes do Sistema › Bateria).' };
 
     const side = [];
     side.push({ icon: b.isCharging ? 'bolt' : b.pluggedIn ? 'plug' : 'battery', label: 'Carga agora',
@@ -284,7 +312,7 @@
   }
 
   const THERMAL = {
-    normal: { txt: 'fresco', tone: 'good' },
+    normal: { txt: 'fresco', tone: 'good' },   // a mesma régua do Painel: Fresco · Morno · Quente · Crítico
     morno: { txt: 'morno', tone: 'good' },
     quente: { txt: 'quente', tone: 'warn' },
     critico: { txt: 'muito quente', tone: 'crit' },
@@ -315,10 +343,10 @@
       pill = { label: 'Tranquilo', icon: 'check' };
       say = 'O processador está folgado.';
     }
-    const cores = cpu && num(cpu.cores);
+    const cores = cpu ? K.fmt.cores(cpu, true) : '';
     return {
       id: 'cpu', tone, pill, say, busy,
-      value: usage, valueFmt: (v) => K.fmt.pct(v, 0), sub: 'em uso agora' + (cores ? ` · ${cores} núcleos` : ''),
+      value: usage, valueFmt: (v) => K.fmt.pct(v, 0), sub: 'em uso agora' + (cores ? ` · ${cores}` : ''),
       meter: usage, meterTone: busy ? 'warn' : null,
       facts: th ? [{ icon: 'thermo', text: `Temperatura do Mac: ${th.txt}` }] : [],
       note: 'É a leitura geral do macOS, não um sensor em graus.',
@@ -356,7 +384,7 @@
   }
 
   const DIRT_COLOR = { caches: K.charts.palette[0], dev: K.charts.palette[1], logs: K.charts.palette[2] };
-  const DIRT_SHORT = { caches: 'Caches de apps', dev: 'Programação', logs: 'Registros' };
+  const DIRT_SHORT = { caches: 'Caches de apps', dev: 'Caches de programação', logs: 'Registros' };
   /** "3,2 GB" com espaço que não quebra (a unidade nunca fica sozinha na linha) */
   const gbNb = (v) => K.fmt.bytes(v).replace(' ', '\u00a0');
 
@@ -432,7 +460,7 @@
     const st = K.batStatus(b);
     return Object.assign({
       pct: num(b.percent), tone: st.tone, charging: !!b.isCharging, plugged: !!b.pluggedIn,
-      full: !!b.pluggedIn && !b.isCharging && b.percent >= 99, hot: num(b.temperatureC) != null && b.temperatureC >= 40,
+      full: !!b.pluggedIn && !b.isCharging && b.percent >= 99 && !K.batTopping(b), hot: num(b.temperatureC) != null && b.temperatureC >= 40,
     }, extra);
   }
 
@@ -598,6 +626,7 @@
 
     const ctx = {};
     const results = [];
+    const startup = startupPeek();
     for (let i = 0; i < STEPS.length; i++) {
       if (my !== token) return;
       const s = STEPS[i];
@@ -633,10 +662,24 @@
     ui.p.textContent = 'Juntando o que achei…';
     await K.sleep(650);
     if (my !== token) return;
-    last = { results, at: nowS(), took: (performance.now() - t0) / 1000, dirtGen: ctx.dirtGen != null ? ctx.dirtGen : K.dirt.gen };
+    last = { results, at: nowS(), took: (performance.now() - t0) / 1000, dirtGen: ctx.dirtGen != null ? ctx.dirtGen : K.dirt.gen,
+      startup: startup.done ? startup.value : null };
     if (ctx.b) machine = Object.assign({}, machine, { b: ctx.b });
     K.sound.tada();
     paintResult(true);
+    /* os itens de início ainda não responderam: o atalho entra depois, se vier */
+    if (!startup.done) {
+      const mine = last;
+      startup.p.then((v) => {
+        if (!v || my !== token || last !== mine) return;
+        mine.startup = v;
+        if (mode === 'result' && ui.actsSlot && summaryOf(mine.results).kind !== 'fail') {
+          const byId = {};
+          for (const r of mine.results) byId[r.id] = r;
+          fillActs(byId);
+        }
+      });
+    }
     if (byKeyboard && ui.sumTitle) ui.sumTitle.focus({ preventScroll: true });
   }
 
@@ -760,7 +803,9 @@
       out.push({ icon: 'btWrench', tone: bat.tone, title: 'Trocar a bateria', text: 'A Apple mostra preço e onde levar pro seu modelo.',
         btn: 'Ver opções de troca', run: () => K.api('open.url', { url: 'https://support.apple.com/pt-br/mac/repair' }).catch(() => {}) });
     }
-    if (en && !en.error && en.top && (en.tone !== 'good' || en.heavy || (cpu && cpu.busy))) {
+    /* só quando algo está puxando de verdade: com tudo tranquilo, "ver quem está puxando" com fogo
+       desmentiria o "nada pede sua atenção" lá de cima */
+    if (en && !en.error && en.top && (en.tone !== 'good' || (cpu && cpu.busy))) {
       out.push({ icon: 'flame', tone: en.tone !== 'good' ? en.tone : null, title: 'Ver quem está puxando', text: `${en.top} está na frente agora.`,
         btn: 'Ver a lista', run: () => go(b ? 'bateria?secao=apps' : 'painel') });
     }
@@ -773,7 +818,8 @@
       out.push({ icon: 'disk', tone: disk.tone, title: 'Liberar espaço', text: 'Veja no Painel quanto sobra e o que o macOS libera sozinho.', btn: 'Ver o disco', run: () => go('painel') });
     }
     if (mem && !mem.error && mem.tone !== 'good') {
-      out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda.', btn: 'Ver a memória', run: () => go('painel') });
+      out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda. No Otimizar você vê quem pesa mais.',
+        btn: 'Ver quem pesa', run: () => go('otimizar?aba=pesando') });
     }
     if (dirt && !diskTight) {
       out.push({ icon: 'broom', title: freeUp, text: 'Caches e registros que os apps recriam. Tudo vai pra Lixeira.',
@@ -785,9 +831,19 @@
         out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá, pra tirar da tomada se quiser.',
           btn: 'Ligar o aviso', toggle: true });
       } else if (!b.optimizedChargingEngaged && b.percent >= 99) {
-        out.push({ icon: 'btShield', title: 'Carregamento otimizado', text: 'Ficar sempre em 100% desgasta mais. O macOS pode segurar em 80% pra você.',
+        out.push({ id: 'otimizado', icon: 'btShield', title: 'Carregamento otimizado', text: 'Ficar sempre em 100% desgasta mais. O macOS pode segurar em 80% pra você.',
           btn: 'Abrir Ajustes', run: () => K.api('open.settings', { painel: 'bateria' }).catch(() => go('bateria?secao=cuidados')) });
       }
+    }
+    const su = last && last.startup;
+    if (su && su.n >= STARTUP_MIN) {
+      /* sem alarme: ter alguns é normal. Só mostra quantos são e onde decidir */
+      const shown = su.names.slice(0, 2);
+      const rest = su.n - shown.length;
+      const who = shown.length ? listPt(rest > 0 ? shown.concat([`mais ${rest}`]) : shown) + '. ' : '';
+      out.push({ icon: 'rocket', title: `${su.n} ${su.names.length === su.n ? 'apps abrem' : 'itens abrem'} com o Mac`,
+        text: `${who}Dá pra desligar o que você não usa, e religar depois.`,
+        btn: 'Ver no Otimizar', run: () => go('otimizar?aba=login') });
     }
     if (b && out.length && out.length < 3) {
       const s = K.settings.value;
@@ -800,6 +856,9 @@
     if (!ui.actsSlot) return;
     ui.actsSlot.textContent = '';
     const acts = actionsFor(byId);
+    /* a mesma dica não aparece duas vezes: se virou ação lá em cima, sai do cartão da bateria */
+    ui.actIds = new Set(acts.map((a) => a.id).filter(Boolean));
+    if (ui.batTip) ui.batTip.hidden = !!(ui.batTip.dataset.id && ui.actIds.has(ui.batTip.dataset.id));
     if (acts.length) ui.actsSlot.appendChild(actionsBlock(acts));
   }
 
@@ -912,7 +971,11 @@
             K.el('span', { class: 'kz-side-sub' }, f.sub)))));
       c.appendChild(K.el('div', { class: 'kz-bat-body' }, main, side));
     }
-    if (r.tip) c.appendChild(K.el('div', { class: 'tip kz-tip', html: K.icon(r.tip.icon) }, K.el('p', null, r.tip.text)));
+    if (r.tip) {
+      ui.batTip = K.el('div', { class: 'tip kz-tip', html: K.icon(r.tip.icon), dataset: { id: r.tip.id || '' } }, K.el('p', null, r.tip.text));
+      ui.batTip.hidden = !!(r.tip.id && ui.actIds && ui.actIds.has(r.tip.id));
+      c.appendChild(ui.batTip);
+    }
     c.appendChild(cardFoot(step, 'Ver a bateria'));
     return c;
   }
@@ -975,7 +1038,7 @@
         afterMount.push(() => {
           const ch = K.charts.stack(box, {
             segments: r.cats.map((x) => ({ name: DIRT_SHORT[x.id] || x.titulo, value: x.sel, color: DIRT_COLOR[x.id] })),
-            total: r.found, restName: 'Pra você decidir', restColor: 'var(--panel)', restNote: 'app aberto ou vale olhar antes',
+            total: r.found, restName: 'Não marcado (você decide)', restColor: 'var(--panel)', restNote: 'app aberto ou vale olhar antes',
             format: (v) => K.fmt.bytes(v), height: 30,
             ariaLabel: 'Sujeira por tipo: o que já vem marcado e o que fica pra você decidir',
           });

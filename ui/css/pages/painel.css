@@ -180,6 +180,14 @@
 .pn-kpi-v.no-read { font-size: 17px; line-height: 1.75; }
 .pn-sn-v.no-read { font-size: 14px; line-height: 1.9; white-space: nowrap; }
 .pn-kv-sub { font-size: 12px; color: var(--ink-3); line-height: 1.2; }
+.pn-bat-24 { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 6px; border: 2.5px solid var(--ink); border-radius: var(--radius-sm); background: var(--card); }
+.pn-bat-24[hidden] { display: none; }
+.pn-bat-24 .pn-mini-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2px 8px; }
+.pn-bat-24 .pn-mini-title { font-size: 14px; }
+.pn-bat-key { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.pn-bat-key i { width: 16px; height: 8px; border-radius: 99px; border: 2px solid var(--ink); background: var(--gold); }
+.pn-bat-chart { min-height: 88px; }
+.pn-bat-chart .loading { padding: 20px 0; font-size: 14px; }
 .pn-bat-link { align-self: flex-start; margin-top: auto; }
 .pn-bat-link[hidden] { display: none; }
 .pn-bat-link svg { width: 17px; height: 17px; transition: transform .2s var(--ease); }
@@ -302,3 +310,5 @@
 
 /* modo foto (o .pop-in já é desligado em base.css): sem transições: com o relógio parado elas nunca chegam ao fim (o mascote ficava vazio) */
 .snap .page-painel *, .snap .page-painel *::before, .snap .page-painel *::after { transition: none !important; }
+
+.no-read-sub { color: var(--ink-3); }

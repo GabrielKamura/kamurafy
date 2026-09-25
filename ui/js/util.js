@@ -57,6 +57,36 @@ K.fmt = {
     const c = casas != null ? casas : (n >= 100 || i === 0 ? 0 : 1);
     return K.fmt.num(n, c) + ' ' + u[i];
   },
+  /**
+   * Memória em base 2, como o Monitor de Atividade e a Apple: 17179869184 → "16 GB" (com casas 0),
+   * 13.8e9 → "12,9 GB". Painel, Varredura, Otimizar e o balão usam esta mesma função, pra os
+   * números nunca se desencontrarem. Disco e arquivos continuam em K.fmt.bytes (base 10, como o Finder).
+   */
+  mem(v, casas) {
+    if (v == null || !isFinite(v)) return '—';
+    const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0, n = Math.abs(Number(v));
+    while (n >= 1000 && i < u.length - 1) { n /= 1024; i++; }
+    const c = casas != null ? casas : (i >= 3 && n < 100 ? 1 : 0);
+    return K.fmt.num(n, c) + ' ' + u[i];
+  },
+  /**
+   * Núcleos do processador, do mesmo jeito em todas as telas (system.now.cpu):
+   *   Intel i7 → "6 núcleos (12 linhas de execução)"; Apple M2 → "8 núcleos (4 de desempenho + 4 de eficiência)"
+   *   curto: "6 núcleos". Sem leitura: ''.
+   */
+  cores(c, curto) {
+    if (!c) return '';
+    const ok = (v) => (typeof v === 'number' && isFinite(v) && v > 0 ? v : null);
+    const lg = ok(c.cores), fis = ok(c.physicalCores), p = ok(c.performanceCores), e = ok(c.efficiencyCores);
+    const n = fis || (p && e ? p + e : null) || lg;
+    if (!n) return '';
+    const base = `${K.fmt.num(n)} ${n === 1 ? 'núcleo' : 'núcleos'}`;
+    if (curto) return base;
+    if (p && e) return `${base} (${K.fmt.num(p)} de desempenho + ${K.fmt.num(e)} de eficiência)`;
+    if (fis && lg && lg > fis) return `${base} (${K.fmt.num(lg)} linhas de execução)`;
+    return base;
+  },
   /** minutos → "48 min", "2 h 5 min" (espaço que não quebra: "min" nunca fica sozinho na linha) */
   mins(m) {
     if (m == null) return '—';
@@ -150,8 +180,54 @@ K.batStatusKey = function (b) {
   return s;
 };
 K.batStatus = (b) => K.batteryStatus[K.batStatusKey(b)];
+/**
+ * Na tomada, o macOS diz "não está carregando" mas ainda entra energia na bateria (ela está
+ * completando os últimos pontinhos devagar). Aí a tela diz "terminando de encher", nunca
+ * "descansando" com "5,5 W entrando" do lado: uma verdade só pra tela inteira.
+ */
+K.batTopping = (b) => !!b && !!b.pluggedIn && !b.isCharging && !b.fullyCharged
+  && typeof b.watts === 'number' && isFinite(b.watts) && b.watts > 0.3;
 /** Modelo é notebook? ("MacBook…"): aí "sem bateria" é bateria sem leitura, não Mac de mesa */
 K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.modelId)) || ''));
+
+/* ===== nomes de processos do macOS em português ===== */
+/**
+ * Processo solto (sem janela) com nome técnico → nome que dá pra entender, com o técnico entre
+ * parênteses. É a mesma tabela do Swift (Energy.friendly) e mais alguns que aparecem muito no
+ * Otimizar, pra Bateria, Varredura, balão e Otimizar falarem a mesma língua. Nome que o Swift já
+ * traduziu (ou que não está na tabela) passa como veio. Só pra processo: app tem nome próprio.
+ */
+K.procName = (function () {
+  const T = {
+    WindowServer: 'Tela e janelas (WindowServer)', kernel_task: 'Núcleo do macOS (kernel_task)',
+    mds: 'Spotlight (mds)', mds_stores: 'Spotlight (mds_stores)', mdworker: 'Spotlight (mdworker)',
+    mdworker_shared: 'Spotlight (mdworker)', corespotlightd: 'Spotlight (corespotlightd)', Spotlight: 'Spotlight',
+    coreaudiod: 'Som do sistema (coreaudiod)', deleted: 'Limpeza automática do macOS (deleted)',
+    bluetoothd: 'Bluetooth (bluetoothd)', backupd: 'Time Machine (backupd)', photoanalysisd: 'Fotos: análise (photoanalysisd)',
+    cloudd: 'iCloud (cloudd)', bird: 'iCloud Drive (bird)', softwareupdated: 'Atualização do macOS',
+    launchd: 'Sistema (launchd)', hidd: 'Teclado e trackpad (hidd)', TouchBarServer: 'Touch Bar',
+    coreduetd: 'Sugestões do sistema (coreduetd)', containermanagerd: 'Apps em contêiner (containermanagerd)',
+    trustd: 'Certificados (trustd)', nsurlsessiond: 'Downloads em segundo plano (nsurlsessiond)',
+    powerd: 'Energia (powerd)', tccd: 'Privacidade (tccd)', SystemUIServer: 'Barra de menus (SystemUIServer)',
+    'com.apple.WebKit.WebContent': 'Páginas da web (WebKit)', 'com.apple.WebKit.GPU': 'Páginas da web: vídeo (WebKit)',
+    'com.apple.WebKit.Networking': 'Páginas da web: rede (WebKit)', ContainerMetadataExtractor: 'Arquivos: leitura de metadados',
+    /* só aqui (ainda não estão no Swift) */
+    fontd: 'Fontes (fontd)', lsd: 'Abrir com (lsd)', launchservicesd: 'Abrir com (launchservicesd)',
+    runningboardd: 'Controle de apps (runningboardd)', swcd: 'Links de apps (swcd)', logd: 'Registros do sistema (logd)',
+    cfprefsd: 'Preferências (cfprefsd)', XProtectPluginService: 'Proteção contra vírus (XProtect)', XprotectService: 'Proteção contra vírus (XProtect)',
+    syspolicyd: 'Segurança de apps (syspolicyd)', opendirectoryd: 'Contas de usuário (opendirectoryd)', configd: 'Rede (configd)',
+    mDNSResponder: 'Rede: nomes (mDNSResponder)', airportd: 'Wi-Fi (airportd)', locationd: 'Localização (locationd)',
+    sharingd: 'AirDrop e Handoff (sharingd)', rapportd: 'Aparelhos por perto (rapportd)', loginwindow: 'Tela de entrada (loginwindow)',
+    ControlCenter: 'Central de Controle', NotificationCenter: 'Central de Notificações', UserEventAgent: 'Eventos do sistema (UserEventAgent)',
+    distnoted: 'Avisos internos (distnoted)', secd: 'Chaves (secd)', securityd: 'Chaves (securityd)', notifyd: 'Avisos internos (notifyd)',
+    thermalmonitord: 'Temperatura (thermalmonitord)', diskarbitrationd: 'Discos (diskarbitrationd)', fseventsd: 'Mudanças em arquivos (fseventsd)',
+    'com.apple.AppleUserHIDDrivers': 'Teclado e mouse (drivers HID)', WindowManager: 'Janelas (WindowManager)', universalaccessd: 'Acessibilidade (universalaccessd)',
+  };
+  return function (nome) {
+    const s = String(nome == null ? '' : nome).trim();
+    return Object.prototype.hasOwnProperty.call(T, s) ? T[s] : s;
+  };
+})();
 
 /* ===== quem gasta energia (battery.energyApps) → itens do gráfico de barras ===== */
 (function () {
@@ -176,7 +252,10 @@ K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.model
       if (!a || typeof a.power !== 'number' || !isFinite(a.power)) continue;
       let name = String(a.name || '').trim();
       if (!a.isApp && HELPERS.has(name.toLowerCase())) continue;
-      let note = a.isSelf ? 'este app' : a.isSystem ? 'do sistema' : a.isApp ? null : 'do sistema';
+      if (!a.isApp) name = K.procName(name);
+      /* app que a pessoa abriu (Terminal, Notas, Finder) é app, mesmo morando em /System/Applications:
+         "do sistema" fica só pro que roda escondido */
+      let note = a.isSelf ? 'este app' : a.isApp ? (a.isSystem ? 'app da Apple' : null) : 'do sistema';
       let key;
       const web = /^Conteúdo da Internet de (.+)$/i.exec(name) || /^(.+?) Web Content$/i.exec(name);
       if (web) { name = web[1].trim(); note = null; }
@@ -378,3 +457,78 @@ K.confirm = (function () {
   open.isOpen = () => !!cur;
   return open;
 })();
+
+/* ===== cartão de erro (o mesmo desenho em todas as telas) ===== */
+/**
+ * Quando uma leitura falha e a tela não tem o que mostrar: rosa, mascote preocupado, o motivo em
+ * português e o botão ouro "Tentar de novo" com a dica de quanto demora.
+ *   K.errorCard({
+ *     title: 'Não consegui listar os apps',
+ *     reason: 'o Swift não respondeu',       // o motivo (sem ponto final); vira "O motivo: …. Nada foi mexido."
+ *     text: 'Frase própria',                  // opcional: troca a frase inteira (ex.: telas que só leem)
+ *     retry: () => …, retryLabel: 'Tentar de novo', retryHint: 'Leva uns 8 segundos.',
+ *     compact: true,                          // opcional: sem mascote, pra caber dentro de um cartão
+ *     mascot: { pct: null, tone: 'none' },    // opcional: estado do mascote (bateria sem leitura = cinza)
+ *   })
+ * Devolve o nó (section.card.kerr); o mascote é montado junto e some com o nó.
+ */
+K.errorCard = function (o) {
+  o = o || {};
+  const reason = String(o.reason == null ? '' : o.reason).trim().replace(/[.!\s]+$/, '');
+  const text = o.text != null ? o.text : `O motivo: ${reason || 'erro desconhecido'}. Nada foi mexido.`;
+  const act = o.retry ? K.el('div', { class: 'kerr-act' },
+    K.el('button', { class: 'btn gold' + (o.compact ? ' small' : ''), type: 'button', html: K.icon('cycle'),
+      onclick: (e) => { if (K.sound) K.sound.plop(); o.retry(e); } }, o.retryLabel || 'Tentar de novo'),
+    o.retryHint ? K.el('span', { class: 'kerr-hint' }, o.retryHint) : null) : null;
+  const art = o.compact ? K.el('span', { class: 'head-ic crit kerr-ic', html: K.icon('alert') }) : K.el('div', { class: 'kerr-art', 'aria-hidden': 'true' });
+  const node = K.el('section', { class: 'card kerr' + (o.compact ? ' is-compact' : '') + (o.class ? ' ' + o.class : ''), role: 'alert' },
+    art,
+    K.el('div', { class: 'kerr-text' },
+      K.el(o.compact ? 'h3' : 'h2', null, o.title || 'Não consegui ler agora'),
+      K.el('p', null, text),
+      act));
+  if (!o.compact && K.mascot) {
+    /* o.mascot muda o estado (ex.: {pct: null, tone: 'none'} quando o que falhou foi a leitura da bateria) */
+    try { K.mascot(art, { size: o.mascotSize || 124, state: Object.assign({ pct: 62, tone: 'good', face: 'worried', label: 'Mascote do Kamurafy preocupado' }, o.mascot || {}) }); } catch (e) { /* sem mascote */ }
+  }
+  return node;
+};
+
+/* ===== foco que não se perde quando a tela se redesenha ===== */
+/**
+ * Roda paint() (que refaz parte da tela) e devolve o foco do teclado pro mesmo controle, se ele
+ * estava dentro de root. Acha o controle de novo pelo id, pelo data-fk ou pela posição entre os
+ * focáveis. Sem isso o foco cai no BODY e quem usa teclado ou leitor de tela perde o lugar.
+ */
+K.keepFocus = function (root, paint, fallback) {
+  const FOCUS = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"]), [id][tabindex="-1"]';
+  const a = document.activeElement;
+  const inside = !!(root && a && a !== document.body && root.contains(a));
+  let sel = null, idx = -1, sig = '';
+  if (inside) {
+    if (a.id) sel = '#' + (window.CSS && CSS.escape ? CSS.escape(a.id) : a.id);
+    else if (a.dataset && a.dataset.fk) sel = `[data-fk="${a.dataset.fk}"]`;
+    idx = K.$$(FOCUS, root).indexOf(a);
+    sig = a.tagName + '|' + (a.textContent || '').trim().slice(0, 40);
+  }
+  const r = paint();
+  if (inside) {
+    let t = sel ? root.querySelector(sel) : null;
+    /* pela posição, só se for o "mesmo" controle (mesma tag e mesmo texto) */
+    if (!t && idx >= 0) {
+      const c = K.$$(FOCUS, root)[idx];
+      if (c && c.tagName + '|' + (c.textContent || '').trim().slice(0, 40) === sig) t = c;
+    }
+    if (!t && fallback) t = root.querySelector(fallback);
+    if (t && t !== document.activeElement && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) { /* sem foco */ } }
+  }
+  return r;
+};
+
+/* ===== textos dos avisos (Bateria e Ajustes dizem igual) ===== */
+K.avisosTxt = {
+  carga: (lim) => `Me avisa quando chegar em ${lim}%`,
+  cargaSub: 'Com o carregador ligado, aviso quando a carga passar do limite, uma vez por carga, pra você tirar da tomada se quiser. Parar antes do 100% ajuda a bateria a durar mais.',
+  quente: 'Me avisa se a bateria esquentar',
+  quenteSub: 'Se ela passar de 45 °C em duas leituras seguidas, eu te chamo. Só aviso de novo depois que ela esfriar.',
+};

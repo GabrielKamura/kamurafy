@@ -1,0 +1,292 @@
+/* Kamurafy — Ajustes (#/ajustes). Prefixo .aj-. Componentes da casa em components.css. */
+
+.page-ajustes { padding-bottom: 12px; }
+
+/* ---------- cabeçalho ---------- */
+.aj-head { align-items: flex-end; }
+.aj-head-side { flex: none; display: flex; align-items: center; min-height: 36px; padding-bottom: 4px; }
+.aj-saved[hidden] { display: none; }
+.aj-saved .status { box-shadow: var(--shadow-xs); }
+@keyframes aj-bump { 0% { transform: scale(.7) rotate(-6deg); } 60% { transform: scale(1.08) rotate(2deg); } 100% { transform: none; } }
+.aj-saved.aj-bump { animation: aj-bump .35s var(--bounce); }
+
+.aj-loadfail { margin: -8px 0 22px; }
+
+/* ---------- grade: duas colunas em janela larga, uma na estreita ---------- */
+.aj-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
+.aj-col { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+@media (min-width: 1140px) {
+  .aj-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aj-wide { grid-column: 1 / -1; }
+}
+
+/* ---------- cartões ---------- */
+.aj-card { padding: 20px 22px 18px; }
+.aj-chead { align-items: flex-start; margin-bottom: 6px; }
+.aj-chead-main { min-width: 0; display: flex; align-items: flex-start; gap: 12px; }
+.aj-chead-t { min-width: 0; padding-top: 4px; }
+.aj-chead .card-sub { margin-top: 3px; }
+
+.aj-setting { padding: 14px 0; align-items: flex-start; }
+.aj-setting > .switch, .aj-setting > .aj-ctl { margin-top: 2px; }
+.aj-setting .setting-text { min-width: 0; }
+.aj-setting .setting-text > b { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-weight: 400; font-size: 17px; line-height: 1.2; }
+.aj-setting .setting-text > span { display: block; margin-top: 4px; line-height: 1.42; }
+.aj-setting .setting-text > b .status { font-size: 13px; padding: 1px 9px 1px 5px; border-width: 2px; color: var(--ink); }
+.aj-setting .setting-text > b .status svg { width: 15px; height: 15px; }
+.aj-setting.is-off .setting-text { opacity: .55; }
+.aj-card > .aj-setting:first-of-type, .aj-card > .card-head + .aj-setting { border-top: 0; }
+.aj-ctl { display: flex; align-items: center; gap: 10px; flex: none; }
+.aj-hear { padding-left: 10px; }
+.aj-hear svg { width: 15px; height: 15px; }
+
+.aj-note { margin: 12px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; }
+.aj-err { margin: 10px 0 0; padding: 8px 12px; border: 2px solid var(--st-crit); border-radius: 10px; background: var(--st-crit-soft); font-size: 14px; line-height: 1.4; }
+.aj-err[hidden] { display: none; }
+
+/* caixinha de recado (item de início, estados do macOS) */
+.aj-note-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+}
+.aj-note-box[hidden] { display: none; }
+.aj-note-box.warn { background: var(--st-warn-soft); }
+.aj-note-box p { flex: 1 1 220px; margin: 0; font-size: 14px; line-height: 1.42; }
+.aj-note-ic { display: grid; flex: none; margin-top: 1px; }
+.aj-note-ic svg { width: 20px; height: 20px; }
+.aj-note-box.warn .aj-note-ic { color: #b77800; }
+.aj-note-box .btn { margin-left: 30px; }
+
+/* ---------- barra de menus: prévia ---------- */
+.aj-mb-wrap { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 10px; }
+.aj-mb-l { font-size: 13px; color: var(--ink-3); }
+.aj-mb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  height: 36px;
+  padding: 0 14px 0 0;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fbfaf7, #efece5);
+  box-shadow: var(--shadow-xs);
+  font-size: 14px;
+  overflow: hidden;
+}
+/* os outros itens da barra somem num degradê à esquerda (só o nosso canto importa) */
+.aj-mb-fade {
+  flex: 1;
+  align-self: stretch;
+  background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(0, 0, 0, .09) 18px 52px, transparent 52px 70px) center / 100% 8px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 70%);
+  mask-image: linear-gradient(90deg, transparent, #000 70%);
+}
+.aj-mb-slot { position: relative; display: flex; align-items: center; }
+.aj-mb-ours {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--gold);
+  line-height: 1;
+}
+.aj-mb-ours.is-empty { background: transparent; border-style: dashed; border-color: var(--ink-3); color: var(--ink-3); }
+.aj-mb-none { font-size: 12.5px; }
+.aj-mb-bat { display: grid; }
+.aj-mb-bat svg { width: 27px; height: 17px; overflow: visible; }
+.aj-mb-shell { fill: none; stroke: var(--ink); stroke-width: 1.8; }
+.aj-mb-tip { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+.aj-mb-fill { fill: var(--ink); }
+.aj-mb-bolt { fill: var(--gold); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+.aj-mb-pct { font-size: 14px; }
+.aj-mb-ic { display: grid; color: var(--ink-2); }
+.aj-mb-ic svg { width: 17px; height: 17px; }
+.aj-mb-clock { color: var(--ink-2); white-space: nowrap; }
+/* etiqueta "Kamurafy" pendurada embaixo do nosso ícone */
+.aj-mb-pin[hidden] { display: none; }
+.aj-mb-pin {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) rotate(-4deg);
+  padding: 1px 8px 2px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--card);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.aj-mb-pin::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  background: var(--card);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* ---------- avisos ---------- */
+.aj-limrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 0 14px; transition: opacity .2s; }
+.aj-limrow.is-off { opacity: .45; }
+.aj-limrow-l { font-size: 14px; color: var(--ink-2); }
+.aj-lims { display: flex; gap: 8px; flex-wrap: wrap; }
+.aj-lim {
+  padding: 5px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  font-size: 15px;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: transform .12s var(--ease), box-shadow .12s var(--ease), background .15s;
+}
+.aj-lim:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.aj-lim:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+.aj-lim[aria-checked="true"] { background: var(--gold); }
+.aj-lim:disabled { cursor: not-allowed; }
+.aj-notif { flex-wrap: wrap; }
+.aj-notif .setting-text { flex: 1 1 240px; }
+.aj-notif-btns { flex-wrap: wrap; justify-content: flex-end; }
+.aj-avisos .aj-note { margin-top: 6px; }
+
+/* ---------- privacidade ---------- */
+.aj-priv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: 10px; }
+@media (min-width: 1140px) { .aj-priv { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; } }
+.aj-priv-lead { margin: 0 0 12px; font-size: 26px; line-height: 1.1; }
+.aj-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.aj-fact { display: flex; align-items: flex-start; gap: 12px; font-size: 14.5px; line-height: 1.42; color: var(--ink-2); }
+.aj-fact b { font-weight: 400; color: var(--ink); font-size: 15.5px; }
+.aj-fact-ic {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid var(--ink);
+  border-radius: 11px;
+  background: var(--st-good-soft);
+}
+.aj-fact-ic svg { width: 20px; height: 20px; }
+.aj-where { margin-top: 18px; }
+.aj-where-l { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-3); margin-bottom: 8px; }
+.aj-path {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  min-width: 0;
+}
+.aj-path-ic { display: grid; flex: none; color: var(--ink-2); }
+.aj-path-ic svg { width: 20px; height: 20px; }
+.aj-path-t { font-family: var(--font); font-size: 15px; overflow-wrap: anywhere; cursor: text; }
+.aj-where-list { margin: 10px 0 0; padding-left: 20px; font-size: 14px; color: var(--ink-2); line-height: 1.45; }
+.aj-where-list li + li { margin-top: 2px; }
+
+.aj-fda {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 18px 18px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, .07) 1.2px, transparent 1.6px) 0 0 / 12px 12px,
+    var(--gold-soft);
+}
+.aj-fda-head { display: flex; align-items: center; gap: 12px; }
+.aj-fda-head h3 { font-size: 21px; }
+.aj-fda-ic {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 13px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  transform: rotate(-4deg);
+}
+.aj-fda-ic svg { width: 26px; height: 26px; }
+.aj-fda-tag { font-size: 12px; padding: 1px 9px; background: var(--card); }
+.aj-fda-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 4px; }
+.aj-fda-pill:empty { display: none; }
+.aj-fda-pill .status { font-size: 13px; padding: 2px 10px 2px 6px; }
+.aj-fda-pill .status svg { width: 15px; height: 15px; }
+.aj-fda p { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
+.aj-fda .aj-fda-how { color: var(--ink); }
+.aj-fda-btn { margin-top: 4px; white-space: normal; text-align: left; line-height: 1.15; }
+.aj-fda .aj-err { align-self: stretch; }
+
+/* ---------- sobre: faixa com o mascote colado na borda do cartão ---------- */
+.aj-sobre { padding: 0; overflow: hidden; }
+.aj-about {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  align-items: stretch;
+}
+.aj-about-side { grid-column: 1 / -1; padding: 0 22px 20px; }
+@media (min-width: 1140px) {
+  .aj-about { grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1.25fr); }
+  .aj-about-side { grid-column: auto; padding: 20px 22px 20px 4px; }
+}
+.aj-about-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 190px;
+  border-right: var(--bw) solid var(--ink);
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, .09) 1.3px, transparent 1.7px) 0 0 / 13px 13px,
+    var(--gold);
+}
+@media (max-width: 1139px) { .aj-about-side { padding-top: 16px; border-top: var(--bw) solid var(--ink); } }
+.aj-about-mascot { width: 130px; transform: rotate(-5deg); }
+.aj-about-hi { position: absolute; top: 18px; right: 16px; font-size: 13px; background: var(--card); transform: rotate(7deg); }
+.aj-about-main { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px 22px; }
+.aj-about-main > .aj-where-l { margin-bottom: 0; }
+.aj-about-name { display: flex; align-items: center; gap: 10px; }
+.aj-about-logo { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ink); flex: none; }
+.aj-about-logo svg { width: 34px; height: 34px; }
+.aj-about-title { font-size: 34px; line-height: 1; }
+.aj-about-tags { gap: 8px; }
+.aj-ver { font-size: 14px; }
+.aj-devtag { font-size: 13px; color: var(--ink-3); padding: 1px 9px; border: 2px dashed var(--ink-3); border-radius: 99px; }
+.aj-about-lead { margin: 2px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--ink-2); }
+.aj-about-by { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; }
+.aj-about-by svg { width: 20px; height: 20px; color: var(--st-crit); fill: var(--pink); }
+
+.aj-credits { list-style: none; margin: 0; padding: 0; border: 2.5px solid var(--ink); border-radius: var(--radius-sm); overflow: hidden; }
+.aj-credit { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; background: var(--card); }
+.aj-credit + .aj-credit { border-top: 2px dashed var(--line); }
+.aj-credit-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.aj-credit-t b { font-weight: 400; font-size: 15.5px; }
+.aj-credit-t span { font-size: 13px; color: var(--ink-3); }
+.aj-lic { flex: none; font-size: 12.5px; padding: 1px 8px; border: 2px solid var(--ink); border-radius: 99px; background: var(--gold-soft); white-space: nowrap; }
+.aj-ext { flex: none; gap: 5px; padding: 5px 8px; font-size: 13.5px; }
+.aj-ext svg { width: 15px; height: 15px; }
+.aj-sobre .aj-note { font-size: 13px; }
+
+.snap .aj-saved.aj-bump { animation: none; }

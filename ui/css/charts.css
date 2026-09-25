@@ -185,7 +185,9 @@
 .ks-item {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  flex-wrap: wrap;           /* sem espaço: a nota desce de linha, o nome e o número nunca quebram no meio */
+  column-gap: 6px;
+  row-gap: 0;
   font-size: 14px;
   padding: 2px 8px 2px 4px;
   margin-left: -4px;
@@ -194,9 +196,9 @@
 }
 .ks-item.hot { background: var(--panel); }
 .ks-sw { width: 13px; height: 13px; border-radius: 4px; border: 2px solid var(--ink); align-self: center; flex: none; }
-.ks-name { color: var(--ink-2); }
-.ks-v { color: var(--ink); font-variant-numeric: tabular-nums; }
-.ks-p { color: var(--ink-3); font-size: 12px; }
+.ks-name { color: var(--ink-2); white-space: nowrap; }
+.ks-v { color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ks-p { color: var(--ink-3); font-size: 12px; white-space: nowrap; }
 .ks-note { color: var(--ink-3); font-size: 12px; }
 
 /* ================= anel ================= */
@@ -381,3 +383,6 @@
   .km, .km * { animation: none !important; }
 }
 .snap .km, .snap .km * { animation: none !important; }
+
+/* mostrador sem leitura: o texto de espera apagado no lugar do número */
+.kg .kg-val.no-read { font-size: 22px; line-height: 1.5; letter-spacing: 0; }

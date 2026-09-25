@@ -1,0 +1,181 @@
+/* Kamurafy — boas-vindas (K.boasVindas, ui/js/boasvindas.js). Prefixo kw-.
+   Um cartão grande no meio da janela: mascote à esquerda num painel dourado, o passo à direita. */
+
+.kw-back {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(20, 16, 8, .46);
+  animation: kmodal-fade .2s ease-out both;
+}
+.kw-back.out { animation: kmodal-fade .18s ease-in reverse both; }
+.kw {
+  position: relative;
+  width: min(820px, 100%);
+  max-height: calc(100vh - 56px);
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "art panel" "art foot";
+  background: var(--card);
+  border: var(--bw-thick) solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 10px 10px 0 var(--ink);
+  overflow: hidden;
+  animation: pop-in .36s var(--bounce) both;
+}
+.kw-art {
+  grid-area: art;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  border-right: var(--bw-thick) solid var(--ink);
+}
+.kw-art::before {
+  /* bolinhas de papel no fundo dourado */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 0, 0, .09) 1.5px, transparent 2px) 0 0 / 18px 18px;
+}
+.kw-mascot { position: relative; transform: rotate(-6deg); }
+.kw-spark {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--ink);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: float 3s ease-in-out infinite;
+}
+.kw-spark.s1 { top: 34px; left: 30px; }
+.kw-spark.s2 { top: 70px; right: 34px; width: 14px; height: 14px; animation-delay: -1s; }
+.kw-spark.s3 { bottom: 48px; left: 46px; width: 16px; height: 16px; animation-delay: -1.8s; }
+
+.kw-panel { grid-area: panel; min-height: 0; overflow: auto; padding: 28px 30px 8px 28px; display: flex; flex-direction: column; gap: 12px; }
+.kw-head { display: flex; align-items: flex-end; gap: 14px; }
+.kw-ic {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 16px;
+  background: var(--gold);
+  box-shadow: var(--shadow-xs);
+  transform: rotate(-4deg);
+}
+.kw-ic svg { width: 28px; height: 28px; }
+.kw-kicker { margin-bottom: 6px; font-size: 13px; }
+.kw-head h2 { font-size: 31px; line-height: 1.05; text-wrap: balance; }
+.kw-text { margin: 2px 0 0; font-size: 16.5px; line-height: 1.45; color: var(--ink-2); }
+.kw-body { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+
+.kw-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--gold-soft);
+}
+.kw-setting-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kw-setting-t b { font-weight: 600; font-size: 16.5px; }
+.kw-setting-t span { font-size: 13.5px; color: var(--ink-2); line-height: 1.35; }
+.kw-notif { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.kw-notif .loading { padding: 4px 0; font-size: 14px; }
+.kw-line { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.35; color: var(--ink-2); flex: 1; min-width: 220px; }
+.kw-line svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+.kw-line.good svg { color: var(--st-good); }
+.kw-line.warn svg { color: #b77800; }
+.kw-line.crit svg { color: var(--st-crit); }
+.kw-line.none svg { color: var(--ink-3); }
+.kw-msg:empty { display: none; }
+
+/* a barra de menus em miniatura (passo 2) */
+.kw-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 34px;
+  padding: 0 12px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 10px;
+  background: #f4f1ea;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.kw-bar-apple { width: 12px; height: 14px; border-radius: 6px 6px 7px 7px; background: var(--ink); }
+.kw-bar-gap { flex: 1; height: 6px; border-radius: 99px; background: repeating-linear-gradient(90deg, var(--line) 0 34px, transparent 34px 48px); }
+.kw-bar-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 5px;
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--gold);
+  box-shadow: var(--shadow-xs);
+  font-weight: 600;
+  transform: rotate(-3deg);
+}
+.kw-bar-me svg { width: 17px; height: 17px; }
+.kw-bar-clock { color: var(--ink-2); white-space: nowrap; }
+.kw-bar-arrow {
+  position: absolute;
+  right: 92px;
+  top: 34px;
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.kw-bar-arrow::before { content: "↑ "; }
+
+.kw-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.kw-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.kw-list svg { width: 19px; height: 19px; flex: none; margin-top: 1px; color: var(--ink); }
+.kw-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+.kw-hint { font-size: 13.5px; color: var(--ink-3); }
+
+.kw-foot {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 24px 20px 28px;
+  border-top: 2px dashed var(--line);
+}
+.kw-dots { display: flex; align-items: center; gap: 8px; }
+.kw-dot {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--card);
+  cursor: pointer;
+  transition: width .2s var(--ease), background .15s;
+}
+.kw-dot.on { width: 30px; border-radius: 99px; background: var(--gold); }
+.kw-count { margin-left: 6px; font-size: 13px; color: var(--ink-3); }
+.kw-acts { display: flex; align-items: center; gap: 10px; }
+.kw-acts [hidden] { display: none; }
+.kw-next .btn-ic { display: inline-grid; }
+.kw-next .btn-ic svg { width: 18px; height: 18px; }
+
+@media (max-width: 1100px), (max-height: 720px) {
+  .kw { grid-template-columns: 200px minmax(0, 1fr); }
+  .kw-mascot { transform: rotate(-6deg) scale(.85); }
+  .kw-head h2 { font-size: 27px; }
+  .kw-panel { padding: 22px 24px 6px 22px; gap: 10px; }
+  .kw-text { font-size: 15.5px; }
+}
+.snap .kw-back, .snap .kw { animation: none !important; }

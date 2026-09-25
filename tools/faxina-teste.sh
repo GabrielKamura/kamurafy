@@ -5,7 +5,7 @@
 # Depois:
 #   KAMURAFY_FAXINA_HOME=<pasta> build/dev/Kamurafy.app/Contents/MacOS/Kamurafy --seq '[["cleanup.scan",{"categoria":"caches"}],["cleanup.clean",{"ids":"$sel:0"}]]'
 #   KAMURAFY_FAXINA_HOME=<pasta> tools/foto.sh faxina build/fotos/faxina.png 1180x2400
-# A pasta <pasta>/../fora-da-caixa guarda arquivos que NUNCA podem sumir (conferir no fim).
+# A pasta <pasta>-fora guarda arquivos que NUNCA podem sumir (conferir no fim).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SB="${1:?uso: tools/faxina-teste.sh <pasta dentro de /private/tmp ou \$TMPDIR>}"
@@ -15,7 +15,7 @@ SB="$(cd "$SB" && pwd -P)"
 case "$SB" in /private/tmp/?*/?*|/private/var/folders/?*/?*) ;; *) echo "use uma pasta dentro de /private/tmp ou \$TMPDIR (ex.: /private/tmp/kamurafy-teste/caixa)" >&2; exit 1 ;; esac
 # só apaga o que já foi uma caixa de areia (tem a marca) ou está vazio
 if [ -n "$(ls -A "$SB")" ] && [ ! -f "$SB/.kamurafy-caixa" ]; then echo "$SB já tem coisas e não é uma caixa de areia: não vou apagar" >&2; exit 1; fi
-FORA="$(dirname "$SB")/fora-da-caixa"
+FORA="$SB-fora"   # um "fora" por caixa: uma caixa nunca apaga a prova de outra
 if [ -e "$FORA" ] && [ ! -f "$FORA/.kamurafy-caixa" ]; then echo "$FORA já existe e não é da caixa de areia: não vou apagar" >&2; exit 1; fi
 rm -rf "$SB" "$FORA"
 mkdir -p "$SB"/{Library/Caches,Library/Logs,Library/Developer/Xcode,.npm,.cache,Downloads,Documents,Desktop,Movies} "$FORA/importante"

@@ -370,7 +370,7 @@
 .kz-sum-art { width: 132px; transform: rotate(-4deg); }
 .kz-sum-text { min-width: 0; }
 .kz-when { background: var(--card); margin-bottom: 10px; }
-.kz-sum h1 { font-size: 44px; line-height: 1.02; margin: 0; font-weight: 400; text-wrap: balance; }
+.kz-sum h1 { font-size: 44px; line-height: 1.02; margin: 0; text-wrap: balance; }
 .kz-sum p { margin: 8px 0 0; font-size: 17px; max-width: 40em; }
 .kz-sum-act { margin-top: 16px; }
 /* botão preto sobre o ouro: sombra branca (a dourada sumiria no fundo) */
@@ -382,7 +382,8 @@
 /* o que dá pra fazer agora */
 .kz-acts { margin: -4px 0 30px; }
 .kz-acts-title { font-size: 24px; margin: 0 0 12px 2px; }
-.kz-acts-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+/* auto-fit: com 2 ou 3 ações a fileira ocupa a largura toda (sem coluna vazia no fim) */
+.kz-acts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 .kz-act {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -475,7 +476,9 @@
 .kz-fact svg { width: 18px; height: 18px; color: var(--ink); flex: none; }
 
 /* bateria em destaque */
-.kz-bat { grid-column: span 2; }
+/* não estica até a altura do vizinho (sem vão branco entre a dica e o botão) */
+.kz-bat { grid-column: span 2; align-self: start; }
+.kz-tip[hidden] { display: none; }
 .kz-wide { grid-column: span 2; }
 .kz-bat-compact { background: var(--panel); box-shadow: none; }
 .kz-bat-body {

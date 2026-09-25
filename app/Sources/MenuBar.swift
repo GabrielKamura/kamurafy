@@ -72,6 +72,7 @@ final class MenuBar: NSObject, NSPopoverDelegate {
 
     private func makePopover() -> NSPopover {
         let p = NSPopover()
+        p.appearance = NSAppearance(named: .aqua)   // a seta e a borda na cor do papel, mesmo no modo escuro
         p.behavior = .transient
         p.animates = true
         p.delegate = self
