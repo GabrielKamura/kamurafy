@@ -183,3 +183,44 @@ Kamurafy em si aparece com `isSelf: true`.
 - `memory.pressure`: normal | atencao | critica.
 - `disk.availableBytes` inclui o espaço que o macOS consegue liberar sozinho (purgeable).
   Bytes em base 10 (como o Finder): use `K.fmt.bytes`.
+
+## cleanup.* (Faxina)
+
+Regras (ver CLAUDE.md): a interface só manda **IDs** que o Swift devolveu numa varredura (o
+caminho nunca sai da interface); tudo vai pra Lixeira; apagar de vez exige `confirmado: true`
+e só vale pro que a Faxina mandou (ou esvaziar a Lixeira toda pelo Finder). IDs valem por 1 h
+e morrem ao serem limpos. No terminal (`--cmd`/`--seq`) e no modo foto, limpar só funciona com
+`KAMURAFY_FAXINA_HOME` (caixa de areia: pasta de mentira + "Lixeira" de mentira dentro dela;
+`tools/faxina-teste.sh <pasta>` monta uma com armadilhas).
+
+| comando | args | resposta |
+|---|---|---|
+| `cleanup.categories` | — | `[{id, titulo, descricao, precisaPermissao}]` — ids: `caches`, `dev`, `logs`, `sistema`, `downloads` |
+| `cleanup.scan` | `{categoria}` | `CleanCategory` (~1 s cada; `downloads` faz o macOS pedir permissão da pasta na 1ª vez) |
+| `cleanup.large` | `{minMB: 100}` | `{itens, bytes, incompleto, semAcesso, ms}` — Downloads, Mesa, Documentos, Filmes, Música, Imagens (até 40 s) |
+| `cleanup.duplicates` | `{minMB: 1}` | `{grupos: [{id, bytesCada, desperdicio, itens}], desperdicio, incompleto, semAcesso, ms}` (até ~60 s) |
+| `cleanup.clean` | `{ids: [...]}` | `{movidos: [{id, nome, bytes, lixeiraId}], falhas: [{id, nome, motivo}], bytes, caixaDeAreia}` |
+| `cleanup.moved` | — | `{itens: [{id, nome, categoria, original, bytes, t, naLixeira}], bytes, caixaDeAreia}` (mais novo primeiro) |
+| `cleanup.restore` | `{ids}` (ids de `moved`/`lixeiraId`) | `{ok, bytes, falhas}` — devolve ao lugar original |
+| `cleanup.purge` | `{ids?, confirmado: true}` | `{ok, bytes, falhas}` — apaga de vez o que a Faxina mandou (sem ids = tudo) |
+| `cleanup.trashInfo` | — | `{legivel, bytes?, itens?, daFaxina, caixaDeAreia}` (`legivel: false` = o macOS não deixou ver a Lixeira toda) |
+| `cleanup.emptyTrash` | `{confirmado: true}` | `{ok}` — pede ao Finder (o macOS pode perguntar sobre Automação na 1ª vez) |
+| `cleanup.reveal` | `{id}` | mostra o item no Finder |
+
+`CleanItem`:
+```json
+{ "id": "…", "categoria": "caches", "nome": "com.spotify.client", "caminho": "~/Library/Caches/com.spotify.client",
+  "bytes": 969900000, "arquivos": 812, "modificado": 1790300000, "usado": null,
+  "selecionado": true, "nota": "O app recria sozinho quando precisar.",
+  "app": "Spotify", "appAberto": false, "icon": "data:image/png;base64,…",
+  "tipo": null, "grupo": null, "semAcesso": false }
+```
+- `selecionado`: sugestão do Swift (cache de app fechado, logs, programação conhecida). Caches
+  do macOS, downloads, grandes e duplicados nunca vêm marcados.
+- `appAberto: true` → o Swift **recusa** limpar (a interface deve desabilitar e dizer "feche o app").
+- `tipo` (downloads/grandes/duplicados): `instalador` · `compactado` · `video` · `audio` ·
+  `imagem` · `documento` · `pasta` · `outro`.
+- Duplicados: o Swift recusa se o pedido deixaria um grupo sem nenhuma cópia; a interface
+  deve impedir marcar todas (sugestão: manter a mais antiga, que vem primeiro).
+- `nome`, `caminho` e `app` vêm de fora: só textContent.
+- Números: `bytes` é espaço em disco de verdade (alocado), base 10 no `K.fmt.bytes`.
