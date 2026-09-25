@@ -40,6 +40,7 @@
   /* séries dos gráficos (validadas pra daltonismo sobre #fff) */
   --s1: #2a78d6;             /* azul: carga, saúde */
   --s2: #eb6834;             /* laranja: energia, watts */
+  --s1-wash: #b5d0f1;        /* azul lavado (s1 a 35% sobre branco): coisa que o macOS devolve sozinho */
 
   /* traço cartunesco */
   --bw: 3px;                 /* borda padrão */
@@ -88,13 +89,17 @@ img { display: block; }
 /* ===== layout da janela ===== */
 .app {
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  /* sem isto a linha cresce até o tamanho do conteúdo e a .view nunca rola */
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
 }
 
 .main {
   position: relative;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--paper);
@@ -137,6 +142,7 @@ img { display: block; }
   padding: 52px 16px 16px;   /* espaço pros botões de fechar/minimizar da janela */
   gap: 6px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .brand {
@@ -150,11 +156,28 @@ img { display: block; }
 
 .nav { display: flex; flex-direction: column; gap: 4px; }
 .nav-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: #9ca3af;
+  flex-wrap: wrap;
+  row-gap: 5px;
   padding: 14px 12px 4px;
+  white-space: nowrap;
+}
+/* selo único "em breve" no rótulo da seção (em vez de um por item) */
+.nav-label .soon {
+  font-size: 10px;
+  letter-spacing: .3px;
+  text-transform: none;
+  padding: 0 7px 1px;
+  border: 1.5px solid #4b5563;
+  border-radius: 99px;
+  color: #9ca3af;
+  line-height: 1.4;
 }
 
 .nav-item {
@@ -182,18 +205,23 @@ img { display: block; }
   box-shadow: 4px 4px 0 #fff;
   transform: translate(-2px, -2px);
 }
-.nav-item .soon {
-  margin-left: auto;
-  font-size: 10px;
-  white-space: nowrap;
-  padding: 1px 6px;
-  border-radius: 99px;
-  border: 2px solid #4b5563;
-  color: #9ca3af;
-}
-.nav-item.active .soon { border-color: var(--ink); color: var(--ink); }
+.nav-item > span:not(.star) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* módulos que ainda não existem: esmaecidos, sem selo por item */
+.nav-item.is-soon { color: #9ca3af; }
+.nav-item.is-soon svg { opacity: .6; }
+.nav-item.is-soon.active { color: var(--ink); }
+.nav-item.is-soon.active svg { opacity: 1; }
 .nav-item .star { margin-left: auto; color: var(--gold); font-size: 16px; }
 .nav-item.active .star { color: var(--ink); }
+
+/* janela baixa (a mínima tem 660 px): menu mais justo pro rodapé caber inteiro */
+@media (max-height: 720px) {
+  .sidebar { padding-top: 46px; gap: 4px; }
+  .brand { padding-bottom: 12px; }
+  .nav { gap: 2px; }
+  .nav-item { padding-top: 8px; padding-bottom: 8px; }
+  .nav-label { padding-top: 10px; }
+}
 
 .sidebar-foot {
   margin-top: auto;
@@ -235,7 +263,7 @@ h3 { font-size: 19px; line-height: 1.15; }
   from { opacity: 0; transform: translateY(10px) scale(.97); }
   to { opacity: 1; transform: none; }
 }
-.pop-in { animation: pop-in .45s var(--bounce) both; }
+.pop-in { animation: pop-in .45s var(--bounce) backwards; }
 
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 .pulse { animation: pulse 1.8s ease-in-out infinite; }
@@ -252,5 +280,7 @@ h3 { font-size: 19px; line-height: 1.15; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* modo foto (testes): sem animação de entrada pra captura sair estável */
+/* modo foto (testes): a janela fica fora da vista e o relógio das animações para. Sem isto
+   tudo que entra com .pop-in ficaria preso no primeiro quadro (invisível). */
 .snap *, .snap *::before, .snap *::after { animation-delay: 0s !important; }
+.snap .pop-in { animation: none !important; }

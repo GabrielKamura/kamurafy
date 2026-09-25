@@ -57,21 +57,28 @@ K.fmt = {
     const c = casas != null ? casas : (n >= 100 || i === 0 ? 0 : 1);
     return K.fmt.num(n, c) + ' ' + u[i];
   },
-  /** minutos → "48 min", "2 h 5 min" */
+  /** minutos → "48 min", "2 h 5 min" (espaço que não quebra: "min" nunca fica sozinho na linha) */
   mins(m) {
     if (m == null) return '—';
     m = Math.round(m);
-    if (m < 60) return m + ' min';
+    if (m < 60) return m + '\u00a0min';
     const h = Math.floor(m / 60), r = m % 60;
-    return r ? `${h} h ${r} min` : `${h} h`;
+    return r ? `${h}\u00a0h\u00a0${r}\u00a0min` : `${h}\u00a0h`;
   },
   /** segundos → "2 dias e 3 h", "5 h 10 min" */
   duration(s) {
     if (s == null) return '—';
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
-    if (d > 0) return `${d} ${d === 1 ? 'dia' : 'dias'}${h ? ` e ${h} h` : ''}`;
-    if (h > 0) return `${h} h${m ? ` ${m} min` : ''}`;
-    return `${m} min`;
+    if (d > 0) return `${d}\u00a0${d === 1 ? 'dia' : 'dias'}${h ? ` e ${h}\u00a0h` : ''}`;
+    if (h > 0) return `${h}\u00a0h${m ? `\u00a0${m}\u00a0min` : ''}`;
+    return `${m}\u00a0min`;
+  },
+  /** segundos → número redondo pra estimativa: "~12 h", "~3 dias" (arredonda, não corta) */
+  roughDuration(s) {
+    if (s == null || !isFinite(s)) return '—';
+    if (s < 3600) return '~' + Math.max(1, Math.round(s / 60)) + '\u00a0min';
+    if (s < 48 * 3600) return '~' + Math.round(s / 3600) + '\u00a0h';
+    return '~' + Math.round(s / 86400) + '\u00a0dias';
   },
   /** Unix (s) → "24 set" */
   day(t) {
@@ -91,14 +98,32 @@ K.fmt = {
     const wd = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
     return `${wd}, ${K.fmt.time(t)}`;
   },
-  /** watts com sinal explicado: 7.7 → "7,7 W" */
+  /** watts sem sinal (o sentido vai em palavras, com K.fmt.flow): −14.2 → "14 W" */
   watts(w) {
     if (w == null) return '—';
     return K.fmt.num(Math.abs(w), Math.abs(w) < 10 ? 1 : 0) + ' W';
   },
+  /** energia da bateria em número + verbo: {value: "14 W", verb: "saindo da bateria", dir} */
+  flow(w, plugged) {
+    if (typeof w !== 'number' || !isFinite(w)) return null;
+    if (Math.abs(w) < 0.3) return { value: '0 W', verb: plugged ? 'a bateria está descansando' : 'quase nada saindo', dir: plugged ? 'direct' : 'idle' };
+    return w > 0 ? { value: K.fmt.watts(w), verb: 'entrando na bateria', dir: 'in' } : { value: K.fmt.watts(w), verb: 'saindo da bateria', dir: 'out' };
+  },
+  /** temperatura sem casa decimal (a casa seria precisão falsa): 30.9 → "31 °C" */
   temp(c) {
     if (c == null) return '—';
-    return K.fmt.num(c, 1) + ' °C';
+    return K.fmt.num(c, 0) + ' °C';
+  },
+  /** "MacBook Pro (16-inch, 2019)" → "MacBook Pro 16″ (2019)"; o resto passa como veio */
+  model(m) {
+    if (!m) return '';
+    const g = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(String(m));
+    if (!g) return String(m);
+    const parts = g[2].split(/\s*,\s*/).filter(Boolean);
+    const i = parts.findIndex((x) => /^\d+(?:[.,]\d+)?-inch$/i.test(x));
+    if (i < 0) return String(m);
+    const inch = parts.splice(i, 1)[0].replace(/-inch$/i, '').replace('.', ',');
+    return `${g[1]} ${inch}″${parts.length ? ` (${parts.join(', ')})` : ''}`;
   },
 };
 
@@ -109,13 +134,88 @@ K.batteryStatus = {
   'gasta': { label: 'Gasta', tone: 'serious', icon: 'alert' },
   'trocar': { label: 'Hora de trocar', tone: 'crit', icon: 'alert' },
   'sem-bateria': { label: 'Sem bateria', tone: 'warn', icon: 'plug' },
+  /* o Mac não mediu a saúde agora: não dá pra dizer que está saudável */
+  'desconhecida': { label: 'Sem leitura', tone: 'none', icon: 'info' },
 };
+
+/** Status que a interface mostra. Sem leitura de saúde, "saudavel" vira "desconhecida"
+    (o Swift antigo mandava "saudavel" mesmo sem medir). */
+K.batStatusKey = function (b) {
+  if (!b) return 'desconhecida';
+  if (b.present === false) return 'sem-bateria';
+  const hasHealth = typeof b.healthPct === 'number' && isFinite(b.healthPct);
+  const s = b.status;
+  if (!K.batteryStatus[s]) return 'desconhecida';
+  if (s === 'saudavel' && !hasHealth) return 'desconhecida';
+  return s;
+};
+K.batStatus = (b) => K.batteryStatus[K.batStatusKey(b)];
+/** Modelo é notebook? ("MacBook…"): aí "sem bateria" é bateria sem leitura, não Mac de mesa */
+K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.modelId)) || ''));
+
+/* ===== quem gasta energia (battery.energyApps) → itens do gráfico de barras ===== */
+(function () {
+  /* ferramentas que o próprio Kamurafy roda pra medir: só aparecem por causa dele */
+  const HELPERS = new Set(['top', 'pmset', 'ioreg', 'system_profiler', 'sysctl', 'vm_stat', 'df', 'powermetrics', 'ps']);
+  const ICON_BY_NAME = [
+    [/tela|janela|windowserver/i, 'screen'],
+    [/\bsom\b|áudio|audio/i, 'soundOn'],
+    [/icloud|nuvem|cloud|\bbird\b/i, 'cloud'],
+    [/spotlight|\bmds|índice|indexa/i, 'scan'],
+  ];
+  /**
+   * Limpa e junta a lista: tira as ferramentas de medição, soma o "Conteúdo da Internet de X"
+   * (processo de páginas web do app X) no próprio X, marca o Kamurafy como "este app" e troca
+   * nome que é só número de versão por "Processo sem nome". Texto continua indo por textContent.
+   *   K.energyItems(lista, {min: 0.1}) → [{label, value, icon, note, isApp}]
+   */
+  K.energyItems = function (list, o) {
+    const min = (o && o.min != null) ? o.min : 0.1;
+    const by = new Map();
+    for (const a of Array.isArray(list) ? list : []) {
+      if (!a || typeof a.power !== 'number' || !isFinite(a.power)) continue;
+      let name = String(a.name || '').trim();
+      if (!a.isApp && HELPERS.has(name.toLowerCase())) continue;
+      let note = a.isApp ? null : 'do sistema';
+      let key;
+      const web = /^Conteúdo da Internet de (.+)$/i.exec(name) || /^(.+?) Web Content$/i.exec(name);
+      if (web) { name = web[1].trim(); note = null; }
+      if (/^kamurafy$/i.test(name)) { name = 'Kamurafy'; note = 'este app'; key = 'kamurafy'; }
+      else if (!name || /^[\d.]+$/.test(name)) {
+        note = name ? `versão ${name}` : null;
+        key = 'pid:' + a.pid;
+        name = 'Processo sem nome';
+      } else key = name.toLowerCase();
+      const cur = by.get(key);
+      if (cur) {
+        cur.value += a.power;
+        if (a.isApp) { cur.isApp = true; if (cur.note === 'do sistema') cur.note = null; }
+        if (a.icon && !(typeof cur.icon === 'string' && cur.icon.indexOf('data:') === 0)) cur.icon = a.icon;
+        continue;
+      }
+      let icon = a.icon || null;
+      if (!icon) {
+        const hit = ICON_BY_NAME.find(([re]) => re.test(name));
+        icon = hit ? hit[1] : a.isApp || web ? 'apps' : 'cpu';
+      }
+      by.set(key, { label: name, value: a.power, icon, note, isApp: !!a.isApp || !!web });
+    }
+    return Array.from(by.values()).filter((x) => x.value >= min).sort((x, y) => y.value - x.value);
+  };
+})();
 
 /** Etiqueta de status (ícone + texto). tone: good | warn | serious | crit */
 K.statusPill = function (tone, text, iconName, big) {
   return K.el('span', { class: `status ${tone}${big ? ' big' : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
 };
 K.toneIcon = (tone) => ({ good: 'check', warn: 'eye', serious: 'alert', crit: 'alert' }[tone] || 'info');
+
+/** Valor que pode faltar: número formatado, ou "sem leitura" apagado (nunca um "—" preto). */
+K.readOr = function (node, v, fmt, missing) {
+  node.classList.toggle('no-read', v == null || (typeof v === 'number' && !isFinite(v)));
+  node.textContent = v == null || (typeof v === 'number' && !isFinite(v)) ? (missing || 'sem leitura') : fmt(v);
+  return node;
+};
 
 /** Anima um número de 0 até o valor (respeita reduzir movimento). */
 K.countUp = function (node, to, format, ms = 900) {

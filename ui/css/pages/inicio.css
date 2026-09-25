@@ -1,1 +1,576 @@
-/* página inicio: estilos próprios */
+/* Kamurafy — Varredura (rota "inicio"). Prefixo kz-. Três estados em .page-inicio[data-mode]:
+   idle (botão enorme), scanning (anel + passos), result (resumo + cartões). */
+
+.page-inicio {
+  --kz-orb: 320px;           /* área do botão com a órbita */
+  --kz-btn: 236px;           /* diâmetro do botão / anel */
+}
+
+/* ===================== cabeçalho ===================== */
+/* a faixa abaixo do cabeçalho é onde fica o balão do mascote */
+.kz-head { align-items: center; justify-content: flex-start; gap: 34px; margin-bottom: 70px; }
+.kz-head-text { min-width: 0; }
+.kz-hello { margin: 0 0 12px 2px; font-size: 16px; }
+.kz-head h1 { font-size: 48px; line-height: 1.02; }
+.kz-head h1 span { display: block; }
+.kz-head p { max-width: 36em; }
+
+/* ===================== palco: botão + lista ===================== */
+.kz-stage {
+  display: grid;
+  grid-template-columns: var(--kz-orb) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+}
+/* parado: o botão manda; a lista é só um lembrete leve do que vai ser conferido */
+.page-inicio[data-mode="idle"] .kz-stage { grid-template-columns: var(--kz-orb) minmax(0, 440px); gap: 64px; }
+.page-inicio[data-mode="idle"] .kz-list { box-shadow: none; border: 2px dashed var(--ink-3); background: transparent; padding: 10px 8px; }
+
+/* mascote no canto do botão, com balão de fala */
+.kz-orb-mascot {
+  position: absolute;
+  top: -10px;
+  right: -46px;
+  width: 120px;
+  transform: rotate(8deg);
+  z-index: 3;
+  pointer-events: none;
+}
+.kz-bubble {
+  position: absolute;
+  left: 30px;
+  bottom: calc(100% + 2px);
+  z-index: 4;
+  width: max-content;
+  max-width: 250px;
+  padding: 8px 14px 9px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow-xs);
+  font-size: 16px;
+  line-height: 1.2;
+  white-space: pre-line;
+  transform: rotate(-2deg);
+  transform-origin: 90% 100%;
+  animation: kz-bob 3.6s ease-in-out infinite;
+}
+.kz-bubble[hidden] { display: none; }
+/* rabinho apontando pro mascote (embaixo, à direita) */
+.kz-bubble::before, .kz-bubble::after { content: ""; position: absolute; width: 0; height: 0; border-style: solid; }
+.kz-bubble::before { right: 26px; bottom: -18px; border-width: 17px 4px 0 14px; border-color: var(--ink) transparent transparent transparent; transform: skewX(28deg); }
+.kz-bubble::after { right: 29px; bottom: -10px; border-width: 10px 2px 0 9px; border-color: var(--card) transparent transparent transparent; transform: skewX(28deg); }
+@keyframes kz-bob { 0%, 100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(-1deg) translateY(-3px); } }
+
+.kz-orb {
+  position: relative;
+  width: var(--kz-orb);
+  height: var(--kz-orb);
+  display: grid;
+  place-items: center;
+}
+.kz-orb > * { grid-area: 1 / 1; }
+
+.kz-orbit {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2.5px dashed var(--ink-3);
+  opacity: .5;
+  animation: spin 60s linear infinite;
+}
+.kz-halo {
+  width: var(--kz-btn);
+  height: var(--kz-btn);
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0;
+  animation: kz-halo 2.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes kz-halo {
+  0% { transform: scale(1); opacity: .5; }
+  80%, 100% { transform: scale(1.34); opacity: 0; }
+}
+
+/* brilhinhos em volta */
+.kz-spark {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  animation: kz-twinkle 2.8s ease-in-out infinite;
+}
+.kz-spark svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.kz-spark path { fill: var(--gold); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.kz-orb .kz-spark.s1 { top: 4%; right: 8%; }
+.kz-orb .kz-spark.s2 { bottom: 12%; left: 0; width: 18px; height: 18px; animation-delay: -1.1s; }
+.kz-orb .kz-spark.s3 { top: 24%; left: -2%; width: 14px; height: 14px; animation-delay: -1.9s; }
+@keyframes kz-twinkle {
+  0%, 100% { transform: scale(1) rotate(0); }
+  50% { transform: scale(.55) rotate(25deg); }
+}
+
+/* o botão */
+.kz-go-wrap {
+  position: relative;
+  width: var(--kz-btn);
+  height: var(--kz-btn);
+  animation: kz-pulse 2.2s ease-in-out infinite;
+}
+@keyframes kz-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+
+.kz-go {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 5px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .14s var(--ease), box-shadow .14s var(--ease);
+}
+.kz-go:hover { transform: translate(-3px, -3px); box-shadow: 11px 11px 0 var(--ink); }
+.kz-go:active { transform: translate(5px, 5px); box-shadow: 3px 3px 0 var(--ink); }
+.kz-go:focus-visible { outline-offset: 8px; }
+/* aro interno */
+.kz-go::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0, 0, 0, .14);
+  pointer-events: none;
+}
+/* faixa de brilho que passa de vez em quando */
+.kz-go::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .7), rgba(255, 255, 255, 0));
+  transform: translateX(-160%) skewX(-18deg);
+  animation: kz-sweep 4.2s ease-in-out 1.2s infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes kz-sweep {
+  0% { transform: translateX(-160%) skewX(-18deg); }
+  38%, 100% { transform: translateX(420%) skewX(-18deg); }
+}
+/* reflexo fixo no canto (como o do mascote) */
+.kz-go-shine { position: absolute; inset: 0; pointer-events: none; }
+.kz-go-shine svg { width: 100%; height: 100%; display: block; }
+.kz-go-shine path { fill: none; stroke: #fff; stroke-opacity: .9; stroke-width: 4.2; stroke-linecap: round; }
+.kz-go-shine circle { fill: #fff; fill-opacity: .9; }
+.kz-go-ic svg { width: 46px; height: 46px; display: block; stroke-width: 2.5; }
+.kz-go-label { font-size: 36px; line-height: 1; margin-top: 2px; }
+.kz-go-sub { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+
+/* o anel (aparece no lugar do botão) */
+.kz-ring-wrap {
+  position: relative;
+  width: var(--kz-btn);
+  height: var(--kz-btn);
+  display: none;
+}
+.kz-ring-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.kz-ring { position: relative; }
+.kz-ring .kr { margin: 0; }
+.kz-ring .kr-center { display: none; }
+/* o arco "trabalhando" vira um ponteiro fino de tinta girando no trilho (não confunde com o progresso) */
+.kz-ring .kr-spin { stroke: var(--ink) !important; stroke-width: 2.2px !important; opacity: .7; }
+.kz-ring-mid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.kz-ring-ic {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 20px;
+  background: var(--gold-soft);
+  box-shadow: var(--shadow-xs);
+}
+.kz-ring-ic svg { width: 36px; height: 36px; }
+.kz-ring-pct { font-size: 30px; line-height: 1; margin-top: 8px; }
+
+.kz-now {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%) rotate(-2deg);
+  padding: 5px 14px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-xs);
+  font-size: 16px;
+  white-space: nowrap;
+  display: none;
+}
+
+.kz-stage.is-scanning .kz-go-wrap,
+.kz-stage.is-scanning .kz-halo { display: none; }
+.kz-stage.is-scanning .kz-ring-wrap { display: block; animation: pop-in .4s var(--bounce) both; }
+.kz-stage.is-scanning .kz-now { display: block; }
+.kz-stage.is-scanning .kz-orbit { animation-duration: 9s; opacity: .7; }
+
+/* ===================== lista de passos ===================== */
+.kz-list {
+  min-width: 0;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 14px 12px;
+}
+.kz-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 8px 8px 8px;
+}
+.kz-list-head b {
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.kz-count { font-size: 14px; color: var(--ink-2); }
+
+.kz-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kz-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 54px;
+  padding: 6px 16px 6px 7px;
+  border: var(--bw) solid transparent;
+  border-radius: 18px;
+  transition: background .2s, border-color .2s, box-shadow .2s var(--ease), transform .2s var(--ease), opacity .25s;
+}
+.kz-bub {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 50%;
+  background: var(--gold-soft);
+}
+.kz-bub svg { width: 23px; height: 23px; }
+.kz-step-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.kz-step-text b { font-weight: 400; font-size: 19px; line-height: 1.1; }
+.kz-desc { font-size: 14px; color: var(--ink-2); line-height: 1.25; }
+.kz-snip {
+  flex: none;
+  max-width: 48%;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kz-step[data-state="wait"] { opacity: .45; }
+.kz-step[data-state="on"] {
+  background: var(--card);
+  border-color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  transform: translate(-2px, -2px);
+}
+.kz-step[data-state="on"] .kz-bub { background: var(--gold); }
+.kz-step[data-state="on"] .kz-bub::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--ink);
+  border-right-color: var(--ink);
+  animation: spin .8s linear infinite;
+}
+.kz-step[data-state="on"] .kz-desc { color: var(--ink); }
+.kz-step[data-state="done"] .kz-bub, .kz-step[data-state="err"] .kz-bub { background: var(--card); }
+.kz-bub.t-good { background: var(--st-good-soft) !important; }
+.kz-bub.t-good svg { color: var(--st-good); }
+.kz-bub.t-warn { background: var(--st-warn-soft) !important; }
+.kz-bub.t-warn svg { color: #b77800; }
+.kz-bub.t-serious { background: var(--st-serious-soft) !important; }
+.kz-bub.t-serious svg { color: #c2521f; }
+.kz-bub.t-crit { background: var(--st-crit-soft) !important; }
+.kz-bub.t-crit svg { color: var(--st-crit); }
+.kz-bub.t-none { background: var(--panel) !important; }
+.kz-bub.t-none svg { color: var(--ink-2); }
+
+.kz-bump { animation: kz-bump .45s var(--bounce); }
+@keyframes kz-bump { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* ===================== faixa do Mac ===================== */
+.kz-mac {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 26px 0 0;
+  padding-top: 14px;
+  border-top: 2px dashed var(--line);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.kz-mac svg { width: 18px; height: 18px; color: var(--ink-2); }
+.kz-mac-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--ink-3); opacity: .6; }
+
+/* ===================== resultado ===================== */
+.kz-sum {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  padding: 22px 30px 24px 24px;
+  margin: 4px 0 28px;
+}
+.kz-sum-art { width: 132px; transform: rotate(-4deg); }
+.kz-sum-text { min-width: 0; }
+.kz-when { background: var(--card); margin-bottom: 10px; }
+.kz-sum h1 { font-size: 44px; line-height: 1.02; margin: 0; font-weight: 400; text-wrap: balance; }
+.kz-sum p { margin: 8px 0 0; font-size: 17px; max-width: 40em; }
+.kz-sum-act { margin-top: 16px; }
+/* botão preto sobre o ouro: sombra branca (a dourada sumiria no fundo) */
+.kz-sum .btn.ink { box-shadow: 4px 4px 0 #fff; }
+.kz-sum .btn.ink:hover { box-shadow: 6px 6px 0 #fff; }
+.kz-sum .btn.ink:active { box-shadow: 1px 1px 0 #fff; }
+.kz-sum.is-fail { background: var(--gold-soft); }
+
+/* o que dá pra fazer agora */
+.kz-acts { margin: -4px 0 30px; }
+.kz-acts-title { font-size: 24px; margin: 0 0 12px 2px; }
+.kz-acts-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.kz-act {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "ic text" "btn btn";
+  grid-template-rows: auto 1fr;
+  column-gap: 12px;
+  row-gap: 10px;
+  align-items: start;
+  padding: 14px 16px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+.kz-act > .head-ic { grid-area: ic; }
+.kz-act-text { grid-area: text; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.kz-act-text b { font-weight: 400; font-size: 17px; line-height: 1.2; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.kz-act-text b .status { font-size: 13px; padding: 1px 9px 1px 5px; border-width: 2px; }
+.kz-act-text b .status svg { width: 15px; height: 15px; }
+.kz-act-text span { font-size: 14px; color: var(--ink-2); line-height: 1.35; }
+.kz-act > .btn { grid-area: btn; justify-self: start; align-self: end; }
+.kz-act .btn-ic svg { width: 16px; height: 16px; }
+.kz-sum .kz-spark path { fill: #fff; }
+.kz-sum .kz-spark.s1 { top: 16px; right: 34px; width: 30px; height: 30px; }
+.kz-sum .kz-spark.s2 { top: 58px; right: 84px; width: 16px; height: 16px; animation-delay: -1s; }
+.kz-sum .kz-spark.s3 { bottom: 22px; right: 46px; width: 20px; height: 20px; animation-delay: -1.8s; }
+.kz-sum .kz-spark.s4 { bottom: 18px; left: 150px; width: 14px; height: 14px; animation-delay: -.6s; }
+
+.kz-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row dense;    /* cartão com problema vem primeiro sem deixar buraco */
+  gap: 24px;
+}
+.kz-res {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kz-res-head { display: flex; align-items: center; gap: 12px; }
+.kz-res-title { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+.kz-res-title h2 { font-size: 24px; line-height: 1; }
+/* figurinha "olhe aqui" nos cartões que pedem atenção */
+.kz-look { position: absolute; top: -14px; right: 18px; transform: rotate(4deg); font-size: 14px; z-index: 2; }
+.btn-ic { display: inline-grid; }
+.kz-res-foot .btn-ic svg, .kz-fax .btn-ic svg { width: 17px; height: 17px; }
+.kz-res-title .status { font-size: 14px; padding: 2px 10px 2px 6px; }
+.kz-res-title .status svg { width: 16px; height: 16px; }
+
+.kz-res-kicker { font-size: 14px; color: var(--ink-2); margin-bottom: -6px; }
+.kz-res-say { margin: 0; font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.kz-note { margin: -4px 0 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+.kz-res-foot {
+  margin-top: auto;
+  padding-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.kz-val-row { display: flex; flex-direction: column; gap: 2px; }
+.kz-val { font-size: 34px; line-height: 1.05; }
+.kz-val-sub { font-size: 14px; color: var(--ink-2); }
+.kz-val.no-read { font-size: 22px; }
+.kz-side-val.no-read { font-size: 15px; }
+
+.kz-meter { position: relative; }
+.kz-meter .meter { height: 16px; }
+.kz-meter .meter-fill.s1 { background: var(--s1); }
+.kz-mark {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 26px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.kz-mark-label {
+  position: absolute;
+  top: 24px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.kz-facts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--ink-2); }
+.kz-fact { display: inline-flex; align-items: center; gap: 6px; }
+.kz-fact svg { width: 18px; height: 18px; color: var(--ink); flex: none; }
+
+/* bateria em destaque */
+.kz-bat { grid-column: span 2; }
+.kz-wide { grid-column: span 2; }
+.kz-bat-compact { background: var(--panel); box-shadow: none; }
+.kz-bat-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(170px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.kz-bat-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding-top: 4px; }
+.kz-bat-main .kz-meter { margin-bottom: 12px; }
+.kz-bat-side {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 20px;
+  border-left: 2px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kz-bat-side li { display: flex; align-items: flex-start; gap: 10px; }
+.kz-side-ic {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  background: var(--panel);
+}
+.kz-side-ic svg { width: 18px; height: 18px; }
+.kz-side-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.kz-side-lab { font-size: 12.5px; color: var(--ink-3); }
+.kz-side-val { font-size: 20px; }
+.kz-side-sub { font-size: 13px; color: var(--ink-2); }
+.kz-hero-row { display: flex; align-items: flex-end; gap: 12px; }
+.kz-hero { font-size: 62px; line-height: .9; letter-spacing: -1px; }
+.kz-hero-lab { display: flex; flex-direction: column; font-size: 19px; line-height: 1.1; padding-bottom: 4px; }
+.kz-hero-lab small { font-size: 13px; color: var(--ink-3); }
+.kz-hero-none { font-size: 26px; line-height: 1.1; color: var(--ink-2); }
+.kz-tip { padding: 10px 12px; }
+.kz-tip p { font-size: 14px; }
+
+/* energia */
+.kz-bars { min-height: 40px; }
+.kz-bars .kb-name { font-size: 14px; }
+
+/* faxina: gancho do que vem aí */
+.kz-fax {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  background: var(--panel);
+  border-style: dashed;
+  box-shadow: none;
+}
+.kz-fax .head-ic { background: var(--card); box-shadow: none; }
+.kz-fax-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.kz-fax-title { display: flex; align-items: center; gap: 12px; }
+.kz-fax-title h2 { font-size: 24px; }
+.kz-soon { font-size: 13px; padding: 2px 10px; }
+
+/* ===================== tamanhos ===================== */
+@media (max-width: 1100px) {
+  .kz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kz-stage { gap: 30px; }
+  .page-inicio[data-mode="idle"] .kz-stage { gap: 48px; }
+  .kz-head h1 { font-size: 44px; }
+}
+@media (max-height: 760px) {
+  .page-inicio { --kz-orb: 270px; --kz-btn: 200px; }
+  .kz-head { margin-bottom: 62px; }
+  .kz-orb-mascot { width: 100px; right: -40px; }
+  .kz-bubble { font-size: 15px; left: 14px; }
+  .kz-stage { gap: 34px; }
+  .kz-steps { gap: 3px; }
+  .kz-step { padding-top: 3px; padding-bottom: 3px; }
+  .kz-bub { width: 38px; height: 38px; }
+  .kz-bub svg { width: 21px; height: 21px; }
+  .kz-step-text b { font-size: 18px; }
+  .kz-list-head { margin-bottom: 6px; }
+  .kz-head h1 { font-size: 42px; }
+  .kz-hello { margin-bottom: 8px; }
+  .kz-go-ic svg { width: 40px; height: 40px; }
+  .kz-go-label { font-size: 32px; }
+  .kz-ring-ic { width: 54px; height: 54px; border-radius: 17px; }
+  .kz-ring-ic svg { width: 30px; height: 30px; }
+  .kz-ring-pct { font-size: 26px; }
+  .kz-step { min-height: 46px; }
+  .kz-mac { margin-top: 16px; padding-top: 12px; }
+}
+
+/* modo foto: sem animação de entrada nem transição (o relógio para com a janela escondida) */
+.snap .page-inicio .meter-fill,
+.snap .page-inicio [class*="kz-"],
+.snap .page-inicio [class*="kz-"]::before,
+.snap .page-inicio [class*="kz-"]::after { animation: none !important; transition: none !important; }

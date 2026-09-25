@@ -1,0 +1,86 @@
+/* Kamurafy — galeria de componentes (#/galeria, só pra testes). */
+
+.page-galeria { padding-bottom: 40px; }
+
+.gal-nav { display: flex; flex-wrap: wrap; gap: 10px; margin: -8px 0 30px; }
+
+.gal-sec { margin-bottom: 44px; scroll-margin-top: 16px; }
+.gal-sec-head { margin-bottom: 16px; }
+.gal-sec-head h2 { font-size: 30px; }
+.gal-sec-head p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+.gal-sec > .card + .card, .gal-sec > .card + .grid, .gal-sec > .grid + .grid, .gal-sec > .grid + .card { margin-top: 22px; }
+
+.gal-head { align-items: flex-start; }
+.gal-tag {
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  padding: 3px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--gold-soft);
+  white-space: nowrap;
+}
+.gal-card { display: flex; flex-direction: column; }
+.gal-box { min-width: 0; }
+
+/* mascote: todos os estados */
+.gal-mascots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 26px 18px;
+  padding-top: 6px;
+}
+.gal-m { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.gal-m-art { height: 118px; display: flex; align-items: flex-end; justify-content: center; }
+.gal-m figcaption { display: flex; flex-direction: column; gap: 2px; }
+.gal-m figcaption b { font-weight: 400; font-size: 16px; }
+.gal-m figcaption span { font-size: 13px; color: var(--ink-3); }
+
+.gal-sizes { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 28px 34px; padding: 10px 0 4px; }
+.gal-size { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.gal-size figcaption { font-size: 13px; color: var(--ink-3); }
+
+/* brinquedo */
+.gal-play { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 28px; align-items: center; }
+.gal-play-art { display: flex; justify-content: center; padding: 20px 0 10px; }
+.gal-ctl { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.gal-ctl-row { display: flex; align-items: center; gap: 14px; }
+.gal-ctl-row.top { align-items: flex-start; }
+.gal-ctl-row > span:first-child { width: 58px; flex: none; color: var(--ink-2); font-size: 15px; }
+.gal-ctl-v { width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
+.gal-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.gal-chip[aria-pressed="true"] { background: var(--gold); }
+.gal-ctl .setting { padding: 8px 0; }
+
+.gal-range { flex: 1; min-width: 0; -webkit-appearance: none; appearance: none; height: 18px; background: transparent; }
+.gal-range::-webkit-slider-runnable-track { height: 12px; border: var(--bw) solid var(--ink); border-radius: 99px; background: var(--panel); }
+.gal-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; height: 24px;
+  margin-top: -9px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: var(--shadow-xs);
+  cursor: grab;
+}
+
+/* anéis pequenos lado a lado */
+.gal-rings { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; padding-top: 8px; }
+.gal-ring { width: 84px; }
+
+/* cartões de número com minilinha */
+.gal-tile { display: flex; flex-direction: column; }
+.gal-spark { margin-top: 12px; }
+
+/* dados reais */
+.gal-real-m { display: flex; justify-content: center; padding: 8px 0 4px; min-height: 150px; align-items: flex-end; }
+.gal-real-t { text-align: center; color: var(--ink-2); font-size: 14px; margin-top: 10px; justify-content: center; }
+
+@media (max-width: 1100px) {
+  .gal-grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 980px) {
+  .gal-play { grid-template-columns: 1fr; }
+}

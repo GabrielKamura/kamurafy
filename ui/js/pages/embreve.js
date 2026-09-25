@@ -1,15 +1,53 @@
-/* Kamurafy — tela provisória dos módulos que ainda vão chegar. */
+/* Kamurafy — tela provisória dos módulos que ainda vão chegar: o que ele vai fazer e como
+   (sem prometer data nem milagre). */
 'use strict';
 
-K.pages.embreve = {
-  async render(el, ctx) {
-    const r = (ctx && ctx.route) || { label: 'Em breve', icon: 'sparkle' };
-    el.appendChild(K.el('header', { class: 'page-head', 'data-drag': true },
-      K.el('div', null, K.el('h1', null, r.label), K.el('p', null, 'Esse módulo está sendo construído.'))));
-    el.appendChild(K.el('div', { class: 'card soon-card pop-in' },
-      K.el('div', { class: 'soon-icon float', html: K.icon(r.icon || 'sparkle') }),
-      K.el('h2', null, 'Chega na próxima versão'),
-      K.el('p', { class: 'soft' }, 'Enquanto isso, dá uma olhada na saúde da sua bateria.'),
-      K.el('button', { class: 'btn gold', html: K.icon('battery'), onclick: () => { location.hash = '#/bateria'; } }, 'Ver bateria')));
-  },
-};
+(function () {
+  const WHAT = {
+    faxina: {
+      title: 'Faxina com você no controle',
+      text: 'Vou achar caches velhos, downloads esquecidos e restos de apps. Mostro tudo antes, você marca, e só vai pra Lixeira o que você escolher.',
+      bits: ['Mostra antes de mexer', 'Só vai pra Lixeira', 'Nada de sistema'],
+    },
+    otimizar: {
+      title: 'Otimizar sem mágica',
+      text: 'Vou mostrar o que abre sozinho quando o Mac liga e o que fica rodando escondido. Você decide o que desligar, e nada muda sem você confirmar.',
+      bits: ['Itens de início', 'Apps em segundo plano', 'Você confirma tudo'],
+    },
+    desinstalar: {
+      title: 'Desinstalar de verdade',
+      text: 'Vou tirar o app junto com as sobras que ele espalha pelo Mac. Tudo vai pra Lixeira, então dá pra voltar atrás se mudar de ideia.',
+      bits: ['App + sobras', 'Vai pra Lixeira', 'Dá pra desfazer'],
+    },
+  };
+
+  let mascot = null;
+
+  K.pages.embreve = {
+    async render(el, ctx) {
+      const r = (ctx && ctx.route) || { id: '', label: 'Em breve', icon: 'sparkle' };
+      const w = WHAT[r.id] || { title: 'Chega numa próxima versão', text: 'Esse módulo está sendo construído.', bits: [] };
+      el.appendChild(K.el('header', { class: 'page-head', 'data-drag': true },
+        K.el('div', null, K.el('h1', null, r.label), K.el('p', null, 'Chega numa próxima versão do Kamurafy.'))));
+
+      const art = K.el('div', { class: 'soon-art' });
+      const mBox = K.el('div', { class: 'soon-mascot' });
+      art.append(mBox, K.el('span', { class: 'soon-icon', html: K.icon(r.icon || 'sparkle') }));
+      el.appendChild(K.el('section', { class: 'card soon-card pop-in' },
+        art,
+        K.el('div', { class: 'soon-text' },
+          K.el('span', { class: 'sticker soon-tag' }, 'em breve'),
+          K.el('h2', null, w.title),
+          K.el('p', null, w.text),
+          w.bits.length ? K.el('ul', { class: 'soon-bits' }, w.bits.map((b) => K.el('li', { html: K.icon('check') }, b))) : null,
+          K.el('p', { class: 'soft soon-meanwhile' }, 'Enquanto isso, a bateria já está toda aqui.'),
+          K.el('button', { class: 'btn gold', type: 'button', onclick: () => { K.sound.plop(); location.hash = '#/bateria'; } },
+            'Ver a bateria', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })))));
+      mascot = K.mascot(mBox, { size: 170, state: { pct: 70, tone: 'good', face: 'happy', label: 'Mascote do Kamurafy, animado com o que vem aí' } });
+    },
+    destroy() {
+      if (mascot) { try { mascot.destroy(); } catch (e) { /* já foi */ } }
+      mascot = null;
+    },
+  };
+})();

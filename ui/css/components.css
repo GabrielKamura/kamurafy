@@ -26,7 +26,7 @@
 }
 .card.flat { box-shadow: none; }
 .card.gold { background: var(--gold); }
-.card.ink { background: var(--ink); color: #fff; box-shadow: var(--shadow) var(--gold); }
+.card.ink { background: var(--ink); color: #fff; box-shadow: 6px 6px 0 var(--gold); }
 .card.panel { background: var(--panel); box-shadow: none; }
 .card-head {
   display: flex;
@@ -38,6 +38,28 @@
 .card-head h2, .card-head h3 { display: flex; align-items: center; gap: 10px; }
 .card-head svg { width: 26px; height: 26px; flex: none; }
 .card-sub { color: var(--ink-2); font-size: 14px; margin-top: 2px; }
+
+/* ícone do título de cartão: o mesmo em todas as telas (sem giro, ouro, 40px) */
+.head-ic {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 12px;
+  background: var(--gold);
+  box-shadow: var(--shadow-xs);
+  transition: background .3s;
+}
+.head-ic svg { width: 24px !important; height: 24px !important; }
+.head-ic.good { background: var(--st-good-soft); }
+.head-ic.warn { background: var(--st-warn-soft); }
+.head-ic.serious { background: var(--st-serious-soft); }
+.head-ic.crit { background: var(--st-crit-soft); }
+.head-ic.none { background: var(--panel); }
+.head-ic.s1 { background: #dbe9fa; }
+.head-ic.s2 { background: #fde3d7; }
 
 /* ===== botões ===== */
 .btn {
@@ -61,7 +83,9 @@
 .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: var(--shadow-xs); }
 .btn.gold { background: var(--gold); }
-.btn.ink { background: var(--ink); color: #fff; box-shadow: var(--shadow-sm) var(--gold); }
+.btn.ink { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--gold); }
+.btn.ink:hover { box-shadow: 6px 6px 0 var(--gold); }
+.btn.ink:active { box-shadow: 1px 1px 0 var(--gold); }
 .btn.small { padding: 6px 12px; font-size: 14px; box-shadow: var(--shadow-xs); }
 .btn.small:hover { box-shadow: 3px 3px 0 var(--ink); }
 .btn.ghost { background: transparent; box-shadow: none; border-color: transparent; }
@@ -89,6 +113,8 @@
 .status.serious svg { color: #c2521f; }
 .status.crit { background: var(--st-crit-soft); }
 .status.crit svg { color: var(--st-crit); }
+.status.none { background: var(--panel); }
+.status.none svg { color: var(--ink-2); }
 .status.big { font-size: 20px; padding: 6px 16px 6px 10px; box-shadow: var(--shadow-sm); }
 .status.big svg { width: 24px; height: 24px; }
 
@@ -103,6 +129,51 @@
   transform: rotate(-3deg);
   font-size: 14px;
 }
+
+/* selo "Ao vivo" (Bateria e Painel): bolinha verde piscando; .paused / .stale / .off */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 14px 6px 11px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  font-size: 15px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.live-badge[hidden] { display: none; }
+.live-dot {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--st-good);
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--st-good);
+  opacity: 0;
+  animation: live-ping 2s ease-out infinite;
+}
+@keyframes live-ping {
+  0% { transform: scale(.45); opacity: .9; }
+  80%, 100% { transform: scale(1.25); opacity: 0; }
+}
+.live-badge.paused .live-dot, .live-badge.off .live-dot { background: var(--ink-3); }
+.live-badge.stale .live-dot { background: var(--st-warn); }
+.live-badge.paused .live-dot::after, .live-badge.off .live-dot::after, .live-badge.stale .live-dot::after { display: none; }
+.snap .live-dot::after { display: none; }
+
+/* valor que o Mac não informou: "sem leitura" apagado, nunca um travessão preto */
+.no-read { color: var(--ink-3); font-size: .62em; letter-spacing: 0; }
 
 /* ===== número em destaque ===== */
 .stat-label { font-size: 14px; color: var(--ink-2); }

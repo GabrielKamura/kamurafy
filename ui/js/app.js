@@ -8,7 +8,7 @@
     { id: 'inicio', label: 'Varredura', icon: 'scan' },
     { id: 'bateria', label: 'Bateria', icon: 'battery', star: true },
     { id: 'painel', label: 'Painel', icon: 'gauge' },
-    { section: 'Limpeza e cuidado' },
+    { section: 'Limpeza e cuidado', soon: true },
     { id: 'faxina', label: 'Faxina', icon: 'broom', soon: true },
     { id: 'otimizar', label: 'Otimizar', icon: 'rocket', soon: true },
     { id: 'desinstalar', label: 'Desinstalar', icon: 'box', soon: true },
@@ -17,6 +17,8 @@
 
   let current = null;
   let readySent = false;
+  /* versão pra distribuir: esconde os módulos que ainda não existem (a casca diz com app.version.publico) */
+  let publico = false;
 
   function routeFromHash() {
     const id = (location.hash || '').replace(/^#\/?/, '').split('?')[0];
@@ -32,19 +34,25 @@
     const nav = K.el('nav', { class: 'nav', 'aria-label': 'Seções' });
     for (const r of ROUTES) {
       if (r.hidden) continue;
-      if (r.section) { nav.appendChild(K.el('div', { class: 'nav-label' }, r.section)); continue; }
+      if (publico && r.soon) continue;
+      if (r.section) {
+        /* um selo só pra seção inteira, em vez de um "em breve" em cada item */
+        nav.appendChild(K.el('div', { class: 'nav-label' }, r.section, r.soon ? K.el('span', { class: 'soon' }, 'em breve') : null));
+        continue;
+      }
       const item = K.el('button', {
-        class: 'nav-item', dataset: { route: r.id }, html: K.icon(r.icon),
+        class: 'nav-item' + (r.soon ? ' is-soon' : ''), dataset: { route: r.id }, html: K.icon(r.icon),
+        title: r.soon ? `${r.label}: chega numa próxima versão` : null,
         onclick: () => { if (location.hash !== '#/' + r.id) { K.sound.plop(); location.hash = '#/' + r.id; } },
       }, K.el('span', null, r.label));
       if (r.star) item.appendChild(K.el('span', { class: 'star', html: K.icon('star') }));
-      if (r.soon) item.appendChild(K.el('span', { class: 'soon' }, 'em breve'));
       nav.appendChild(item);
     }
     side.appendChild(nav);
 
     const foot = K.el('div', { class: 'sidebar-foot' });
-    foot.appendChild(K.el('div', { id: 'side-battery', class: 'side-battery' }));
+    foot.appendChild(K.el('div', { id: 'side-battery', class: 'side-battery', role: 'button', tabindex: 0, 'aria-label': 'Ver a bateria' },
+      K.el('span', { class: 'side-bat-wait' }, 'Lendo a bateria…')));
     const soundBtn = K.el('button', { class: 'nav-item side-sound', id: 'side-sound', onclick: toggleSound });
     foot.appendChild(soundBtn);
     side.appendChild(foot);
@@ -70,20 +78,33 @@
   async function paintSideBattery() {
     const box = K.$('#side-battery');
     if (!box) return;
+    const open = () => { if (location.hash !== '#/bateria') { K.sound.plop(); location.hash = '#/bateria'; } };
+    box.onclick = open;
+    box.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
     try {
       const b = await K.cached('battery.now', null, 5000);
       box.innerHTML = '';
-      if (!b.present) { box.appendChild(K.el('span', { class: 'muted' }, 'Sem bateria')); return; }
-      const st = K.batteryStatus[b.status] || K.batteryStatus['saudavel'];
+      if (!b || !b.present) {
+        const info = await K.cached('battery.info', null, 600000).catch(() => null);
+        const laptop = K.isLaptop(info);
+        box.innerHTML = '';
+        box.appendChild(K.el('div', { class: 'side-bat-row' },
+          K.el('span', { class: 'side-bat-icon', html: K.icon(laptop ? 'battery' : 'plug') }), K.el('span', { class: 'side-bat-word' }, laptop ? 'Sem leitura' : 'Sem bateria')));
+        box.appendChild(K.el('div', { class: 'side-bat-sub' }, laptop ? 'Não achei a bateria' : 'Mac de mesa'));
+        return;
+      }
+      const st = K.batStatus(b);
       box.appendChild(K.el('div', { class: 'side-bat-row' },
         K.el('span', { class: 'side-bat-icon', html: K.icon(b.pluggedIn ? 'bolt' : 'battery') }),
-        K.el('span', { class: 'side-bat-pct' }, K.fmt.pct(b.percent, 0)),
+        K.el('span', { class: 'side-bat-pct' }, b.percent != null ? K.fmt.pct(b.percent, 0) : '—'),
         K.el('span', { class: `side-bat-dot ${st.tone}`, title: st.label })));
       box.appendChild(K.el('div', { class: 'side-bat-sub' },
-        b.healthPct != null ? `Saúde ${K.fmt.pct(b.healthPct)} · ${st.label}` : st.label));
-      box.onclick = () => { location.hash = '#/bateria'; };
+        b.healthPct != null ? `Saúde ${K.fmt.pct(b.healthPct)} · ${st.label}` : 'Saúde sem leitura agora'));
     } catch (e) {
-      box.textContent = '';
+      box.innerHTML = '';
+      box.appendChild(K.el('div', { class: 'side-bat-row' },
+        K.el('span', { class: 'side-bat-icon', html: K.icon('battery') }), K.el('span', { class: 'side-bat-word' }, 'Sem leitura')));
+      box.appendChild(K.el('div', { class: 'side-bat-sub' }, 'Tento de novo em 30 s'));
     }
   }
 
@@ -164,6 +185,7 @@
       const s = await K.settings.load();
       K.sound.enabled = s.som && !document.documentElement.classList.contains('snap');
     } catch (e) { console.warn('settings:', e.message); }
+    try { const v = await K.api('app.version'); publico = !!(v && v.publico); } catch (e) { /* sem versão: mostra tudo */ }
     buildSidebar();
     setupDrag();
     paintSideBattery();
