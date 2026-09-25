@@ -12,6 +12,7 @@
     { id: 'faxina', label: 'Faxina', icon: 'broom', soon: true },
     { id: 'otimizar', label: 'Otimizar', icon: 'rocket', soon: true },
     { id: 'desinstalar', label: 'Desinstalar', icon: 'box', soon: true },
+    { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true },  // só pra testes
   ];
 
   let current = null;
@@ -30,6 +31,7 @@
 
     const nav = K.el('nav', { class: 'nav', 'aria-label': 'Seções' });
     for (const r of ROUTES) {
+      if (r.hidden) continue;
       if (r.section) { nav.appendChild(K.el('div', { class: 'nav-label' }, r.section)); continue; }
       const item = K.el('button', {
         class: 'nav-item', dataset: { route: r.id }, html: K.icon(r.icon),
