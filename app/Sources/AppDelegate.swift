@@ -56,7 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
             DispatchQueue.main.asyncAfter(deadline: .now() + 25, execute: w)
         } else {
             Notifier.shared.setup()
+            Sampler.shared.onReading = { b in MenuBar.shared.update(b) }
             Sampler.shared.start()
+            if Settings.current.iconeNaBarra { MenuBar.shared.install() }
             NSApp.activate(ignoringOtherApps: true)
         }
     }
@@ -68,9 +70,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         return true
     }
 
-    func showWindow() {
+    func showWindow(route: String? = nil) {
+        if NSApp.activationPolicy() != .regular { NSApp.setActivationPolicy(.regular) }
+        if let r = route, r.range(of: #"^[a-z0-9-]+(\?[a-z0-9=&-]*)?$"#, options: .regularExpression) != nil {
+            web.evaluateJavaScript("location.hash = '#/\(r)'; void 0")
+        }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        // "só na barra": sem janela, o Kamurafy some do Dock e fica no ícone da bateria
+        let s = Settings.current
+        if snapshot == nil, s.soNaBarra, s.iconeNaBarra { NSApp.setActivationPolicy(.accessory) }
     }
 
     // MARK: janela

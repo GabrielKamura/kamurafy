@@ -124,6 +124,8 @@ enum Energy {
         return unsafeBitCast(sym, to: RespPid.self)
     }()
 
+    static func responsible(_ pid: pid_t) -> pid_t? { responsiblePid(pid) }
+
     private static func responsiblePid(_ pid: pid_t) -> pid_t? {
         guard let f = respPid else { return nil }
         let r = f(pid)

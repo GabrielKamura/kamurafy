@@ -70,6 +70,9 @@ enum Commands {
         SystemModule.register(r)
         NotifyModule.register(r)
         CleanupModule.register(r)
+        OptimizeModule.register(r)
+        UninstallModule.register(r)
+        MenuBarModule.register(r)
     }
 }
 

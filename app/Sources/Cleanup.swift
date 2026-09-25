@@ -1,15 +1,16 @@
 import AppKit
 
-// Faxina: regras duras (CLAUDE.md) —
+// Faxina: regras duras —
 //  1. nada sai sem o usuário ver a lista e confirmar;
-//  2. tudo vai pra Lixeira (trashItem); apagar de vez só o que a Faxina mandou pra lá, ou
+//  2. tudo vai pra Lixeira (com desfazer); apagar de vez só o que a Faxina mandou pra lá, ou
 //     esvaziar a Lixeira pelo Finder, sempre com confirmação;
 //  3. a interface só manda IDs de itens que o próprio Swift achou numa varredura; o caminho
 //     nunca vem da interface;
-//  4. antes de mexer, o Swift confere de novo: mesmo arquivo (fileResourceIdentifier), mesma
-//     pasta permitida depois de resolver links simbólicos, dentro da pasta do usuário, sem
-//     trocar de volume, sem link simbólico no próprio item;
-//  5. sem sudo, sem nada fora da pasta do usuário.
+//  4. mover e apagar é feito por descritor (SafeFS): pasta aberta sem seguir links, item
+//     conferido pelo inode antes e depois, pasta de passagem com nome sorteado;
+//  5. pastas permitidas existem exatamente no lugar esperado, sem link nenhum no caminho;
+//  6. uma operação que mexe em arquivo por vez (trava única);
+//  7. sem sudo, sem nada fora da pasta do usuário (fora a pasta Aplicativos, no Desinstalar).
 
 struct CleanItem: Codable {
     var id: String
@@ -18,16 +19,18 @@ struct CleanItem: Codable {
     var caminho: String          // pra mostrar, com ~ no lugar da pasta do usuário
     var bytes: Int64             // espaço em disco de verdade (alocado)
     var arquivos: Int
-    var modificado: Double?      // Unix (s)
+    var modificado: Double?      // Unix (s): a data mais recente lá dentro
     var usado: Double?           // último uso segundo o Spotlight, quando existe
     var selecionado: Bool        // já vem marcado
     var nota: String?
     var app: String?             // app dono (caches)
     var appAberto: Bool
     var icon: String?            // data URL do ícone do app dono
-    var tipo: String?            // downloads/grandes: instalador | compactado | video | audio | imagem | documento | pasta | outro
+    var tipo: String?            // downloads/grandes: instalador | imagem-disco | app | compactado | video | audio | imagem | documento | pasta | outro
     var grupo: String?           // duplicados
-    var semAcesso: Bool          // o macOS não deixou ler (falta Acesso Total ao Disco)
+    var semAcesso: Bool          // o macOS não deixou ler nada (falta Acesso Total ao Disco)
+    var parcial: Bool? = nil     // leu só uma parte (o tamanho é mínimo)
+    var vinculo: String? = nil   // duplicados: "clone" (divide o espaço) | "link" (mesmo arquivo com outro nome)
 }
 
 struct CleanCategory: Codable {
@@ -40,6 +43,7 @@ struct CleanCategory: Codable {
     var semAcesso: Int
     var incompleto: Bool         // passou do tempo limite; os números são mínimos
     var ms: Int
+    var aviso: String? = nil     // ex.: a pasta não está onde devia (virou atalho) e ficou de fora
 }
 
 struct CategoryInfo: Codable {
@@ -57,7 +61,10 @@ struct MovedItem: Codable {
     var lixeira: String          // onde ficou na Lixeira
     var bytes: Int64
     var t: Double
-    var fileID: String?          // identidade do item já na Lixeira (pra apagar de vez com segurança)
+    var fileID: String?          // (versões antigas) identidade pelo Foundation
+    var dev: Int32? = nil        // identidade de verdade (disco + inode) do item na Lixeira
+    var ino: UInt64? = nil
+    var root: String? = nil      // pasta permitida de onde saiu (o desfazer só volta pra dentro dela)
 }
 
 enum RunMode {
@@ -70,14 +77,19 @@ enum RunMode {
 enum CleanEnv {
     static let fm = FileManager.default
 
-    /// Nos testes (build dev), KAMURAFY_FAXINA_HOME aponta pra uma pasta de mentira e a
-    /// "Lixeira" vira uma pasta dentro dela: nada do usuário é tocado.
+    /// Nos testes (build dev), KAMURAFY_FAXINA_HOME aponta pra uma pasta de mentira, dentro de
+    /// uma pasta temporária, e a "Lixeira" vira uma pasta dentro dela: nada do usuário é tocado.
     static let sandbox: URL? = {
         #if KAMURAFY_DEV
         if let h = ProcessInfo.processInfo.environment["KAMURAFY_FAXINA_HOME"], !h.isEmpty {
             let u = URL(fileURLWithPath: h, isDirectory: true)
             try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
-            return CleanGuard.real(u)
+            let r = CleanGuard.real(u)
+            guard r.path.hasPrefix("/private/tmp/") || r.path.hasPrefix("/private/var/folders/") else {
+                fputs("KAMURAFY_FAXINA_HOME precisa ser uma pasta temporária (/private/tmp ou /private/var/folders)\n", stderr)
+                exit(64)
+            }
+            return r
         }
         #endif
         return nil
@@ -87,25 +99,30 @@ enum CleanEnv {
         sandbox ?? CleanGuard.real(fm.homeDirectoryForCurrentUser)
     }
 
+    static var sandboxTrash: String? {
+        guard let s = sandbox else { return nil }
+        let t = s.appendingPathComponent(".Lixeira-de-teste", isDirectory: true)
+        try? fm.createDirectory(at: t, withIntermediateDirectories: true)
+        return CleanGuard.real(t).path
+    }
+
     static var trashDir: URL {
-        if let s = sandbox {
-            let t = s.appendingPathComponent(".Lixeira-de-teste", isDirectory: true)
-            try? fm.createDirectory(at: t, withIntermediateDirectories: true)
-            return t
-        }
+        if let t = sandboxTrash { return URL(fileURLWithPath: t, isDirectory: true) }
         let t = (try? fm.url(for: .trashDirectory, in: .userDomainMask, appropriateFor: home, create: false))
             ?? home.appendingPathComponent(".Trash", isDirectory: true)
         return CleanGuard.real(t)
     }
 
     /// Mover/apagar só vale no app de verdade (usuário clicando) ou na caixa de areia.
-    /// No terminal (--cmd) e no modo foto, só com KAMURAFY_FAXINA_HOME.
+    /// No terminal (--cmd/--seq) e no modo foto, só com KAMURAFY_FAXINA_HOME.
     static var destructiveAllowed: Bool {
         sandbox != nil || RunMode.current == .app
     }
 
-    static func display(_ url: URL) -> String {
-        let p = url.path, h = home.path
+    static func display(_ url: URL) -> String { display(url.path) }
+
+    static func display(_ p: String) -> String {
+        let h = home.path
         if p == h { return "~" }
         if p.hasPrefix(h + "/") { return "~" + p.dropFirst(h.count) }
         return p
@@ -113,23 +130,35 @@ enum CleanEnv {
 
     static func sub(_ rel: String) -> URL { home.appendingPathComponent(rel) }
 
-    /// Pasta permitida já resolvida (realpath); se não existir, fica o caminho literal.
-    static func root(_ rel: String) -> URL { CleanGuard.real(sub(rel)) }
+    /// Pasta permitida: tem que existir exatamente em home/rel, sem nenhum link no caminho e
+    /// no mesmo disco da pasta do usuário. Se alguém trocou ~/Library/Caches por um atalho, a
+    /// categoria fica de fora (nil) em vez de varrer o destino do atalho.
+    static func root(_ rel: String) -> URL? {
+        let lit = home.path + "/" + rel
+        guard SafeFS.isLiteralDir(lit),
+              let d = SafeFS.lstatInfo(lit)?.ident.dev, d == SafeFS.lstatInfo(home.path)?.ident.dev else { return nil }
+        return URL(fileURLWithPath: lit, isDirectory: true)
+    }
 }
 
 // MARK: - registro dos itens achados (a interface só conhece os IDs)
 
 final class CleanRegistry {
     static let shared = CleanRegistry()
+    static let lifetime: TimeInterval = 3600
 
     struct Entry {
         var item: CleanItem
-        var url: URL
-        var root: URL            // pasta permitida (já resolvida) em que o item foi achado
-        var directChild: Bool    // o item precisa ser filho direto de root
-        var fileID: String?
-        var device: Int?
-        var groupMembers: [String]
+        var parent: String           // pasta onde o item está (caminho real)
+        var name: String
+        var root: String             // pasta permitida em que foi achado
+        var ident: SafeFS.Ident
+        var size: Int64              // tamanho lógico (arquivos) na varredura
+        var mtimeNs: Int64
+        var groupMembers: [String] = []
+        var hash: String? = nil      // duplicados: SHA-256 do conteúdo na varredura
+        var owners: [String] = []    // prefixos de bundle id dos apps donos (pra checar "aberto")
+        var url: URL { URL(fileURLWithPath: parent).appendingPathComponent(name) }
     }
 
     private let lock = NSLock()
@@ -140,15 +169,16 @@ final class CleanRegistry {
         lock.lock(); defer { lock.unlock() }
         entries[e.item.id] = e
         createdAt[e.item.id] = Date()
-        // itens de varreduras com mais de 1 h não valem mais (limpa de vez em quando)
-        if entries.count % 256 == 0 {
-            let old = Date().addingTimeInterval(-3600)
-            for (k, d) in createdAt where d < old { entries[k] = nil; createdAt[k] = nil }
-        }
+        if entries.count % 256 == 0 { prune() }
     }
 
+    /// Vale por 1 hora; depois disso a lista da tela está velha demais pra confiar.
     func get(_ id: String) -> Entry? {
         lock.lock(); defer { lock.unlock() }
+        guard let d = createdAt[id], Date().timeIntervalSince(d) < CleanRegistry.lifetime else {
+            entries[id] = nil; createdAt[id] = nil
+            return nil
+        }
         return entries[id]
     }
 
@@ -157,72 +187,64 @@ final class CleanRegistry {
         entries[id] = nil
         createdAt[id] = nil
     }
+
+    private func prune() {
+        let old = Date().addingTimeInterval(-CleanRegistry.lifetime)
+        for (k, d) in createdAt where d < old { entries[k] = nil; createdAt[k] = nil }
+    }
 }
 
-// MARK: - conferências de segurança
+// MARK: - conferências
 
 enum CleanGuard {
-    /// Caminho canônico de verdade (realpath): resolve links simbólicos sem o atalho do
-    /// URL.resolvingSymlinksInPath, que troca /private/var por /var e bagunça as comparações.
+    /// Caminho canônico (realpath). URL.resolvingSymlinksInPath troca /private/var por /var e
+    /// standardizedFileURL depende de o arquivo existir: nenhum dos dois serve pra comparar.
     static func real(_ url: URL) -> URL {
-        guard let p = realpath(url.path, nil) else { return url.standardizedFileURL }
+        guard let p = realpath(url.path, nil) else { return URL(fileURLWithPath: url.path) }
         defer { free(p) }
         return URL(fileURLWithPath: String(cString: p), isDirectory: url.hasDirectoryPath)
     }
 
-    static func fileID(_ url: URL) -> String? {
-        guard let v = try? url.resourceValues(forKeys: [.fileResourceIdentifierKey]),
-              let id = v.fileResourceIdentifier else { return nil }
-        return String(describing: id)
-    }
+    static func exists(_ url: URL) -> Bool { SafeFS.lstatInfo(url.path) != nil }
+    static func isSymlink(_ url: URL) -> Bool { SafeFS.lstatInfo(url.path)?.isLink ?? false }
+    static func device(_ url: URL) -> Int? { SafeFS.lstatInfo(url.path).map { Int($0.ident.dev) } }
 
-    static func device(_ url: URL) -> Int? {
-        var st = stat()
-        guard lstat(url.path, &st) == 0 else { return nil }
-        return Int(st.st_dev)
-    }
-
-    static func isSymlink(_ url: URL) -> Bool {
-        var st = stat()
-        guard lstat(url.path, &st) == 0 else { return false }
-        return (st.st_mode & S_IFMT) == S_IFLNK
-    }
-
-    static func exists(_ url: URL) -> Bool {
-        var st = stat()
-        return lstat(url.path, &st) == 0
-    }
-
-    /// `child` está dentro de `root` (os dois já resolvidos, comparando componentes).
-    static func inside(_ child: URL, _ root: URL) -> Bool {
-        let c = child.standardizedFileURL.pathComponents
-        let r = root.standardizedFileURL.pathComponents
+    /// `child` está dentro de `root`, comparando só o texto dos caminhos (já resolvidos).
+    static func inside(_ child: String, _ root: String) -> Bool {
+        let c = (child as NSString).pathComponents, r = (root as NSString).pathComponents
         return c.count > r.count && Array(c.prefix(r.count)) == r
     }
 
-    /// Caminho do item com a pasta-mãe resolvida (links simbólicos do caminho) e o último
-    /// componente intacto (o item em si nunca é seguido).
+    static func inside(_ child: URL, _ root: URL) -> Bool { inside(child.path, root.path) }
+
+    /// Pasta-mãe resolvida + o último componente intacto (o item em si nunca é seguido).
     static func resolvedPath(_ url: URL) -> URL {
         real(url.deletingLastPathComponent()).appendingPathComponent(url.lastPathComponent)
     }
 
+    /// Identidade atual lida na hora (lstat), sem cache nenhum.
+    static func sameAsScan(_ e: CleanRegistry.Entry) -> Bool {
+        guard let now = SafeFS.lstatInfo(e.url.path), !now.isLink else { return false }
+        if now.ident != e.ident { return false }
+        if !now.isDir && (now.size != e.size || now.mtimeNs != e.mtimeNs) { return false }
+        return true
+    }
+
     enum Failure: Error { case reason(String) }
 
-    /// Tudo que precisa ser verdade pra mandar um item pra Lixeira.
+    /// Conferência de antes (a definitiva acontece no SafeFS, por descritor).
     static func check(_ e: CleanRegistry.Entry) throws {
-        let home = CleanEnv.home
-        let real = resolvedPath(e.url)
-        guard exists(e.url) else { throw Failure.reason("não existe mais") }
-        guard !isSymlink(e.url) else { throw Failure.reason("virou um link simbólico") }
+        let home = CleanEnv.home.path
         guard inside(e.root, home) || e.root == home else { throw Failure.reason("pasta fora da pasta do usuário") }
-        guard inside(real, e.root) else { throw Failure.reason("saiu da pasta permitida") }
-        if e.directChild, real.deletingLastPathComponent().path != e.root.path {
-            throw Failure.reason("mudou de lugar")
+        guard e.parent == e.root || inside(e.parent, e.root) else { throw Failure.reason("saiu da pasta permitida") }
+        guard SafeFS.isLiteralDir(e.root) else { throw Failure.reason("a pasta mudou (virou atalho ou sumiu)") }
+        guard let now = SafeFS.lstatInfo(e.url.path) else { throw Failure.reason("não existe mais") }
+        guard !now.isLink else { throw Failure.reason("virou um link simbólico") }
+        guard now.ident == e.ident else { throw Failure.reason("mudou desde a varredura") }
+        guard let rootDev = SafeFS.lstatInfo(e.root)?.ident.dev, rootDev == now.ident.dev else {
+            throw Failure.reason("está em outro disco")
         }
-        guard real.lastPathComponent == e.url.lastPathComponent else { throw Failure.reason("mudou de nome") }
-        guard let now = fileID(e.url), now == e.fileID else { throw Failure.reason("mudou desde a varredura") }
-        if let d = e.device, device(e.url) != d { throw Failure.reason("está em outro disco") }
-        guard real.path != home.path else { throw Failure.reason("é a pasta do usuário") }
+        guard e.url.path != home else { throw Failure.reason("é a pasta do usuário") }
     }
 }
 
@@ -238,6 +260,8 @@ struct CleanResult: Codable {
 }
 
 enum Cleanup {
+    /// Uma operação que mexe em arquivo por vez (limpar, desfazer, apagar, esvaziar, desinstalar).
+    static let opLock = NSLock()
     private static let movedLock = NSLock()
 
     // --- lista do que a Faxina mandou pra Lixeira (pra desfazer ou apagar de vez) ---
@@ -250,10 +274,17 @@ enum Cleanup {
         Store.save("faxina-lixeira.json", Array(list.suffix(5000)))
     }
 
+    /// Anota algo que foi pra Lixeira por outro caminho (ex.: app desinstalado).
+    static func recordMoved(_ m: MovedItem) {
+        movedLock.lock(); defer { movedLock.unlock() }
+        saveMoved(movedList() + [m])
+    }
+
     static func clean(ids: [String]) throws -> CleanResult {
         guard CleanEnv.destructiveAllowed else {
             throw BridgeError.failed("A limpeza só roda no app aberto (ou na caixa de areia dos testes).")
         }
+        opLock.lock(); defer { opLock.unlock() }
         var movidos: [CleanResult.Done] = []
         var falhas: [CleanResult.Fail] = []
         var total: Int64 = 0
@@ -263,31 +294,41 @@ enum Cleanup {
 
         for id in ids {
             guard let e = CleanRegistry.shared.get(id) else {
-                falhas.append(.init(id: id, nome: "?", motivo: "não está mais na lista: escaneie de novo"))
+                falhas.append(.init(id: id, nome: "?", motivo: "a lista venceu: procure de novo"))
                 continue
             }
             do {
                 try CleanGuard.check(e)
                 // cache de app aberto: o app pode se perder
-                if e.item.categoria == "caches" || e.item.categoria == "sistema" || e.item.categoria == "dev",
-                   let owner = CleanScan.runningOwner(named: e.item.nome, in: running) {
+                if let owner = CleanScan.runningOwner(name: e.name, prefixes: e.owners, in: running) {
                     throw CleanGuard.Failure.reason("\(owner) está aberto: feche antes")
                 }
-                // duplicados: sempre sobra pelo menos uma cópia
-                if let g = e.item.grupo {
-                    let others = e.groupMembers.filter { $0 != id }
-                    let survivors = others.filter { !requested.contains($0) && CleanRegistry.shared.get($0).map { CleanGuard.exists($0.url) } == true }
-                    if survivors.isEmpty { throw CleanGuard.Failure.reason("sobraria nenhuma cópia (grupo \(g))") }
+                // duplicados: o item e pelo menos uma cópia igual continuam idênticos à varredura
+                if e.item.grupo != nil {
+                    guard CleanGuard.sameAsScan(e), let h = e.hash, CleanScan.fullHash(e.url, size: e.size) == h else {
+                        throw CleanGuard.Failure.reason("mudou desde a varredura: procure de novo")
+                    }
+                    let keeper = e.groupMembers.lazy
+                        .filter { $0 != id && !requested.contains($0) }
+                        .compactMap { CleanRegistry.shared.get($0) }
+                        .first { CleanGuard.sameAsScan($0) && $0.ident != e.ident && CleanScan.fullHash($0.url, size: $0.size) == h }
+                    guard keeper != nil else { throw CleanGuard.Failure.reason("não sobraria nenhuma cópia igual: procure de novo") }
                 }
-                let dest = try moveToTrash(e.url)
+                let t = try SafeFS.moveToTrash(parent: e.parent, name: e.name, expected: e.ident,
+                                               sandboxTrash: CleanEnv.sandboxTrash)
                 let lid = UUID().uuidString
-                newMoved.append(MovedItem(id: lid, nome: e.item.nome, categoria: e.item.categoria,
-                                          original: e.url.path, lixeira: dest.path, bytes: e.item.bytes,
-                                          t: Date().timeIntervalSince1970, fileID: CleanGuard.fileID(dest)))
-                movidos.append(.init(id: id, nome: e.item.nome, bytes: e.item.bytes, lixeiraId: lid))
+                if let dest = t.url {
+                    newMoved.append(MovedItem(id: lid, nome: e.item.nome, categoria: e.item.categoria,
+                                              original: e.url.path, lixeira: dest.path, bytes: e.item.bytes,
+                                              t: Date().timeIntervalSince1970, fileID: nil,
+                                              dev: t.ident?.dev, ino: t.ident?.ino, root: e.root))
+                }
+                movidos.append(.init(id: id, nome: e.item.nome, bytes: e.item.bytes, lixeiraId: t.url == nil ? "" : lid))
                 total += e.item.bytes
                 CleanRegistry.shared.remove(id)
             } catch CleanGuard.Failure.reason(let r) {
+                falhas.append(.init(id: id, nome: e.item.nome, motivo: r))
+            } catch SafeFS.Failure.reason(let r) {
                 falhas.append(.init(id: id, nome: e.item.nome, motivo: r))
             } catch {
                 falhas.append(.init(id: id, nome: e.item.nome, motivo: friendly(error)))
@@ -301,19 +342,9 @@ enum Cleanup {
         return CleanResult(movidos: movidos, falhas: falhas, bytes: total, caixaDeAreia: CleanEnv.sandbox != nil)
     }
 
-    /// Lixeira de verdade pelo trashItem; na caixa de areia, uma pasta de mentira.
-    private static func moveToTrash(_ url: URL) throws -> URL {
-        if CleanEnv.sandbox != nil {
-            let dest = CleanEnv.trashDir.appendingPathComponent(UUID().uuidString.prefix(8) + "-" + url.lastPathComponent)
-            try CleanEnv.fm.moveItem(at: url, to: dest)
-            return dest
-        }
-        var out: NSURL?
-        try CleanEnv.fm.trashItem(at: url, resultingItemURL: &out)
-        return (out as URL?) ?? CleanEnv.trashDir.appendingPathComponent(url.lastPathComponent)
-    }
-
     static func friendly(_ error: Error) -> String {
+        if case SafeFS.Failure.reason(let r) = error { return r }
+        if case CleanGuard.Failure.reason(let r) = error { return r }
         let ns = error as NSError
         if ns.domain == NSCocoaErrorDomain {
             switch ns.code {
@@ -341,28 +372,29 @@ enum Cleanup {
 
     static func movedView() -> MovedView {
         let rows = movedList().reversed().map { m -> MovedView.Row in
-            let still = trashEntryValid(m)
-            return .init(id: m.id, nome: m.nome, categoria: m.categoria, original: CleanEnv.display(URL(fileURLWithPath: m.original)),
-                         bytes: m.bytes, t: m.t, naLixeira: still)
+            .init(id: m.id, nome: m.nome, categoria: m.categoria, original: CleanEnv.display(m.original),
+                  bytes: m.bytes, t: m.t, naLixeira: trashIdent(m) != nil)
         }
         return MovedView(itens: Array(rows), bytes: rows.filter { $0.naLixeira }.reduce(0) { $0 + $1.bytes },
                          caixaDeAreia: CleanEnv.sandbox != nil)
     }
 
-    /// O item ainda está na Lixeira, é o mesmo que a Faxina colocou lá, e o caminho não escapa dela.
-    private static func trashEntryValid(_ m: MovedItem) -> Bool {
+    /// O item ainda está na Lixeira, direto nela, e é o mesmo que a Faxina colocou lá.
+    private static func trashIdent(_ m: MovedItem) -> SafeFS.Ident? {
+        guard let dev = m.dev, let ino = m.ino else { return nil }
         let url = URL(fileURLWithPath: m.lixeira)
-        guard CleanGuard.exists(url), !CleanGuard.isSymlink(url) else { return false }
-        guard CleanGuard.inside(CleanGuard.resolvedPath(url), CleanEnv.trashDir) else { return false }
-        if let id = m.fileID { return CleanGuard.fileID(url) == id }
-        return false
+        guard url.deletingLastPathComponent().path == CleanEnv.trashDir.path else { return nil }
+        guard let now = SafeFS.lstatInfo(url.path), !now.isLink, now.ident == SafeFS.Ident(dev: dev, ino: ino) else { return nil }
+        return now.ident
     }
 
     struct SimpleResult: Codable { var ok: Int; var bytes: Int64; var falhas: [CleanResult.Fail] }
 
-    /// Devolve do jeito que estava.
+    /// Devolve do jeito que estava: rename atômico da Lixeira pra pasta original, que tem que
+    /// existir, sem atalho no caminho e dentro da pasta permitida de onde o item saiu.
     static func restore(ids: [String]) throws -> SimpleResult {
         guard CleanEnv.destructiveAllowed else { throw BridgeError.failed("Só no app aberto.") }
+        opLock.lock(); defer { opLock.unlock() }
         movedLock.lock(); defer { movedLock.unlock() }
         var list = movedList()
         var ok = 0, bytes: Int64 = 0
@@ -370,13 +402,21 @@ enum Cleanup {
         for id in ids {
             guard let i = list.firstIndex(where: { $0.id == id }) else { continue }
             let m = list[i]
-            let from = URL(fileURLWithPath: m.lixeira), to = URL(fileURLWithPath: m.original)
-            guard trashEntryValid(m) else { falhas.append(.init(id: id, nome: m.nome, motivo: "não está mais na Lixeira")); continue }
-            guard CleanGuard.inside(CleanGuard.resolvedPath(to), CleanEnv.home) else { falhas.append(.init(id: id, nome: m.nome, motivo: "lugar original fora da pasta do usuário")); continue }
-            guard !CleanGuard.exists(to) else { falhas.append(.init(id: id, nome: m.nome, motivo: "já existe outro no lugar original")); continue }
+            guard let ident = trashIdent(m) else { falhas.append(.init(id: id, nome: m.nome, motivo: "não está mais na Lixeira")); continue }
+            let to = URL(fileURLWithPath: m.original)
+            let parent = to.deletingLastPathComponent().path
+            let allowed: Bool
+            if m.categoria == "app" {
+                allowed = to.pathExtension == "app" && Uninstall.roots.contains { parent == $0.0.path || CleanGuard.inside(parent, $0.0.path) }
+            } else if let root = m.root {
+                allowed = (parent == root || CleanGuard.inside(parent, root)) && CleanGuard.inside(root, CleanEnv.home.path)
+            } else {
+                allowed = false
+            }
+            guard allowed else { falhas.append(.init(id: id, nome: m.nome, motivo: "lugar original não confere: devolva pelo Finder")); continue }
             do {
-                try CleanEnv.fm.createDirectory(at: to.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try CleanEnv.fm.moveItem(at: from, to: to)
+                try SafeFS.moveBack(fromDir: CleanEnv.trashDir.path, fromName: (m.lixeira as NSString).lastPathComponent,
+                                    expected: ident, toDir: parent, toName: to.lastPathComponent)
                 list.remove(at: i)
                 ok += 1
                 bytes += m.bytes
@@ -392,26 +432,28 @@ enum Cleanup {
     static func purge(ids: [String]?, confirmed: Bool) throws -> SimpleResult {
         guard confirmed else { throw BridgeError.badArgs("precisa de confirmado: true") }
         guard CleanEnv.destructiveAllowed else { throw BridgeError.failed("Só no app aberto.") }
+        opLock.lock(); defer { opLock.unlock() }
         movedLock.lock(); defer { movedLock.unlock() }
-        var list = movedList()
         let wanted = ids.map(Set.init)
         var ok = 0, bytes: Int64 = 0
         var falhas: [CleanResult.Fail] = []
         var keep: [MovedItem] = []
-        for m in list {
+        let trash = CleanEnv.trashDir.path
+        for m in movedList() {
             guard wanted == nil || wanted!.contains(m.id) else { keep.append(m); continue }
-            guard trashEntryValid(m) else { continue }   // já saiu da Lixeira: só esquece
+            guard let ident = trashIdent(m) else { continue }   // já saiu da Lixeira: só esquece
             do {
-                try CleanEnv.fm.removeItem(at: URL(fileURLWithPath: m.lixeira))
+                try SafeFS.removeForever(dir: trash, name: (m.lixeira as NSString).lastPathComponent, expected: ident)
                 ok += 1
                 bytes += m.bytes
             } catch {
-                falhas.append(.init(id: m.id, nome: m.nome, motivo: friendly(error)))
+                var motivo = friendly(error)
+                if motivo.contains("permissão") { motivo += ": use \"Esvaziar a Lixeira toda\" (pelo Finder)" }
+                falhas.append(.init(id: m.id, nome: m.nome, motivo: motivo))
                 keep.append(m)
             }
         }
-        list = keep
-        saveMoved(list)
+        saveMoved(keep)
         return SimpleResult(ok: ok, bytes: bytes, falhas: falhas)
     }
 
@@ -428,11 +470,12 @@ enum Cleanup {
         var legivel = false
         var bytes: Int64? = nil
         var itens: Int? = nil
-        if let kids = try? CleanEnv.fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: []) {
+        if let kids = try? CleanEnv.fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) {
             legivel = true
-            itens = kids.count
-            let m = CleanScan.measure(dir, deadline: Date().addingTimeInterval(10))
-            bytes = m.bytes
+            let visible = kids.filter { $0.lastPathComponent != ".DS_Store" }
+            itens = visible.count
+            let deadline = Date().addingTimeInterval(10)
+            bytes = visible.reduce(Int64(0)) { $0 + CleanScan.measure($1, deadline: deadline).bytes }
         }
         return TrashInfo(legivel: legivel, bytes: bytes, itens: itens, daFaxina: movedView().bytes,
                          caixaDeAreia: CleanEnv.sandbox != nil)
@@ -443,11 +486,12 @@ enum Cleanup {
     static func emptyTrash(confirmed: Bool) throws -> Ok {
         guard confirmed else { throw BridgeError.badArgs("precisa de confirmado: true") }
         guard CleanEnv.destructiveAllowed else { throw BridgeError.failed("Só no app aberto.") }
-        if CleanEnv.sandbox != nil {
-            let dir = CleanEnv.trashDir
-            for k in (try? CleanEnv.fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? [] {
-                try CleanEnv.fm.removeItem(at: k)
-            }
+        opLock.lock(); defer { opLock.unlock() }
+        if let t = CleanEnv.sandboxTrash {
+            guard let dfd = SafeFS.openDirNoFollow(t) else { throw BridgeError.failed("Lixeira de teste sumiu.") }
+            defer { close(dfd) }
+            let dev = SafeFS.lstatInfo(t)?.ident.dev ?? 0
+            for k in (try? CleanEnv.fm.contentsOfDirectory(atPath: t)) ?? [] { _ = SafeFS.removeTree(dfd, k, device: dev) }
             return Ok()
         }
         var err: NSDictionary?
@@ -467,7 +511,7 @@ enum Cleanup {
             NSWorkspace.shared.activateFileViewerSelecting([e.url])
             return Ok()
         }
-        if let m = movedList().first(where: { $0.id == id }), trashEntryValid(m) {
+        if let m = movedList().first(where: { $0.id == id }), trashIdent(m) != nil {
             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: m.lixeira)])
             return Ok()
         }
