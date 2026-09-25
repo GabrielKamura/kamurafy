@@ -7,8 +7,4 @@ build/
 local/
 ui/fonts/MoreSugar-*.woff2
 
-# configuração do assistente de código (fica só nesta máquina)
-.claude/
-CLAUDE.md
-
 .DS_Store

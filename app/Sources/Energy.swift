@@ -95,7 +95,7 @@ enum Energy {
         }
         guard !path.isEmpty else { return nil }
         var raw = (path as NSString).lastPathComponent
-        // binário com nome de versão (ex.: ~/.local/share/claude/versions/2.1.282)
+        // binário com nome de versão (ex.: ~/.local/share/ferramenta/versions/2.1.282)
         if raw.allSatisfy({ $0.isNumber || $0 == "." }) {
             if !fallbackComm.isEmpty, !fallbackComm.allSatisfy({ $0.isNumber || $0 == "." }) {
                 raw = fallbackComm
