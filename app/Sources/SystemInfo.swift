@@ -5,7 +5,10 @@ struct CPUInfo: Codable {
     var usagePct: Double     // 0–100, média de todos os núcleos
     var userPct: Double
     var systemPct: Double
-    var cores: Int
+    var cores: Int               // threads lógicas (o que o macOS usa pra média)
+    var physicalCores: Int
+    var performanceCores: Int?   // Apple Silicon: núcleos P
+    var efficiencyCores: Int?    // Apple Silicon: núcleos E
     var chip: String
 }
 
@@ -43,6 +46,7 @@ struct SystemNow: Codable {
 
 enum SystemInfo {
     private static var lastTicks: (user: UInt64, sys: UInt64, idle: UInt64, nice: UInt64)?
+    private static var lastResult: (at: TimeInterval, info: CPUInfo)?
     private static let lock = NSLock()
 
     private static func cpuTicks() -> (user: UInt64, sys: UInt64, idle: UInt64, nice: UInt64)? {
@@ -59,10 +63,14 @@ enum SystemInfo {
 
     static func cpu() -> CPUInfo {
         lock.lock(); defer { lock.unlock() }
+        // duas chamadas quase juntas cairiam na mesma janela de ticks e dariam 0%:
+        // abaixo de 1 s, devolve a última medida
+        let agora = ProcessInfo.processInfo.systemUptime
+        if let l = lastResult, agora - l.at < 1.0 { return l.info }
         var prev = lastTicks
         if prev == nil {
             prev = cpuTicks()
-            usleep(250_000)
+            usleep(500_000)
         }
         let cur = cpuTicks()
         lastTicks = cur
@@ -75,8 +83,15 @@ enum SystemInfo {
             if total > 0 { user = du / total * 100; sys = ds / total * 100 }
         }
         func r(_ v: Double) -> Double { (v * 10).rounded() / 10 }
-        return CPUInfo(usagePct: r(user + sys), userPct: r(user), systemPct: r(sys),
-                       cores: ProcessInfo.processInfo.activeProcessorCount, chip: Machine.chip())
+        let silicon = Machine.isAppleSilicon
+        let info = CPUInfo(usagePct: r(user + sys), userPct: r(user), systemPct: r(sys),
+                           cores: ProcessInfo.processInfo.activeProcessorCount,
+                           physicalCores: Machine.sysctlInt("hw.physicalcpu") ?? ProcessInfo.processInfo.processorCount,
+                           performanceCores: silicon ? Machine.sysctlInt("hw.perflevel0.physicalcpu") : nil,
+                           efficiencyCores: silicon ? Machine.sysctlInt("hw.perflevel1.physicalcpu") : nil,
+                           chip: Machine.chip())
+        lastResult = (ProcessInfo.processInfo.systemUptime, info)
+        return info
     }
 
     static func memory() -> MemoryInfo {

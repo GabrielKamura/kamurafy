@@ -176,11 +176,11 @@ K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.model
       if (!a || typeof a.power !== 'number' || !isFinite(a.power)) continue;
       let name = String(a.name || '').trim();
       if (!a.isApp && HELPERS.has(name.toLowerCase())) continue;
-      let note = a.isApp ? null : 'do sistema';
+      let note = a.isSelf ? 'este app' : a.isSystem ? 'do sistema' : a.isApp ? null : 'do sistema';
       let key;
       const web = /^Conteúdo da Internet de (.+)$/i.exec(name) || /^(.+?) Web Content$/i.exec(name);
       if (web) { name = web[1].trim(); note = null; }
-      if (/^kamurafy$/i.test(name)) { name = 'Kamurafy'; note = 'este app'; key = 'kamurafy'; }
+      if (a.isSelf || /^kamurafy$/i.test(name)) { name = 'Kamurafy'; note = 'este app'; key = 'kamurafy'; }
       else if (!name || /^[\d.]+$/.test(name)) {
         note = name ? `versão ${name}` : null;
         key = 'pid:' + a.pid;

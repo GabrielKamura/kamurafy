@@ -68,6 +68,7 @@ enum Commands {
         HistoryModule.register(r)
         EnergyModule.register(r)
         SystemModule.register(r)
+        NotifyModule.register(r)
     }
 }
 
@@ -97,7 +98,12 @@ func runTool(_ path: String, _ arguments: [String], timeout: TimeInterval = 20) 
     p.standardError = FileHandle.nullDevice
     try p.run()
     let deadline = DispatchTime.now() + timeout
-    DispatchQueue.global().asyncAfter(deadline: deadline) { if p.isRunning { p.terminate() } }
+    DispatchQueue.global().asyncAfter(deadline: deadline) {
+        guard p.isRunning else { return }
+        p.terminate()
+        let pid = p.processIdentifier
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) { if p.isRunning { kill(pid, SIGKILL) } }
+    }
     let data = out.fileHandleForReading.readDataToEndOfFile()
     p.waitUntilExit()
     return String(decoding: data, as: UTF8.self)

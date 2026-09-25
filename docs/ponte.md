@@ -12,7 +12,15 @@ responde com JSON (a Promise recebe uma string e o `K.api` já faz o `JSON.parse
 exceção com a mensagem em português.
 
 - Toda data/hora é **Unix em segundos** (`Double`).
-- Campo que o Mac não informa vem **ausente ou `null`**: a interface sempre trata isso.
+- Campo que o Mac não informa vem **ausente** (o JSONEncoder omite `nil`): na interface use
+  sempre `v == null` (pega `undefined` também), nunca `=== null`.
+- Texto que vem de fora e entra no DOM **só por textContent**: `energyApps[].name`,
+  `disk.name` (nome que o usuário deu ao disco), `model`, `adapter.name`, `deviceName`,
+  `manufacturer`, nomes de arquivo e de app da Faxina.
+- A interface nunca usa `alert`/`confirm`/`prompt` (o WKWebView não mostra nada e o
+  `confirm` devolve `false`): confirmação é um modal próprio em HTML.
+- Ganchos de teste (modo foto, `KAMURAFY_UI_DIR`, inspetor) só existem na build de
+  desenvolvimento (`-D KAMURAFY_DEV`, padrão do `./build.sh`); `PUBLICO=1` tira todos.
 - Comando novo: registre no módulo Swift (`XxxModule.register`) e documente aqui.
 - Testar sem interface: `build/dev/Kamurafy.app/Contents/MacOS/Kamurafy --cmd <comando> '<json>'`
   (`--cmd list` lista todos).
@@ -23,9 +31,19 @@ exceção com a mensagem em português.
 |---|---|---|
 | `app.ready` | — | `{ok}`. A casca chama depois do primeiro desenho; o modo foto espera por ele. |
 | `app.log` | `{level, msg}` | `{ok}`. Já é chamado sozinho em erro de JS. |
-| `app.version` | — | `{version, build, dev}` |
+| `app.version` | — | `{version, build, dev, publico}`. `publico: true` na build distribuível (a interface esconde módulos "em breve" e a galeria). |
 | `window.drag` / `window.zoom` | — | arrasta/maximiza a janela (a casca cuida disso via `data-drag`) |
 | `open.url` | `{url}` (só https) | abre no navegador padrão |
+| `open.settings` | `{painel}`: `bateria` · `notificacoes` · `armazenamento` · `itens-login` · `privacidade-disco` | abre esse painel dos Ajustes do Sistema |
+
+## notify.*
+
+| comando | resposta |
+|---|---|
+| `notify.status` | `{permitido, estado}`; `estado`: `permitido` · `provisorio` · `negado` · `nao-pedido` · `indisponivel` |
+| `notify.test` | manda um aviso de teste (se permitido) e devolve o mesmo que `notify.status` |
+
+A permissão é pedida ao abrir o app. O banner aparece mesmo com o Kamurafy na frente.
 
 ## settings.*
 
@@ -35,8 +53,12 @@ exceção com a mensagem em português.
 { "aviso80": true, "limiteAviso": 80, "avisoQuente": true, "som": true }
 ```
 
-- `aviso80`: notifica quando a carga **cruza** `limiteAviso` (50–100) com o carregador ligado.
-- `avisoQuente`: notifica com duas leituras seguidas ≥ 45 °C.
+- `aviso80`: notifica quando a carga **cruza** `limiteAviso` (50–100) com o carregador ligado,
+  uma vez por carga. Não avisa se o Carregamento Otimizado está segurando a carga. Mudar o
+  limite rearma o aviso.
+- `avisoQuente`: notifica com duas leituras seguidas ≥ 45 °C; só rearma abaixo de 42 °C.
+- O app acorda a cada mudança de carga/tomada (aviso do macOS) e a cada minuto, também com
+  a janela fechada.
 
 ## battery.now
 
@@ -47,12 +69,15 @@ Leitura instantânea (rápida, pode chamar a cada 2 s). Exemplo real (MacBook Pr
   "present": true,
   "percent": 99,               // carga como o macOS mostra
   "currentMah": 7447, "maxMah": 7895, "designMah": 8790,
-  "healthPct": 89.8,           // maxMah / designMah; oscila ±1–2 pontos a cada recalibração
+  "healthPct": 89.8,           // saúde como o macOS mostra; oscila ±1–2 pontos a cada recalibração
+                               // e pode passar de 100 em bateria nova
+  "healthPctRaw": 89.8,        // capacidade bruta do medidor / fábrica (no Intel é igual)
   "cycles": 251, "designCycles": 1000,
   "temperatureC": 31,
   "voltageV": 12.684,
   "amperageMa": 611,           // + entrando na bateria, − saindo
   "watts": 7.7,                // + carregando, − gastando (0 quando cheia na tomada)
+  "systemWatts": 44.5,         // quanto o Mac inteiro puxa agora (ausente se o medidor não diz)
   "isCharging": true, "pluggedIn": true, "fullyCharged": false,
   "finishingCharge": true,     // o macOS está terminando a carga devagar
   "optimizedChargingEngaged": false,
@@ -65,17 +90,23 @@ Leitura instantânea (rápida, pode chamar a cada 2 s). Exemplo real (MacBook Pr
   "permanentFailure": false,
   "lowPowerMode": true,
   "thermalState": "morno",     // normal | morno | quente | critico (do Mac todo)
-  "status": "saudavel",        // saudavel | de-olho | gasta | trocar | sem-bateria
+  "status": "saudavel",        // saudavel | de-olho | gasta | trocar | desconhecida | sem-bateria
   "readAt": 1790304193.29
 }
 ```
 
-Regra do `status` (Swift, `Battery.read`):
-`trocar` se a Apple pede revisão ou há falha permanente · `gasta` se saúde < 80% ·
-`de-olho` se saúde < 85% ou ciclos ≥ 80% do projetado · senão `saudavel`.
-Na interface: `K.batteryStatus[status]` → `{label, tone, icon}`.
+Regra do `status` (Swift, `Battery.read`), sobre a saúde **amortecida** (mediana dos
+últimos 7 pontos diários + a leitura de agora, pra não trocar de status a cada recalibração):
+`trocar` se a Apple pede revisão ou há falha permanente · `desconhecida` se não há leitura de
+saúde · `gasta` se < 80% · `de-olho` se < 85% ou ciclos ≥ 80% do projetado · senão `saudavel`.
+Na interface: `K.batStatus(b)` → `{label, tone, icon}`.
 
-Mac sem bateria (desktop): `present: false`, `status: "sem-bateria"`, o resto vazio.
+Leituras fora de faixa (65535, célula fora de 1–5 V, temperatura > 90 °C) viram ausentes.
+No Apple Silicon, `maxMah` segue `NominalChargeCapacity` e `healthPct` usa
+`BatteryData.MaximumCapacityPercent` quando existe (o mesmo número dos Ajustes).
+
+Mac sem bateria (desktop): `present: false`, `status: "sem-bateria"`, `percent: 0`,
+`pluggedIn: true`, `designCycles: 1000`, `cellsMv: []` e o resto ausente.
 
 ## battery.info
 
@@ -100,23 +131,28 @@ Dados que não mudam (chame uma vez):
 }
 ```
 
-- `carga`: ordenado por `t`. `fonte: "macos"` vem do log do sistema (só carga e tomada, a cada
-  dormir/acordar); `fonte: "kamurafy"` é medido pelo app (a cada 5 min, com watts e temperatura).
-  Cobre ~7 dias antes do app ser instalado.
+- `carga`: ordenado por `t`, sempre terminando na leitura de agora. `fonte: "macos"` vem do
+  log do sistema (só carga e tomada, a cada dormir/acordar); `fonte: "kamurafy"` é medido
+  pelo app (a cada 5 min, ou antes se a carga ou a tomada mudarem; com watts e temperatura).
+  Cobre ~7 dias antes do app ser instalado. Mac sem bateria: `[]`.
 - `saude`: um ponto por dia, gravado pelo app enquanto aberto. Começa com 1 ponto.
-- `projection.method`:
-  - `"historico"`: 30+ dias de dados com queda → reta; `dateTo80` confiável.
+  Arquivo que não decodifica é guardado como `saude.quebrado-<t>.json`, nunca sobrescrito.
+- `projection` usa a saúde amortecida. `method`:
+  - `"historico"`: 30+ dias de dados com queda real → reta; `dateTo80` confiável.
   - `"ciclos"`: desgaste médio por ciclo até hoje → `cyclesTo80`. `dateTo80` só com 14+ dias
-    (precisa saber quantos ciclos por mês a pessoa faz).
-  - `"sem-dados"`: bateria nova demais pra estimar.
+    e 5+ ciclos nesse período (precisa saber quantos ciclos por mês a pessoa faz).
+  - `"sem-dados"`: bateria nova (menos de 50 ciclos ou saúde acima de 98%) ou sem leitura.
 
 ## battery.energyApps
 
-`args: { limite: 8 }`. Leva ~1,5 s (duas amostras do `top`). Processos do mesmo app somados.
+`args: { limite: 8 }`. Leva ~1,5 s (duas amostras do `top`); o resultado fica 5 s em cache.
+Cada processo é somado no app responsável (abas do Safari → Safari, helpers → o app, como o
+Monitor de Atividade). O `top`/`pmset` que o próprio Kamurafy roda ficam de fora; o
+Kamurafy em si aparece com `isSelf: true`.
 
 ```json
-[ { "pid": 631, "name": "Firefox", "power": 85.5, "isApp": true, "icon": "data:image/png;base64,..." },
-  { "pid": 138, "name": "Tela e janelas (WindowServer)", "power": 35.5, "isApp": false, "icon": null } ]
+[ { "pid": 631, "name": "Firefox", "power": 85.5, "isApp": true, "isSystem": false, "isSelf": false, "icon": "data:image/png;base64,..." },
+  { "pid": 138, "name": "Tela e janelas (WindowServer)", "power": 35.5, "isApp": false, "isSystem": true, "isSelf": false } ]
 ```
 
 `power` é o "impacto energético" do Monitor de Atividade (sem unidade; só compara entre si).
@@ -126,7 +162,8 @@ Dados que não mudam (chame uma vez):
 
 ```json
 {
-  "cpu": { "usagePct": 10.4, "userPct": 7, "systemPct": 3.3, "cores": 12, "chip": "Intel Core i7-9750H" },
+  "cpu": { "usagePct": 10.4, "userPct": 7, "systemPct": 3.3, "cores": 12, "physicalCores": 6,
+           "performanceCores": null, "efficiencyCores": null, "chip": "Intel Core i7-9750H" },
   "memory": { "totalBytes": 17179869184, "usedBytes": 13060431872, "appBytes": 9579110400,
               "wiredBytes": 2762805248, "compressedBytes": 718516224, "cachedBytes": 3396718592,
               "freeBytes": 722718720, "swapUsedBytes": 445644800, "pressure": "normal" },
@@ -137,7 +174,10 @@ Dados que não mudam (chame uma vez):
 }
 ```
 
-- `cpu.usagePct` é a média desde a chamada anterior (a primeira mede 250 ms).
+- `cpu.usagePct` é a média desde a chamada anterior (a primeira mede 500 ms); chamadas com
+  menos de 1 s de diferença recebem a mesma medida. `cores` são threads lógicas (12 num i7
+  de 6 núcleos); `physicalCores` é o número de núcleos de verdade; no Apple Silicon vêm
+  também `performanceCores` e `efficiencyCores`.
 - `memory.usedBytes` = app + wired + compressed (igual ao "Memória usada" do Monitor de Atividade).
   `cachedBytes` é cache de arquivo que o macOS devolve sozinho: **não** conta como ocupado.
 - `memory.pressure`: normal | atencao | critica.

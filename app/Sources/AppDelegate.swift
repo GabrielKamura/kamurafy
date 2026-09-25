@@ -13,6 +13,9 @@ struct SnapshotConfig {
     var action: String?
 
     static func fromEnvironment() -> SnapshotConfig? {
+        #if !KAMURAFY_DEV
+        return nil      // modo foto só existe na build de desenvolvimento
+        #else
         let env = ProcessInfo.processInfo.environment
         guard let path = env["KAMURAFY_SNAPSHOT"], !path.isEmpty else { return nil }
         var size = NSSize(width: 1180, height: 780)
@@ -21,6 +24,7 @@ struct SnapshotConfig {
         }
         return SnapshotConfig(path: path, route: env["KAMURAFY_ROUTE"] ?? "inicio", size: size,
                               waitMs: Int(env["KAMURAFY_WAIT"] ?? "") ?? 1500, action: env["KAMURAFY_ACTION"])
+        #endif
     }
 }
 
@@ -33,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     let bridge = BridgeHandler()
     let snapshot = SnapshotConfig.fromEnvironment()
     private var snapshotTaken = false
+    private var watchdog: DispatchWorkItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
@@ -41,13 +46,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         buildMenu()
         buildWindow()
 
-        if let snap = snapshot {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
+        if snapshot != nil {
+            let w = DispatchWorkItem {
                 fputs("modo foto: a interface não avisou app.ready em 25 s\n", stderr)
-                _ = snap
                 exit(2)
             }
+            watchdog = w
+            DispatchQueue.main.asyncAfter(deadline: .now() + 25, execute: w)
         } else {
+            Notifier.shared.setup()
             Sampler.shared.start()
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -96,16 +103,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         }
     }
 
-    // A interface só navega dentro de kamurafy://. Links externos abrem no navegador.
+    // A interface só navega dentro de kamurafy://app. Link https clicado pelo usuário abre
+    // no navegador; qualquer outra navegação (automática, http, outro host) é barrada.
     nonisolated func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = action.request.url else { decisionHandler(.cancel); return }
-        if url.scheme == UIScheme.scheme || url.scheme == "about" {
+        if (url.scheme == UIScheme.scheme && url.host == "app") || url.absoluteString == "about:blank" {
             decisionHandler(.allow)
-        } else {
-            if url.scheme == "https" || url.scheme == "http" { NSWorkspace.shared.open(url) }
-            decisionHandler(.cancel)
+            return
         }
+        if url.scheme == "https", action.navigationType == .linkActivated, action.targetFrame?.isMainFrame ?? true {
+            NSWorkspace.shared.open(url)
+        }
+        decisionHandler(.cancel)
     }
 
     nonisolated func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
@@ -117,10 +127,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     func uiReady() {
         guard let snap = snapshot, !snapshotTaken else { return }
         snapshotTaken = true
+        watchdog?.cancel()
+        let limite = Double(snap.waitMs * 2) / 1000 + 20
+        DispatchQueue.main.asyncAfter(deadline: .now() + limite) {
+            fputs("modo foto: a foto não saiu em \(Int(limite)) s\n", stderr)
+            exit(5)
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(snap.waitMs)) { [weak self] in
             guard let self else { return }
             if let js = snap.action, !js.isEmpty {
-                self.web.evaluateJavaScript(js) { _, err in
+                // embrulha pra o retorno (Promise, nó do DOM) não virar falso erro
+                self.web.evaluateJavaScript("(function(){\n" + js + "\n})(); void 0") { _, err in
                     if let err { fputs("KAMURAFY_ACTION falhou: \(err.localizedDescription)\n", stderr) }
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(snap.waitMs)) { self.capture(snap) }
@@ -151,7 +168,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
     }
 
     func dragWindow() {
-        guard snapshot == nil, let ev = web.lastMouseDown else { return }
+        // só se o botão ainda está apertado e o clique é recente (senão a janela grudaria no cursor)
+        guard snapshot == nil, let ev = web.lastMouseDown,
+              NSEvent.pressedMouseButtons & 1 == 1,
+              ProcessInfo.processInfo.systemUptime - ev.timestamp < 0.6 else { return }
         window.performDrag(with: ev)
     }
 
@@ -205,7 +225,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
 }
 
 enum AppCommands {
-    struct Version: Codable { var version: String; var build: String; var dev: Bool }
+    struct Version: Codable { var version: String; var build: String; var dev: Bool; var publico: Bool }
+
+    /// Painéis dos Ajustes do Sistema que a interface pode abrir.
+    static let settingsPanes: [String: String] = [
+        "bateria": "x-apple.systempreferences:com.apple.Battery-Settings.extension",
+        "notificacoes": "x-apple.systempreferences:com.apple.Notifications-Settings.extension",
+        "armazenamento": "x-apple.systempreferences:com.apple.settings.Storage",
+        "itens-login": "x-apple.systempreferences:com.apple.LoginItems-Settings.extension",
+        "privacidade-disco": "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles",
+    ]
 
     @MainActor
     static func register(_ r: Router) {
@@ -222,12 +251,25 @@ enum AppCommands {
         }
         r.register("app.version") { _ in
             let info = Bundle.main.infoDictionary ?? [:]
+            #if KAMURAFY_DEV
+            let publico = false
+            #else
+            let publico = true
+            #endif
             return Version(version: info["CFBundleShortVersionString"] as? String ?? "dev",
                            build: info["CFBundleVersion"] as? String ?? "0",
-                           dev: ProcessInfo.processInfo.environment["KAMURAFY_UI_DIR"] != nil)
+                           dev: ProcessInfo.processInfo.environment["KAMURAFY_UI_DIR"] != nil,
+                           publico: publico)
         }
         r.register("window.drag") { _ in
-            DispatchQueue.main.async { AppDelegate.shared?.dragWindow() }
+            AppDelegate.shared?.dragWindow()
+            return Ok()
+        }
+        r.register("open.settings") { args in
+            guard let pane = args.string("painel"), let s = settingsPanes[pane], let url = URL(string: s) else {
+                throw BridgeError.badArgs("painel desconhecido (use: \(settingsPanes.keys.sorted().joined(separator: ", ")))")
+            }
+            NSWorkspace.shared.open(url)
             return Ok()
         }
         r.register("window.zoom") { _ in

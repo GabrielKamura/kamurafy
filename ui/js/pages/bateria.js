@@ -435,6 +435,12 @@
           else { flowTx.textContent = 'O Mac não informou a energia agora.'; }
           t.ic.className = 'head-ic' + (dir === 'out' ? ' s2' : dir === 'in' ? ' s1' : '');
         }
+        /* na tomada sem carregar, o medidor diz quanto o Mac inteiro puxa do carregador */
+        if (dir === 'direct') {
+          flowTx.textContent = isNum(b.systemWatts)
+            ? `O Mac puxa ${K.fmt.watts(b.systemWatts)} direto do carregador e a bateria descansa.`
+            : 'O Mac usa o carregador direto e a bateria descansa.';
+        }
         /* carregador e bateria em linhas separadas: 12,6 V é da bateria, não do carregador */
         adapter.textContent = '';
         const a = b.adapter;
@@ -991,6 +997,31 @@
     });
     paintLims();
 
+    /* as notificações do macOS estão liberadas pro Kamurafy? */
+    const notifTx = K.el('span');
+    const notifBtns = K.el('div', { class: 'row bt-notif-btns' });
+    const notif = K.el('div', { class: 'setting bt-setting bt-notif-status' },
+      K.el('div', { class: 'setting-text' }, K.el('b', null, 'Notificações do macOS'), notifTx), notifBtns);
+    async function paintNotif(justTested) {
+      let st = null;
+      try { st = await K.api('notify.status'); } catch (e) { /* sem leitura */ }
+      notifBtns.textContent = '';
+      if (!st) { notifTx.textContent = 'Não consegui ver se estão liberadas.'; return; }
+      if (st.permitido) {
+        notifTx.textContent = justTested ? 'Mandei um aviso de teste agora. Chegou aí?' : 'Liberadas. Quer ver como chega?';
+        notifBtns.appendChild(K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
+          onclick: async () => { K.sound.plop(); try { await K.api('notify.test'); } catch (e) { /* ignora */ } paintNotif(true); } }, 'Testar aviso'));
+      } else if (st.estado === 'negado') {
+        notifTx.textContent = 'Estão desligadas pro Kamurafy, então os avisos não chegam.';
+        notifBtns.appendChild(K.el('button', { class: 'btn small gold', type: 'button',
+          onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'notificacoes' }).catch(() => {}); } }, 'Abrir Ajustes'));
+      } else if (st.estado === 'nao-pedido') {
+        notifTx.textContent = 'O macOS ainda vai perguntar se pode mostrar meus avisos. Responda "Permitir".';
+      } else {
+        notifTx.textContent = 'Indisponíveis nesta versão.';
+      }
+    }
+
     c.append(
       K.el('div', { class: 'setting bt-setting' },
         K.el('div', { class: 'setting-text' }, t1,
@@ -1002,8 +1033,10 @@
         K.el('div', { class: 'setting-text' }, K.el('b', null, 'Me avisa se esquentar'),
           K.el('span', null, 'Se a bateria passar de 45 °C em duas leituras seguidas, eu te chamo.')),
         sw2),
+      notif,
       err,
-      K.el('p', { class: 'bt-note' }, ok ? 'Os avisos funcionam enquanto o Kamurafy estiver aberto.' : 'Não consegui ler suas configurações agora. Abra a tela de novo daqui a pouco.'));
+      K.el('p', { class: 'bt-note' }, ok ? 'Os avisos funcionam enquanto o Kamurafy estiver aberto (mesmo com a janela fechada).' : 'Não consegui ler suas configurações agora. Abra a tela de novo daqui a pouco.'));
+    paintNotif();
     return { node: c };
   }
 

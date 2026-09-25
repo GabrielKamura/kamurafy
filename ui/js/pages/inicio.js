@@ -629,7 +629,7 @@
           btn: 'Ligar o aviso', toggle: true });
       } else if (!b.optimizedChargingEngaged && b.percent >= 99) {
         out.push({ icon: 'btShield', title: 'Carregamento otimizado', text: 'Ficar sempre em 100% desgasta mais. O macOS pode segurar em 80% pra você.',
-          btn: 'Ver como ligar', run: () => go('bateria?secao=cuidados') });
+          btn: 'Abrir Ajustes', run: () => K.api('open.settings', { painel: 'bateria' }).catch(() => go('bateria?secao=cuidados')) });
       }
     }
     if (b && out.length && out.length < 3) {

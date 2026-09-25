@@ -17,13 +17,15 @@ struct BatteryNow: Codable {
     var currentMah: Int?
     var maxMah: Int?                 // capacidade total hoje
     var designMah: Int?              // capacidade de fábrica
-    var healthPct: Double?           // maxMah / designMah × 100, 1 casa
+    var healthPct: Double?           // saúde como o macOS mostra (pode passar de 100 em bateria nova)
+    var healthPctRaw: Double?        // capacidade bruta do medidor / fábrica
     var cycles: Int?
     var designCycles: Int            // ciclos de vida projetados (1000 nos Macs atuais)
     var temperatureC: Double?
     var voltageV: Double?
     var amperageMa: Int?             // + entrando na bateria, − saindo
     var watts: Double?               // voltageV × amperage; + carregando, − gastando
+    var systemWatts: Double?         // quanto o Mac inteiro está puxando agora (quando o medidor informa)
     var isCharging: Bool
     var pluggedIn: Bool
     var fullyCharged: Bool
@@ -38,7 +40,7 @@ struct BatteryNow: Codable {
     var permanentFailure: Bool
     var lowPowerMode: Bool
     var thermalState: String         // "normal" | "morno" | "quente" | "critico"
-    var status: String               // "saudavel" | "de-olho" | "gasta" | "trocar" | "sem-bateria"
+    var status: String               // "saudavel" | "de-olho" | "gasta" | "trocar" | "desconhecida" | "sem-bateria"
     var readAt: Double
 }
 
@@ -90,6 +92,26 @@ enum Battery {
         )
     }
 
+    /// Valor dentro da faixa plausível, senão nil (65535 e afins = medidor sem leitura).
+    static func sane(_ v: Int?, _ range: ClosedRange<Int>) -> Int? {
+        guard let v, range.contains(v), v != 65535 else { return nil }
+        return v
+    }
+
+    /// Quanto o Mac inteiro está puxando agora, em watts. No Intel vem em BatteryData
+    /// como float de 32 bits guardado num inteiro; no Apple Silicon, em PowerTelemetryData (mW).
+    static func systemPower(_ r: [String: Any]) -> Double? {
+        var w: Double? = nil
+        if let t = r.dict("PowerTelemetryData"), let mw = t.double("SystemPowerIn"), mw > 0 {
+            w = mw / 1000
+        } else if let bits = r.dict("BatteryData")?.int("SystemPower") {
+            let f = Double(Float(bitPattern: UInt32(truncatingIfNeeded: bits)))
+            if f.isFinite { w = f }
+        }
+        guard let v = w, v > 0.5, v < 400 else { return nil }
+        return (v * 10).rounded() / 10
+    }
+
     static func thermalState() -> String {
         switch ProcessInfo.processInfo.thermalState {
         case .nominal: return "normal"
@@ -115,23 +137,32 @@ enum Battery {
         }
 
         // No Intel, MaxCapacity/CurrentCapacity vêm em mAh; no Apple Silicon vêm em %.
-        // AppleRaw* é sempre mAh nos dois.
-        let maxMah = r.int("AppleRawMaxCapacity") ?? r.int("NominalChargeCapacity") ?? r.int("MaxCapacity")
-        let curMah = r.int("AppleRawCurrentCapacity") ?? r.int("CurrentCapacity")
-        let design = r.int("DesignCapacity")
+        // AppleRaw* é sempre mAh nos dois. No Apple Silicon, a "Capacidade máxima" dos
+        // Ajustes segue NominalChargeCapacity (ou MaximumCapacityPercent, quando existe).
+        let rawMax = r.int("AppleRawMaxCapacity") ?? r.int("MaxCapacity")
+        let silicon = Machine.isAppleSilicon
+        let maxMah = sane(silicon ? (r.int("NominalChargeCapacity") ?? rawMax) : rawMax, 100...30000)
+        let curMah = sane(r.int("AppleRawCurrentCapacity") ?? r.int("CurrentCapacity"), 0...30000)
+        let design = sane(r.int("DesignCapacity"), 100...30000)
         var health: Double? = nil
-        if let m = maxMah, let d = design, d > 0, m > 100 {
-            health = (Double(m) / Double(d) * 1000).rounded() / 10
+        var healthRaw: Double? = nil
+        if let d = design {
+            if let m = maxMah { health = (Double(m) / Double(d) * 1000).rounded() / 10 }
+            if let m = sane(rawMax, 100...30000) { healthRaw = (Double(m) / Double(d) * 1000).rounded() / 10 }
+        }
+        if silicon, let applePct = sane(r.dict("BatteryData")?.int("MaximumCapacityPercent"), 1...150) {
+            health = Double(applePct)
         }
 
         var percent = ps?.int("Current Capacity") ?? 0
         if ps == nil, let c = curMah, let m = maxMah, m > 0 { percent = Int((Double(c) / Double(m) * 100).rounded()) }
 
-        let designCycles = r.int("DesignCycleCount9C") ?? ps?.int("DesignCycleCount") ?? 1000
-        let cycles = r.int("CycleCount")
-        let tempC = r.double("Temperature").map { ($0 / 10).rounded() / 10 }
-        let voltage = (r.double("Voltage") ?? r.dict("BatteryData")?.double("Voltage")).map { $0 / 1000 }
-        let amps = r.int("InstantAmperage") ?? r.int("Amperage")
+        let designCycles = sane(r.int("DesignCycleCount9C") ?? ps?.int("DesignCycleCount"), 100...10000) ?? 1000
+        let cycles = sane(r.int("CycleCount"), 0...20000)
+        // 65535 (0xFFFF) e valores fora de faixa = o medidor não sabe
+        let tempC = sane(r.int("Temperature"), -2000...9000).map { (Double($0) / 10).rounded() / 10 }
+        let voltage = sane(r.int("Voltage") ?? r.dict("BatteryData")?.int("Voltage"), 1000...30000).map { Double($0) / 1000 }
+        let amps = sane(r.int("InstantAmperage") ?? r.int("Amperage"), -20000...20000)
         var watts: Double? = nil
         if let v = voltage, let a = amps { watts = (v * Double(a) / 1000 * 10).rounded() / 10 }
 
@@ -146,7 +177,7 @@ enum Battery {
         let toFull = charging ? (minutes(ps?.int("Time to Full Charge")) ?? minutes(r.int("AvgTimeToFull"))) : nil
         let toEmpty = plugged ? nil : (minutes(ps?.int("Time to Empty")) ?? minutes(r.int("AvgTimeToEmpty")))
 
-        let cells = (r.dict("BatteryData")?["CellVoltage"] as? [NSNumber])?.map { $0.intValue }.filter { $0 > 0 } ?? []
+        let cells = (r.dict("BatteryData")?["CellVoltage"] as? [NSNumber])?.map { $0.intValue }.filter { $0 > 1000 && $0 < 5000 } ?? []
         let spread = cells.count > 1 ? (cells.max()! - cells.min()!) : nil
 
         let failure = (r.int("PermanentFailureStatus") ?? 0) != 0
@@ -161,12 +192,17 @@ enum Battery {
             condition = "normal"
         }
 
+        // O status usa a saúde amortecida (mediana dos últimos dias + agora), pra não
+        // ficar trocando entre "saudável" e "de olho" a cada recalibração.
+        let steady = History.steadyHealth(current: health)
         var status = "saudavel"
         if condition == "falha" || condition == "revisao" {
             status = "trocar"
-        } else if let h = health, h < 80 {
+        } else if steady == nil {
+            status = "desconhecida"
+        } else if let h = steady, h < 80 {
             status = "gasta"
-        } else if let h = health, h < 85 {
+        } else if let h = steady, h < 85 {
             status = "de-olho"
         } else if let c = cycles, Double(c) >= Double(designCycles) * 0.8 {
             status = "de-olho"
@@ -174,8 +210,9 @@ enum Battery {
 
         return BatteryNow(
             present: true, percent: percent, currentMah: curMah, maxMah: maxMah, designMah: design,
-            healthPct: health, cycles: cycles, designCycles: designCycles, temperatureC: tempC,
+            healthPct: health, healthPctRaw: healthRaw, cycles: cycles, designCycles: designCycles, temperatureC: tempC,
             voltageV: voltage.map { ($0 * 1000).rounded() / 1000 }, amperageMa: amps, watts: watts,
+            systemWatts: systemPower(r),
             isCharging: charging, pluggedIn: plugged, fullyCharged: full,
             finishingCharge: ps?.bool("Is Finishing Charge") ?? false,
             optimizedChargingEngaged: ps?.bool("Optimized Battery Charging Engaged") ?? false,
@@ -225,8 +262,21 @@ enum Machine {
         let plist = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Preferences/com.apple.SystemProfiler.plist")
         if let d = NSDictionary(contentsOf: plist) as? [String: Any],
-           let names = d["CPU Names"] as? [String: String], let first = names.values.first {
-            return first
+           let names = d["CPU Names"] as? [String: String], !names.isEmpty {
+            // chaves tipo "MD6M-en-BR_BR": prefere a do idioma atual
+            let lang = Locale.current.identifier
+            if let hit = names.first(where: { $0.key.hasSuffix(lang) }) { return hit.value }
+            return names.sorted { $0.key < $1.key }.first!.value
+        }
+        // Apple Silicon: o nome comercial está na árvore de dispositivos
+        let product = IORegistryEntryFromPath(kIOMainPortDefault, "IODeviceTree:/product")
+        if product != 0 {
+            defer { IOObjectRelease(product) }
+            if let cf = IORegistryEntryCreateCFProperty(product, "product-name" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue(),
+               let data = cf as? Data {
+                let name = String(decoding: data, as: UTF8.self).trimmingCharacters(in: CharacterSet(charactersIn: "\0").union(.whitespaces))
+                if !name.isEmpty { return name }
+            }
         }
         let id = sysctlString("hw.model") ?? "Mac"
         if id.hasPrefix("MacBookPro") { return "MacBook Pro" }

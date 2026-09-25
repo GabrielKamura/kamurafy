@@ -39,6 +39,11 @@ enum SettingsModule {
     @MainActor
     static func register(_ r: Router) {
         r.register("settings.get") { _ in Settings.current }
-        r.register("settings.set") { args in Settings.apply(args) }
+        r.register("settings.set") { args in
+            let before = Settings.current.limiteAviso
+            let s = Settings.apply(args)
+            if s.limiteAviso != before { Sampler.shared.rearm() }
+            return s
+        }
     }
 }

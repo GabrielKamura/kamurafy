@@ -21,12 +21,14 @@ final class UIScheme: NSObject, WKURLSchemeHandler {
     static let scheme = "kamurafy"
     let root: URL
 
-    init(root: URL) { self.root = root.standardizedFileURL }
+    init(root: URL) { self.root = root.resolvingSymlinksInPath().standardizedFileURL }
 
     static func defaultRoot() -> URL {
+        #if KAMURAFY_DEV
         if let dev = ProcessInfo.processInfo.environment["KAMURAFY_UI_DIR"], !dev.isEmpty {
             return URL(fileURLWithPath: dev, isDirectory: true)
         }
+        #endif
         return Bundle.main.resourceURL!.appendingPathComponent("ui", isDirectory: true)
     }
 
@@ -42,9 +44,13 @@ final class UIScheme: NSObject, WKURLSchemeHandler {
         guard let url = task.request.url else { return }
         var path = url.path
         if path.isEmpty || path == "/" { path = "/index.html" }
-        let file = root.appendingPathComponent(String(path.dropFirst())).standardizedFileURL
+        // resolve links simbólicos antes de conferir que continua dentro de ui/
+        let file = root.appendingPathComponent(String(path.dropFirst())).resolvingSymlinksInPath().standardizedFileURL
         let inside = file.path.hasPrefix(root.path + "/")
-        guard inside, let data = try? Data(contentsOf: file) else {
+        guard url.host == "app", inside, let data = try? Data(contentsOf: file) else {
+            #if KAMURAFY_DEV
+            fputs("[ui:404] \(url.absoluteString)\n", stderr)
+            #endif
             let resp = HTTPURLResponse(url: url, statusCode: 404, httpVersion: "HTTP/1.1", headerFields: [:])!
             task.didReceive(resp)
             task.didReceive(Data())
@@ -69,7 +75,8 @@ final class BridgeHandler: NSObject, WKScriptMessageHandlerWithReply {
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage,
                                replyHandler: @escaping (Any?, String?) -> Void) {
         guard message.frameInfo.isMainFrame,
-              message.frameInfo.securityOrigin.protocol == UIScheme.scheme else {
+              message.frameInfo.securityOrigin.protocol == UIScheme.scheme,
+              message.frameInfo.securityOrigin.host == "app" else {
             replyHandler(nil, "origem não permitida")
             return
         }
@@ -94,7 +101,11 @@ enum WebUI {
     static let errorHook = """
     (function(){
       function send(level, msg){ try { window.webkit.messageHandlers.kamurafy.postMessage({cmd:'app.log', args:{level:level, msg:String(msg).slice(0,4000)}}); } catch(e){} }
-      window.addEventListener('error', function(e){ send('error', (e.message||'erro') + ' @ ' + (e.filename||'') + ':' + (e.lineno||'') + ':' + (e.colno||'')); });
+      window.addEventListener('error', function(e){
+        var t = e.target;
+        if (t && t !== window && (t.src || t.href)) { send('error', 'recurso não carregou: ' + (t.src || t.href)); return; }
+        send('error', (e.message||'erro') + ' @ ' + (e.filename||'') + ':' + (e.lineno||'') + ':' + (e.colno||''));
+      }, true);
       window.addEventListener('unhandledrejection', function(e){ var r=e.reason; send('error', 'promise: ' + (r && (r.stack || r.message) || r)); });
       var ce = console.error.bind(console), cw = console.warn.bind(console), cl = console.log.bind(console);
       console.error = function(){ send('error', Array.prototype.join.call(arguments,' ')); ce.apply(null, arguments); };
@@ -115,7 +126,11 @@ enum WebUI {
                                            injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
         cfg.userContentController = ucc
-        cfg.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        #if KAMURAFY_DEV
+        if ProcessInfo.processInfo.environment["KAMURAFY_DEV"] == "1" {
+            cfg.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        }
+        #endif
         cfg.suppressesIncrementalRendering = true
 
         let web = KWebView(frame: .zero, configuration: cfg)
@@ -123,15 +138,19 @@ enum WebUI {
         web.setValue(false, forKey: "drawsBackground")
         web.allowsMagnification = false
         web.allowsBackForwardNavigationGestures = false
+        #if KAMURAFY_DEV
         if #available(macOS 13.3, *) {
             web.isInspectable = ProcessInfo.processInfo.environment["KAMURAFY_DEV"] == "1"
         }
+        #endif
         return web
     }
 
     static func startURL(route: String?) -> URL {
-        var s = "\(UIScheme.scheme)://app/index.html"
-        if let r = route, !r.isEmpty { s += "#/" + r }
-        return URL(string: s)!
+        let base = "\(UIScheme.scheme)://app/index.html"
+        guard let r = route, !r.isEmpty,
+              let frag = r.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed),
+              let url = URL(string: base + "#/" + frag) else { return URL(string: base)! }
+        return url
     }
 }
