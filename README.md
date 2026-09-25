@@ -43,6 +43,19 @@
 
 **Na barra de menus**: a bateria sempre à vista, com um resumo a um clique.
 
+<table>
+  <tr>
+    <td width="50%"><img src="docs/img/varredura.png" alt="Varredura conferindo bateria, energia, memória, processador, disco e sujeira"></td>
+    <td width="50%"><img src="docs/img/faxina.png" alt="Faxina mostrando quanto dá pra liberar, com tudo marcado pra conferir antes"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/img/otimizar.png" alt="Otimizar: o que abre com o Mac, o que está pesando e manutenção"></td>
+    <td><img src="docs/img/painel.png" alt="Painel ao vivo com processador, memória e disco"></td>
+  </tr>
+</table>
+
+<p align="center"><img src="docs/img/menubar.png" width="300" alt="Resumo da bateria na barra de menus"></p>
+
 ## Instalar
 
 1. Baixe o `Kamurafy.dmg` na [última versão](../../releases/latest) e arraste o Kamurafy pra pasta Aplicativos.
