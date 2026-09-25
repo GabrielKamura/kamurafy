@@ -41,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
+        if snapshot != nil { RunMode.current = .snapshot }
         Commands.registerAll()
         NSApp.setActivationPolicy(snapshot == nil ? .regular : .accessory)
         buildMenu()

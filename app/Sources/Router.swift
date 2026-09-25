@@ -69,6 +69,7 @@ enum Commands {
         EnergyModule.register(r)
         SystemModule.register(r)
         NotifyModule.register(r)
+        CleanupModule.register(r)
     }
 }
 

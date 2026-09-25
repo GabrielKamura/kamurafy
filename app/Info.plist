@@ -26,6 +26,14 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>O Kamurafy pede ao Finder pra esvaziar a Lixeira, só quando você mandar.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>Pra procurar arquivos grandes e duplicados na sua Mesa. Nada é apagado sem você escolher.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Pra procurar arquivos grandes e duplicados nos seus Documentos. Nada é apagado sem você escolher.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>Pra achar downloads esquecidos e arquivos grandes. Nada é apagado sem você escolher.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
