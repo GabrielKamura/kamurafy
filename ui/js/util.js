@@ -204,6 +204,19 @@ K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.model
   };
 })();
 
+/* ===== Faxina: o que já vem marcado (Faxina, Varredura e Painel usam a mesma regra) ===== */
+/**
+ * Sugestão do Swift (`selecionado`) com uma trava a mais: cache de app sem app conhecido
+ * (`categoria: 'caches'` e `app` vazio) não vem marcado. Costuma ser serviço do macOS sem o
+ * prefixo com.apple (askpermissiond, Maps…) ou ferramenta de terminal que pode estar rodando.
+ * A pessoa ainda pode marcar na mão.
+ */
+K.cleanSuggested = function (it) {
+  if (!it || !it.selecionado || it.appAberto || it.semAcesso) return false;
+  if (it.categoria === 'caches' && !it.app) return false;
+  return true;
+};
+
 /** Etiqueta de status (ícone + texto). tone: good | warn | serious | crit */
 K.statusPill = function (tone, text, iconName, big) {
   return K.el('span', { class: `status ${tone}${big ? ' big' : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
@@ -230,3 +243,138 @@ K.countUp = function (node, to, format, ms = 900) {
   };
   requestAnimationFrame(step);
 };
+
+/* ===== caixa de marcar (três estados) ===== */
+/**
+ * Caixa de marcar desenhada (button role=checkbox). state: true | false | 'mixed'.
+ *   const c = K.checkbox({ state: true, label: 'Marcar Spotify', onchange: () => … })
+ *   c.set(false)            // muda o desenho (não chama onchange)
+ *   c.set('mixed', true)    // segundo argumento: desabilitada
+ * O clique só chama onchange: quem decide o novo estado é a página (ela chama set).
+ */
+K.checkbox = function (o) {
+  o = o || {};
+  const node = K.el('button', {
+    class: 'kcheck' + (o.class ? ' ' + o.class : ''), type: 'button', role: 'checkbox',
+    'aria-label': o.label || null, title: o.title || null,
+    html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="kc-tick" d="m6 12.6 4 4 8-9"/><path class="kc-dash" d="M6.5 12h11"/></svg>',
+  });
+  node.set = function (state, disabled) {
+    node.setAttribute('aria-checked', state === 'mixed' ? 'mixed' : state ? 'true' : 'false');
+    node.disabled = !!disabled;
+    return node;
+  };
+  node.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (node.disabled) return;
+    if (o.onchange) o.onchange(e);
+  });
+  node.set(o.state, o.disabled);
+  return node;
+};
+
+/* ===== confirmação (modal próprio: o WKWebView não mostra confirm()) ===== */
+/**
+ * Pergunta antes de fazer algo que mexe em arquivo. Devolve Promise<boolean>.
+ *   const ok = await K.confirm({
+ *     title: 'Mandar 2,3 GB pra Lixeira?',
+ *     text: 'Uma frase explicando.',                    // opcional
+ *     body: nó | [nós],                                   // opcional (resumo, lista)
+ *     note: { icon: 'fxUndo', text: 'Dá pra desfazer…', tone: 'good' | 'crit' },   // opcional
+ *     ok: 'Mandar pra Lixeira', cancel: 'Agora não',
+ *     tone: 'gold' | 'danger',                            // danger: botão vermelho, foco no Cancelar
+ *     icon: 'fxTrash',                                    // ícone do selo do título
+ *     ack: 'Entendi que não dá pra desfazer',             // opcional: precisa marcar pra liberar o botão
+ *     mascot: 'happy' | 'worried' | …                     // opcional: mascote pequeno ao lado
+ *   })
+ * Esc, clique fora e "Cancelar" devolvem false. Só um aberto por vez (abrir outro cancela o anterior).
+ * K.confirm.close(valor) fecha por código (testes); K.confirm.isOpen() diz se há um aberto.
+ */
+K.confirm = (function () {
+  let cur = null;
+
+  function close(value) {
+    if (!cur) return;
+    const c = cur;
+    cur = null;
+    document.removeEventListener('keydown', c.onKey, true);
+    if (c.mascot) { try { c.mascot.destroy(); } catch (e) { /* já foi */ } }
+    const calm = document.documentElement.classList.contains('snap') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (calm) c.back.remove();
+    else { c.back.classList.add('out'); setTimeout(() => c.back.remove(), 170); }
+    if (c.prev && document.contains(c.prev) && c.prev.focus) { try { c.prev.focus({ preventScroll: true }); } catch (e) { /* sem foco */ } }
+    c.resolve(!!value);
+  }
+
+  function open(o) {
+    o = o || {};
+    if (cur) close(false);
+    const danger = o.tone === 'danger';
+    return new Promise((resolve) => {
+      const id = 'kmodal-' + Math.random().toString(36).slice(2, 8);
+      const okBtn = K.el('button', { class: 'btn ' + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
+        o.ok || 'Confirmar');
+      const cancelBtn = K.el('button', { class: 'btn kmodal-cancel', type: 'button', onclick: () => close(false) }, o.cancel || 'Cancelar');
+      let ackBox = null;
+      if (o.ack) {
+        okBtn.disabled = true;
+        const chk = K.checkbox({ state: false, label: o.ack, onchange: () => {
+          const on = chk.getAttribute('aria-checked') !== 'true';
+          chk.set(on);
+          okBtn.disabled = !on;
+          K.sound.tick();
+        } });
+        ackBox = K.el('div', { class: 'kmodal-ack' }, chk,
+          K.el('span', { onclick: () => chk.click() }, o.ack));
+      }
+      const body = [];
+      if (o.text) body.push(K.el('p', { class: 'kmodal-text', id: id + '-d' }, o.text));
+      if (o.body) body.push(...[].concat(o.body).filter(Boolean));
+      /* o aviso fica fora da parte que rola: em janela baixa, "Não dá pra desfazer" nunca some */
+      const note = o.note
+        ? K.el('div', { class: 'kmodal-note ' + (o.note.tone || (danger ? 'crit' : 'good')), html: K.icon(o.note.icon || (danger ? 'alert' : 'check')) },
+          K.el('p', null, o.note.text))
+        : null;
+      const art = o.mascot ? K.el('div', { class: 'kmodal-mascot', 'aria-hidden': 'true' }) : null;
+      const dialog = K.el('div', {
+        class: 'kmodal' + (danger ? ' is-danger' : '') + (art ? ' has-mascot' : ''), role: 'alertdialog', 'aria-modal': 'true',
+        'aria-labelledby': id + '-t', 'aria-describedby': o.text ? id + '-d' : null,
+      },
+        K.el('div', { class: 'kmodal-head' },
+          K.el('span', { class: 'kmodal-ic' + (danger ? ' crit' : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
+          K.el('h2', { id: id + '-t' }, o.title || 'Tem certeza?')),
+        K.el('div', { class: 'kmodal-body' }, body),
+        note,
+        ackBox,
+        K.el('div', { class: 'kmodal-foot' }, cancelBtn, okBtn),
+        art);
+      const back = K.el('div', { class: 'kmodal-back', onclick: (e) => { if (e.target === back) close(false); } }, dialog);
+      document.body.appendChild(back);
+      const c = { back, dialog, resolve, prev: document.activeElement, mascot: null };
+      if (art && K.mascot) {
+        try { c.mascot = K.mascot(art, { size: 104, state: { pct: 72, tone: danger ? 'warn' : 'good', face: o.mascot === true ? (danger ? 'worried' : 'happy') : o.mascot } }); } catch (e) { /* sem mascote */ }
+      }
+      c.onKey = (e) => {
+        if (cur !== c) return;
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(false); return; }
+        if (e.key === 'Tab') {
+          const f = K.$$('button:not([disabled]), [tabindex]:not([tabindex="-1"])', dialog);
+          if (!f.length) return;
+          const i = f.indexOf(document.activeElement);
+          if (e.shiftKey && (i <= 0)) { e.preventDefault(); f[f.length - 1].focus(); }
+          else if (!e.shiftKey && (i === f.length - 1 || i < 0)) { e.preventDefault(); f[0].focus(); }
+        }
+      };
+      document.addEventListener('keydown', c.onKey, true);
+      cur = c;
+      /* perigo: o foco começa no Cancelar (Enter sem querer não apaga nada) */
+      const first = danger || o.ack ? cancelBtn : okBtn;
+      setTimeout(() => { if (cur === c) first.focus({ preventScroll: true }); }, 30);
+      K.tooltip && K.tooltip.hide && K.tooltip.hide();
+    });
+  }
+
+  open.close = close;
+  open.isOpen = () => !!cur;
+  return open;
+})();

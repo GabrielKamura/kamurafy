@@ -216,11 +216,26 @@ e morrem ao serem limpos. No terminal (`--cmd`/`--seq`) e no modo foto, limpar s
   "tipo": null, "grupo": null, "semAcesso": false }
 ```
 - `selecionado`: sugestão do Swift (cache de app fechado, logs, programação conhecida). Caches
-  do macOS, downloads, grandes e duplicados nunca vêm marcados.
+  do macOS, downloads, grandes e duplicados nunca vêm marcados. A interface aplica uma trava a
+  mais (`K.cleanSuggested`, em `util.js`, usada na Faxina, na Varredura e no Painel pra os
+  números baterem): item de `caches` sem `app` não vem marcado, porque costuma ser serviço do
+  macOS sem o prefixo `com.apple` ou ferramenta de terminal rodando.
+- `parcial` (opcional, planejado: a interface já entende): `true` quando parte da pasta não deu
+  pra ler e `bytes` é só o mínimo. A linha mostra "parte sem acesso" e "pelo menos X".
 - `appAberto: true` → o Swift **recusa** limpar (a interface deve desabilitar e dizer "feche o app").
 - `tipo` (downloads/grandes/duplicados): `instalador` · `compactado` · `video` · `audio` ·
   `imagem` · `documento` · `pasta` · `outro`.
 - Duplicados: o Swift recusa se o pedido deixaria um grupo sem nenhuma cópia; a interface
   deve impedir marcar todas (sugestão: manter a mais antiga, que vem primeiro).
-- `nome`, `caminho` e `app` vêm de fora: só textContent.
+- `nome`, `caminho` e `app` vêm de fora: só textContent. Na tela, caracteres que mudam a direção
+  do texto (U+202E e parecidos) viram `�` e ganham a etiqueta "nome disfarçado"; no meio de uma
+  frase o nome vai isolado (FSI…PDI).
 - Números: `bytes` é espaço em disco de verdade (alocado), base 10 no `K.fmt.bytes`.
+- `motivo` das falhas: frase curta em português, sem UUID nem caminho. A interface traduz os que
+  conhece (`why()` em `faxina.js`) e tira UUID do que não conhece.
+- As abas conversam: depois de um `cleanup.clean` que deu certo, a interface tira das outras abas
+  o que tiver o mesmo `caminho` (ou estiver dentro dele) e avisa "a lista mudou". Um grupo de
+  duplicados que fica com uma cópia só sai da lista, e essa cópia vira "última cópia" (Grandes
+  e Downloads avisam antes de mandar ela também).
+- Ganchos de teste da interface (`K.faxina.scan/clean/purge/emptyTrash…`, com `semConfirmar`)
+  só existem na build de desenvolvimento: com `app.version.publico` eles somem.

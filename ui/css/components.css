@@ -363,3 +363,118 @@
   border-radius: var(--radius-sm);
   background: var(--st-crit-soft);
 }
+
+/* ===== botão de perigo (apagar de vez, esvaziar a Lixeira) ===== */
+.btn.danger { background: var(--st-crit); color: #fff; }
+.btn.danger:disabled { background: var(--st-crit-soft); color: var(--ink-2); }
+
+/* ===== caixa de marcar (K.checkbox): true · false · mixed ===== */
+.kcheck {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 9px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: transform .12s var(--ease), background .15s, box-shadow .12s var(--ease);
+}
+.kcheck svg { width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.kcheck .kc-tick, .kcheck .kc-dash { opacity: 0; }
+.kcheck .kc-tick { stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset .22s var(--ease), opacity .1s; }
+.kcheck[aria-checked="true"] { background: var(--gold); }
+.kcheck[aria-checked="true"] .kc-tick { opacity: 1; stroke-dashoffset: 0; }
+.kcheck[aria-checked="mixed"] { background: var(--gold-soft); }
+.kcheck[aria-checked="mixed"] .kc-dash { opacity: 1; }
+.kcheck:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.kcheck:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 0 0 0 var(--ink); }
+.kcheck:disabled { cursor: not-allowed; border-color: var(--ink-3); background: var(--panel); box-shadow: none; }
+.kcheck:disabled svg { stroke: var(--ink-3); }
+
+/* ===== confirmação (K.confirm) ===== */
+.kmodal-back {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 16, 8, .42);
+  animation: kmodal-fade .18s ease-out both;
+}
+.kmodal-back.out { animation: kmodal-fade .16s ease-in reverse both; }
+@keyframes kmodal-fade { from { opacity: 0; } to { opacity: 1; } }
+.kmodal {
+  position: relative;
+  width: min(540px, 100%);
+  background: var(--card);
+  border: var(--bw-thick) solid var(--ink);
+  border-radius: 24px;
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 22px 24px 20px;
+  animation: pop-in .32s var(--bounce) both;
+  /* cabe na janela: só o miolo (.kmodal-body) encolhe e rola; título, aviso e botões ficam */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+}
+.kmodal > * { flex: none; }
+.kmodal.has-mascot { margin-top: 40px; max-height: calc(100vh - 88px); }
+.kmodal.is-danger { box-shadow: 8px 8px 0 var(--st-crit); }
+.kmodal-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; padding-right: 70px; }
+.kmodal:not(.has-mascot) .kmodal-head { padding-right: 0; }
+.kmodal-head h2 { font-size: 27px; line-height: 1.08; text-wrap: balance; }
+.kmodal-ic {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 14px;
+  background: var(--gold);
+  box-shadow: var(--shadow-xs);
+  transform: rotate(-4deg);
+}
+.kmodal-ic svg { width: 26px; height: 26px; }
+.kmodal-ic.crit { background: var(--st-crit-soft); }
+.kmodal-ic.crit svg { color: var(--st-crit); }
+.kmodal-mascot { position: absolute; top: -52px; right: 14px; width: 104px; transform: rotate(8deg); pointer-events: none; }
+.kmodal > .kmodal-body { display: flex; flex-direction: column; gap: 12px; flex: 0 1 auto; min-height: 0; overflow: auto; }
+.kmodal-body > * { flex: none; }
+.kmodal > .kmodal-note { margin-top: 12px; }
+.kmodal-text { margin: 0; font-size: 16px; line-height: 1.45; color: var(--ink-2); }
+.kmodal-text b { font-weight: 400; color: var(--ink); }
+.kmodal-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--st-good-soft);
+}
+.kmodal-note svg { width: 22px; height: 22px; flex: none; margin-top: 1px; color: var(--st-good); }
+.kmodal-note p { margin: 0; font-size: 15px; line-height: 1.35; }
+.kmodal-note.crit { background: var(--st-crit-soft); }
+.kmodal-note.crit svg { color: var(--st-crit); }
+.kmodal-note.warn { background: var(--st-warn-soft); }
+.kmodal-note.warn svg { color: #b77800; }
+.kmodal-ack {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 2px dashed var(--ink-3);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  cursor: pointer;
+}
+.kmodal-foot { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.snap .kmodal-back, .snap .kmodal { animation: none !important; }

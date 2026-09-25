@@ -54,7 +54,9 @@ passos, `.oops()` em erro. Nada de som em hover.
 Entrada dos cartões com `.pop-in` escalonado (`style.animationDelay`), números com
 `K.countUp`, mascote piscando e respirando, botão de escanear com `.pulse`. Hover levanta
 (`translate(-2px,-2px)` + sombra maior), clique afunda. Tudo desliga com
-`prefers-reduced-motion` e no modo foto (`html.snap`).
+`prefers-reduced-motion` e no modo foto (`html.snap`, que também zera todas as transições em
+`base.css`: com a janela fora da vista o relógio para e a transição ficaria presa no primeiro
+quadro). No modo foto, roteiro longo (mais de ~15 s de ações) fica lento: quebre em fotos menores.
 
 ## Gráficos (regras que valem mesmo no estilo cartum)
 

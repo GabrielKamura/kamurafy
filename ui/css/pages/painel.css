@@ -232,6 +232,36 @@
 .pn-disk-line { font-size: 15px; line-height: 1.3; }
 .pn-disk-stats .stat-sub { margin-top: 6px; line-height: 1.35; font-size: 13px; color: var(--ink-3); }
 .pn-disk .pn-disk-body { margin: 4px 0 18px; }
+/* ponte pra Faxina (estimativa que só lê) */
+.pn-fax {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 2px dashed var(--ink-3);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+}
+.pn-fax[data-state="tip"] { border: var(--bw) solid var(--ink); background: var(--card); box-shadow: var(--shadow-xs); }
+.pn-fax-ic {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 11px;
+  background: var(--card);
+}
+.pn-fax[data-state="tip"] .pn-fax-ic { background: var(--gold); }
+.pn-fax-ic svg { width: 22px; height: 22px; }
+.pn-fax-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.pn-fax-t b { font-weight: 400; font-size: 17px; line-height: 1.15; }
+.pn-fax-sub { font-size: 13px; line-height: 1.3; color: var(--ink-2); }
+.pn-fax[data-state="wait"] .pn-fax-sub { color: var(--ink-3); }
+.pn-fax-btn { flex: none; }
+.pn-fax-btn svg { width: 16px; height: 16px; }
 .pn-disktip { margin-top: auto; padding: 10px 12px; }
 .pn-disktip p { font-size: 13px; line-height: 1.35; }
 .pn-disktip svg { width: 20px; height: 20px; }

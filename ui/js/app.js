@@ -8,8 +8,8 @@
     { id: 'inicio', label: 'Varredura', icon: 'scan' },
     { id: 'bateria', label: 'Bateria', icon: 'battery', star: true },
     { id: 'painel', label: 'Painel', icon: 'gauge' },
-    { section: 'Limpeza e cuidado', soon: true },
-    { id: 'faxina', label: 'Faxina', icon: 'broom', soon: true },
+    { section: 'Limpeza e cuidado' },
+    { id: 'faxina', label: 'Faxina', icon: 'broom' },
     { id: 'otimizar', label: 'Otimizar', icon: 'rocket', soon: true },
     { id: 'desinstalar', label: 'Desinstalar', icon: 'box', soon: true },
     { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true },  // só pra testes
@@ -32,13 +32,20 @@
       K.el('span', { class: 'brand-name' }, 'Kamurafy')));
 
     const nav = K.el('nav', { class: 'nav', 'aria-label': 'Seções' });
+    /* um selo "em breve" por grupo, em vez de um em cada item: vai no rótulo da seção quando ela
+       inteira ainda não existe, ou logo acima dos itens que faltam (os prontos ficam fora dele) */
+    let soonShown = false;
     for (const r of ROUTES) {
       if (r.hidden) continue;
       if (publico && r.soon) continue;
       if (r.section) {
-        /* um selo só pra seção inteira, em vez de um "em breve" em cada item */
+        soonShown = !!r.soon;
         nav.appendChild(K.el('div', { class: 'nav-label' }, r.section, r.soon ? K.el('span', { class: 'soon' }, 'em breve') : null));
         continue;
+      }
+      if (r.soon && !soonShown) {
+        soonShown = true;
+        nav.appendChild(K.el('div', { class: 'nav-label nav-soon' }, K.el('span', { class: 'soon' }, 'em breve')));
       }
       const item = K.el('button', {
         class: 'nav-item' + (r.soon ? ' is-soon' : ''), dataset: { route: r.id }, html: K.icon(r.icon),
@@ -185,7 +192,7 @@
       const s = await K.settings.load();
       K.sound.enabled = s.som && !document.documentElement.classList.contains('snap');
     } catch (e) { console.warn('settings:', e.message); }
-    try { const v = await K.api('app.version'); publico = !!(v && v.publico); } catch (e) { /* sem versão: mostra tudo */ }
+    try { const v = await K.api('app.version'); publico = !!(v && v.publico); K.appVersion = v || null; } catch (e) { /* sem versão: mostra tudo */ }
     buildSidebar();
     setupDrag();
     paintSideBattery();

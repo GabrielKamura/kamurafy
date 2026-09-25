@@ -28,6 +28,8 @@
     { to: 90, tone: 'warn', label: 'Trabalhando' },
     { to: 100, tone: 'serious', label: 'A todo vapor' },
   ];
+  const DIRT_WAIT = 2500;    // a olhada na sujeira começa depois das leituras rápidas do começo
+  const DIRT_AGE = 120000;   // reaproveita a olhada (da Varredura ou daqui) por 2 min
   const SEED_N = 7;          // leituras rápidas ao abrir, pra minilinha não nascer vazia
   const SEED_MS = 300;
   const SPARK_MIN = 10;      // antes disso, média e pico ainda não dizem muito
@@ -334,6 +336,19 @@
         K.el('div', { class: 'pn-bigline' }, R.diskFree),
         R.diskPurge,
         R.diskAvail)));
+    /* ponte pra Faxina: uma estimativa que só lê (cleanup.scan), sem segurar o painel */
+    R.faxText = K.el('span', { class: 'pn-fax-sub' }, 'Vendo quanto dá pra liberar…');
+    R.faxBtn = K.el('button', {
+      class: 'btn small pn-fax-btn', type: 'button', html: K.icon('arrow'),
+      onclick: () => { K.sound.plop(); location.hash = '#/faxina'; },
+    });
+    R.faxBtnText = K.el('span', null, 'Abrir a Faxina');
+    R.faxBtn.insertBefore(R.faxBtnText, R.faxBtn.firstChild);
+    R.fax = K.el('div', { class: 'pn-fax', dataset: { state: 'wait' } },
+      K.el('span', { class: 'pn-fax-ic', html: K.icon('broom') }),
+      K.el('div', { class: 'pn-fax-t' }, K.el('b', null, 'Faxina'), R.faxText),
+      R.faxBtn);
+    dk.c.appendChild(R.fax);
     R.diskTip = K.el('p', null, '');
     dk.c.appendChild(K.el('div', { class: 'tip pn-tip pn-disktip', html: K.icon('info') }, R.diskTip));
     grid.appendChild(dk.c);
@@ -605,6 +620,43 @@
       : `O macOS gosta de ter uns 10 a 20% do disco livre pra atualizações e memória extra. Aqui estão livres ${K.fmt.num(share * 100, 0)}%${share >= 0.2 ? ', folga de sobra.' : share >= 0.1 ? ': ainda dá, mas vale ficar de olho.' : ': está apertado, vale tirar arquivos grandes que você não usa.'}`);
   }
 
+  /** estimativa da Faxina: caches, programação e registros (só lê; K.dirt mora na Varredura) */
+  async function estimateDirt(me) {
+    const R = me.R;
+    if (!K.dirt) { paintDirt(R, null); return; }
+    try {
+      const d = await K.dirt.check({ maxAgeMs: DIRT_AGE });
+      if (S !== me || me.dead) return;
+      paintDirt(R, d);
+    } catch (e) {
+      if (S !== me || me.dead) return;
+      paintDirt(R, null);
+    }
+  }
+
+  function paintDirt(R, d) {
+    const sel = d && isNum(d.sel) ? d.sel : null;
+    const least = d && (d.incompleto || (d.errs && d.errs.length)) ? 'pelo menos ' : '';
+    let state, text;
+    if (sel == null) {
+      state = 'none';
+      text = 'Você vê tudo antes e decide o que sai.';
+    } else if (sel >= 1e9) {
+      state = 'tip';
+      text = `Dá pra liberar ${least}${K.fmt.bytes(sel).replace(' ', '\u00a0')} em caches e registros, com segurança.`;
+    } else if (sel >= 1e8) {
+      state = 'ok';
+      text = `Só ${least}${K.fmt.bytes(sel).replace(' ', '\u00a0')} em caches e registros: nada que pese no disco.`;
+    } else {
+      state = 'ok';
+      text = 'Quase nada de cache ou registro sobrando agora.';
+    }
+    R.fax.dataset.state = state;
+    txt(R.faxText, text);
+    R.faxBtn.classList.toggle('gold', state === 'tip');
+    txt(R.faxBtnText, state === 'tip' ? 'Ver e limpar' : 'Abrir a Faxina');
+  }
+
   /* ---------- sistema ---------- */
 
   function applyInfo(s) {
@@ -752,6 +804,7 @@
       if (s.status === 'fulfilled') seed(me).then(() => { if (!me.dead) every(SYS_MS, pollSystem); });
       else every(SYS_MS, pollSystem);
       every(BAT_MS, pollBattery);
+      me.dirtTimer = setTimeout(() => { if (!me.dead) estimateDirt(me); }, snap() ? 0 : DIRT_WAIT);
       S.onVis = () => { if (!document.hidden && S && !S.dead && !S.paused) for (const j of S.jobs) j.kick(); };
       document.addEventListener('visibilitychange', S.onVis);
     },
@@ -760,6 +813,7 @@
       if (!S) return;
       S.dead = true;
       for (const j of S.jobs) clearTimeout(j.id);
+      clearTimeout(S.dirtTimer);
       if (S.onVis) document.removeEventListener('visibilitychange', S.onVis);
       for (const c of S.charts) { try { c.destroy(); } catch (e) { /* já foi */ } }
       if (S.mascot) { try { S.mascot.destroy(); } catch (e) { /* já foi */ } }

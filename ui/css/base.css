@@ -284,3 +284,6 @@ h3 { font-size: 19px; line-height: 1.15; }
    tudo que entra com .pop-in ficaria preso no primeiro quadro (invisível). */
 .snap *, .snap *::before, .snap *::after { animation-delay: 0s !important; }
 .snap .pop-in { animation: none !important; }
+/* e sem transição: com o relógio parado ela ficaria presa no primeiro quadro (caixa desmarcada
+   ainda dourada, item do menu lateral ainda aceso) */
+.snap *, .snap *::before, .snap *::after { transition: none !important; }

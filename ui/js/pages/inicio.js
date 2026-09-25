@@ -4,7 +4,9 @@
      escaneando → o botão vira um anel de progresso e cada passo ganha ✓ com o que achou;
      resultado  → resumo ("Tudo certo por aqui!" / "Achei N pontos de atenção") e cartões.
    K.scan() começa a varredura (usado nos testes com tools/foto.sh); K.scanReset() volta pro botão.
-   Regras de status honestas: só vira "atenção" o que de fato pede alguma ação. */
+   Regras de status honestas: só vira "atenção" o que de fato pede alguma ação.
+   A Varredura só LÊ: o passo "Sujeira" usa cleanup.scan (caches, programação e registros; nunca
+   Downloads, que faria o macOS pedir permissão) e manda a pessoa pra Faxina, que é quem limpa. */
 'use strict';
 
 (function () {
@@ -18,6 +20,9 @@
   const STEP_MAX = 9000;         // passo que passa disso vira "sem leitura" e a varredura segue
   const KEEP_S = 15 * 60;        // resultado continua na tela por 15 min ao voltar pra cá
   const RANK = { good: 0, warn: 1, serious: 2, crit: 3 };
+  const GB = 1e9;                // base 10, como o Finder e o K.fmt.bytes
+  const DIRT_TIP = GB;           // até aqui a sujeira é "tranquilo"; acima vira sugestão (nunca alarme)
+  const DIRT_CAT_MS = 9000;      // cada categoria que passa disso fica de fora (as outras seguem)
 
   const STEPS = [
     { id: 'bateria', name: 'Bateria', icon: 'battery', desc: 'saúde, ciclos e carga', doing: 'Olhando a bateria…', route: 'bateria', run: stepBattery },
@@ -25,7 +30,10 @@
     { id: 'memoria', name: 'Memória', icon: 'memory', desc: 'folgada ou apertada', doing: 'Medindo a memória…', route: 'painel', run: stepMemory },
     { id: 'cpu', name: 'Processador', icon: 'cpu', desc: 'uso e temperatura', doing: 'Sentindo o processador…', route: 'painel', run: stepCpu },
     { id: 'disco', name: 'Disco', icon: 'disk', desc: 'quanto espaço sobra', doing: 'Medindo o disco…', route: 'painel', run: stepDisk },
+    { id: 'sujeira', name: 'Sujeira', icon: 'broom', desc: 'caches e registros sobrando', doing: 'Procurando sujeira…', route: 'faxina', run: stepDirt,
+      max: DIRT_CAT_MS * 3 + 2000 },
   ];
+  const DIRT_STEP = STEPS.find((s) => s.id === 'sujeira');
 
   let host = null;
   let mode = 'idle';             // idle | scanning | result
@@ -64,6 +72,81 @@
     return Promise.race([p, K.sleep(ms).then(() => { throw new Error('demorou demais pra responder'); })]);
   }
 
+  /* ================= sujeira: olhada rápida pra Varredura e pro Painel =================
+     K.dirt.check({fresh, maxAgeMs, onCat}) → {at, sel, bytes, cats, errs, incompleto}
+       sel   = bytes que a Faxina já traz marcados (o seguro); bytes = tudo que achou
+       cats  = [{id, titulo, bytes, sel, incompleto, top: {nome, bytes} | null}] (só as que responderam)
+       errs  = [{id, nome, msg}] (categorias que não deu pra ver)
+     Só lê (cleanup.scan), uma categoria por vez. Sem nenhuma categoria lida, rejeita.
+     O resultado é esquecido quando a pessoa passa pela Faxina (lá ela pode ter limpado):
+     K.dirt.gen muda e quem guardou um número sabe que ele ficou velho. */
+  K.dirt = (function () {
+    const CATS = ['caches', 'dev', 'logs'];
+    const NAMES = { caches: 'caches de apps', dev: 'caches de programação', logs: 'registros' };
+    let last = null, running = null, gen = 0;
+
+    async function run(onCat) {
+      const my = gen;
+      const out = { at: 0, sel: 0, bytes: 0, cats: [], errs: [], incompleto: false };
+      for (const id of CATS) {
+        if (onCat) { try { onCat(id, NAMES[id]); } catch (e) { /* só aviso de progresso */ } }
+        try {
+          const c = await withTimeout(K.api('cleanup.scan', { categoria: id }), DIRT_CAT_MS);
+          if (!c || num(c.bytes) == null) throw new Error('resposta vazia');
+          /* o que vem marcado segue a mesma regra da Faxina (K.cleanSuggested), pra o número bater */
+          const pick = K.cleanSuggested || ((it) => !!it && it.selecionado);
+          const list = Array.isArray(c.itens) ? c.itens : null;
+          const sel = list ? list.reduce((a, it) => a + (pick(it) && num(it.bytes) ? it.bytes : 0), 0) : num(c.bytesSelecionados) || 0;
+          let top = null;
+          for (const it of list || []) {
+            if (pick(it) && num(it.bytes) && (!top || it.bytes > top.bytes)) top = it;
+          }
+          out.cats.push({
+            id, titulo: c.titulo || NAMES[id], bytes: c.bytes, sel, incompleto: !!c.incompleto,
+            /* nome e app vêm de fora: quem mostrar usa textContent */
+            /* caractere que muda a direção do texto (U+202E…) vira � pra não inverter a frase */
+            top: top ? { nome: String(top.app || top.nome || '').replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '\uFFFD'), bytes: top.bytes } : null,
+          });
+          out.sel += sel;
+          out.bytes += c.bytes;
+          if (c.incompleto) out.incompleto = true;
+        } catch (e) {
+          out.errs.push({ id, nome: NAMES[id], msg: e && e.message ? String(e.message) : '' });
+        }
+      }
+      out.at = Date.now();
+      if (!out.cats.length) {
+        const e = out.errs.find((x) => x.msg);
+        throw new Error(e ? e.msg : 'o Mac não respondeu');
+      }
+      if (my === gen) last = out;
+      return out;
+    }
+
+    return {
+      NAMES,
+      get gen() { return gen; },
+      get last() { return last; },
+      check(o) {
+        o = o || {};
+        if (!o.fresh) {
+          if (o.maxAgeMs && last && Date.now() - last.at < o.maxAgeMs) return Promise.resolve(last);
+          if (running) return running;
+        }
+        const p = run(o.onCat);
+        running = p;
+        const done = () => { if (running === p) running = null; };
+        p.then(done, done);
+        return p;
+      },
+      forget() { gen++; last = null; running = null; },
+    };
+  })();
+  /* passou pela Faxina (entrando ou saindo): o número de sujeira guardado ficou velho */
+  window.addEventListener('hashchange', (e) => {
+    if (/^#\/faxina\b/.test(location.hash) || /#\/faxina\b/.test((e && e.oldURL) || '')) K.dirt.forget();
+  });
+
   /* ================= leitura e análise de cada área ================= */
 
   async function stepBattery(ctx) {
@@ -85,7 +168,13 @@
   }
   async function stepDisk(ctx) {
     const s = await K.api('system.now');
-    return anDisk(s && s.disk);
+    ctx.disk = anDisk(s && s.disk);
+    return ctx.disk;
+  }
+  async function stepDirt(ctx) {
+    const d = await K.dirt.check({ fresh: true, onCat: (id, nome) => ctx.progress && ctx.progress(`Olhando ${nome}…`) });
+    ctx.dirtGen = K.dirt.gen;
+    return anDirt(d, ctx.disk);
   }
 
   function chargeText(b) {
@@ -266,8 +355,59 @@
     };
   }
 
+  const DIRT_COLOR = { caches: K.charts.palette[0], dev: K.charts.palette[1], logs: K.charts.palette[2] };
+  const DIRT_SHORT = { caches: 'Caches de apps', dev: 'Programação', logs: 'Registros' };
+  /** "3,2 GB" com espaço que não quebra (a unidade nunca fica sozinha na linha) */
+  const gbNb = (v) => K.fmt.bytes(v).replace(' ', '\u00a0');
+
+  /** Sujeira nunca vira "atenção": até 1 GB é tranquilo; acima é sugestão (tom "tip", dourado).
+      Cache volta com o tempo e não é o que deixa o Mac lento, então o texto não promete milagre. */
+  function anDirt(d, disk) {
+    const r = { id: 'sujeira', sel: d.sel, found: d.bytes, cats: d.cats, errs: d.errs, partial: d.errs.length > 0 || d.incompleto };
+    const big = d.cats.slice().sort((a, b) => b.sel - a.sel)[0];
+    let top = null;
+    for (const c of d.cats) if (c.top && c.top.nome && (!top || c.top.bytes > top.bytes)) top = c.top;
+    const tight = !!(disk && !disk.error && RANK[disk.tone] > 0);
+    const selTxt = gbNb(d.sel);
+    const least = r.partial ? 'pelo menos ' : '';
+    r.tight = tight;
+    r.facts = [];
+    if (top && d.sel > 0 && top.bytes >= 1e7) r.facts.push({ icon: 'box', text: `O maior: ${top.nome}, ${gbNb(top.bytes)}` });
+    if (d.errs.length) r.facts.push({ icon: 'info', text: `Não deu pra ver: ${listPt(d.errs.map((e) => e.nome))}` });
+    else if (d.incompleto) r.facts.push({ icon: 'info', text: 'Tinha muita coisa e parei de contar no meio: o número é o mínimo' });
+    r.note = 'Contei caches de apps, de programação e registros (os do macOS só aparecem na Faxina). Lá você revisa item por item, e tudo vai pra Lixeira.';
+
+    if (d.bytes <= 0) {
+      return Object.assign(r, { tone: 'good', pill: { label: 'Limpinho', icon: 'check' }, snippet: 'nada sobrando', value: null, note: null,
+        say: 'Não achei cache nem registro sobrando. Nada pra fazer aqui.' });
+    }
+    if (d.sel <= 0) {
+      /* sem nada marcado, a barra seria 100% "pra você decidir": não diz nada, fica de fora */
+      return Object.assign(r, { tone: 'good', pill: { label: 'Nada marcado', icon: 'check' }, snippet: 'nada pra tirar sozinho', value: null, noStack: true,
+        note: 'Na Faxina você revisa item por item, e tudo vai pra Lixeira.',
+        say: `Achei ${least}${gbNb(d.bytes)} em caches e registros, mas nada que eu tiraria sozinho: é de app aberto ou coisa que vale você olhar antes. Na Faxina dá pra ver item por item.` });
+    }
+    const out = { value: d.sel, snippet: `${selTxt} pra liberar`, sub: r.partial ? 'pra liberar, pelo menos' : 'pra liberar com segurança' };
+    if (d.sel < DIRT_TIP) {
+      return Object.assign(r, out, { tone: 'good', pill: { label: 'Tranquilo', icon: 'check' },
+        say: `Só ${least}${selTxt} em caches e registros. Não pesa no disco: dá pra deixar pra outro dia.` });
+    }
+    const bigTxt = `os ${K.dirt.NAMES[big.id]} (${gbNb(big.sel)})`;
+    let say = d.sel >= 10 * GB ? 'Juntou bastante coisa. ' : '';
+    say += tight
+      ? `O que mais pesa são ${bigTxt}. Com o disco apertado, é um bom lugar pra começar: os apps recriam o que precisarem com o tempo.`
+      : `O que mais pesa são ${bigTxt}. Não é urgente, e não é isso que deixa o Mac lento: é espaço de volta. Os apps recriam o que precisarem com o tempo.`;
+    return Object.assign(r, out, { tone: 'tip', pill: { label: 'Dá pra liberar', icon: 'sparkle' }, say });
+  }
+
   function errResult(step, e) {
     const msg = e && e.message ? String(e.message) : '';
+    if (step.id === 'sujeira') {
+      return {
+        id: step.id, error: true, tone: null, pill: { label: 'Não consegui ver', icon: 'info' }, snippet: 'não consegui ver',
+        say: `Não consegui ver a sujeira agora${msg ? ` (${msg})` : ''}. Não mexi em nada: dá pra escanear de novo ou abrir a Faxina e olhar com calma.`,
+      };
+    }
     return {
       id: step.id, error: true, tone: null, pill: { label: 'Sem leitura', icon: 'info' }, snippet: 'não deu pra ler',
       say: `Não consegui ler agora${msg ? ` (${msg})` : ''}. Tente escanear de novo daqui a pouco.`,
@@ -353,7 +493,7 @@
 
     ui.hello = K.el('span', { class: 'sticker kz-hello' }, greeting());
     ui.h1 = K.el('h1', null, K.el('span', null, 'Bora dar uma geral'), ' ', K.el('span', null, 'no seu Mac?'));
-    ui.p = K.el('p', null, 'Confiro cinco coisas em uns segundos. Só olho, não apago nada.');
+    ui.p = K.el('p', null, 'Confiro seis coisas em uns segundos. Só olho, não apago nada.');
     host.appendChild(K.el('header', { class: 'page-head kz-head', 'data-drag': true },
       K.el('div', { class: 'kz-head-text' }, ui.hello, ui.h1, ui.p)));
 
@@ -363,7 +503,7 @@
       K.el('span', { class: 'kz-go-shine', 'aria-hidden': 'true', html: '<svg viewBox="0 0 100 100"><path d="M18 35 Q22 21 36 14"/><circle cx="14.5" cy="43" r="2.3"/></svg>' }),
       K.el('span', { class: 'kz-go-ic', html: K.icon('scan') }),
       K.el('span', { class: 'kz-go-label' }, 'Escanear'),
-      K.el('span', { class: 'kz-go-sub' }, 'leva uns 5 segundos'));
+      K.el('span', { class: 'kz-go-sub' }, 'leva uns 10 segundos'));
     ui.ringBox = K.el('div', { class: 'kz-ring' });
     ui.ringIc = K.el('span', { class: 'kz-ring-ic', html: K.icon('battery') });
     ui.ringPct = K.el('span', { class: 'kz-ring-pct num' }, '0%');
@@ -420,7 +560,9 @@
     } else if (state === 'done' || state === 'err') {
       s.desc.textContent = STEPS[i].desc;
       const tone = res && res.tone;
-      const icon = state === 'err' ? 'info' : res && res.none ? (res.pill && res.pill.icon) || 'info' : K.toneIcon(tone);
+      /* Mac de mesa e sugestão (sujeira) usam o ícone da etiqueta; o resto, o do tom */
+      const own = res && (res.none || tone === 'tip');
+      const icon = state === 'err' ? 'info' : own ? (res.pill && res.pill.icon) || 'info' : K.toneIcon(tone);
       s.bub.innerHTML = K.icon(icon);
       s.bub.classList.add(state === 'err' || !tone ? 't-none' : 't-' + tone, 'kz-bump');
       s.snip.textContent = (res && res.snippet) || '';
@@ -466,7 +608,10 @@
       void ui.ringIc.offsetWidth;
       ui.ringIc.classList.add('kz-bump');
       ui.listCount.textContent = `${i + 1} de ${STEPS.length}`;
-      const [out] = await Promise.allSettled([withTimeout(Promise.resolve().then(() => s.run(ctx)), STEP_MAX), K.sleep(STEP_MIN)]);
+      /* passo comprido (a sujeira lê três categorias) conta o que está olhando no lugar da descrição */
+      ctx.progress = (t) => { if (my === token && ui.steps && ui.steps[i]) ui.steps[i].desc.textContent = t; };
+      const [out] = await Promise.allSettled([withTimeout(Promise.resolve().then(() => s.run(ctx)), s.max || STEP_MAX), K.sleep(STEP_MIN)]);
+      ctx.progress = null;
       if (my !== token) return;
       let res;
       if (out.status === 'fulfilled' && out.value) res = out.value;
@@ -488,7 +633,7 @@
     ui.p.textContent = 'Juntando o que achei…';
     await K.sleep(650);
     if (my !== token) return;
-    last = { results, at: nowS(), took: (performance.now() - t0) / 1000 };
+    last = { results, at: nowS(), took: (performance.now() - t0) / 1000, dirtGen: ctx.dirtGen != null ? ctx.dirtGen : K.dirt.gen };
     if (ctx.b) machine = Object.assign({}, machine, { b: ctx.b });
     K.sound.tada();
     paintResult(true);
@@ -536,6 +681,9 @@
       out.sub = skipped.length
         ? `Conferi ${total} coisas${deskNote} e está tudo em ordem. Nada pede sua atenção agora.`
         : `Conferi as ${total} coisas e está tudo em ordem. Nada pede sua atenção agora.`;
+      /* sujeira não é problema: vira só um "se quiser" no fim */
+      const dirt = results.find((r) => r.id === 'sujeira' && r.tone === 'tip');
+      if (dirt) out.sub += ` Se quiser, dá pra liberar ${gbNb(dirt.sel)} na Faxina.`;
       out.face = 'joy';
     }
     if (missing.length) out.sub += ` Ficou sem leitura: ${listPt(missing.map((r) => lower(r.id)))}. Vale escanear de novo daqui a pouco.`;
@@ -563,16 +711,16 @@
       K.el('div', { class: 'kz-sum-text' },
         K.el('span', { class: 'sticker kz-when' }, when),
         (ui.sumTitle = K.el('h1', { tabindex: '-1' }, sm.title)),
-        K.el('p', null, sm.sub),
+        (ui.sumSub = K.el('p', null, sm.sub)),
         K.el('div', { class: 'kz-sum-act' }, again)));
     host.appendChild(sum);
     const bat = byId.bateria;
     mascots.push(K.mascot(art, { size: 132, state: batteryState(bat && bat.b, { face: sm.face, full: false }) }));
 
-    if (sm.kind !== 'fail') {
-      const acts = actionsFor(byId);
-      if (acts.length) host.appendChild(actionsBlock(acts));
-    }
+    /* "o que dá pra fazer" fica num lugar fixo (a sujeira pode ser relida depois da Faxina) */
+    ui.actsSlot = K.el('div', { class: 'kz-acts-slot' });
+    host.appendChild(ui.actsSlot);
+    if (sm.kind !== 'fail') fillActs(byId);
 
     /* cartões: o que pede atenção vem primeiro, com uma figurinha "olhe aqui" */
     const desk = !!(bat && bat.none);
@@ -583,6 +731,7 @@
       const step = STEPS.find((x) => x.id === id);
       cards.push({ r: byId[id] || errResult(step), make: (r, st) => plainCard(step, r, st) });
     }
+    cards.push({ r: byId.sujeira || errResult(DIRT_STEP), make: (r, st) => (ui.dirtCard = dirtCard(r, st)) });
     const order = cards.map((c, i) => ({ c, i, a: isAttention(c.r) ? RANK[c.r.tone] : 0 }))
       .sort((x, y) => y.a - x.a || x.i - y.i);
     const grid = K.el('div', { class: 'kz-grid' });
@@ -593,11 +742,8 @@
       if (o.a > 0) { node.classList.add('is-att'); node.appendChild(K.el('span', { class: 'sticker kz-look', 'aria-hidden': 'true' }, 'olhe aqui')); }
       grid.appendChild(node);
     }
-    grid.appendChild(faxinaCard(delay()));
     host.appendChild(grid);
-    const todo = afterMount;
-    afterMount = [];
-    for (const fn of todo) { try { fn(); } catch (e) { console.error('varredura/gráfico: ' + (e.stack || e.message)); } }
+    runAfterMount();
     const strip = macStrip();
     if (strip) host.appendChild(strip);
     if (fresh) setTimeout(() => { if (host && mode === 'result') host.closest('.view').scrollTop = 0; }, 0);
@@ -607,6 +753,8 @@
   function actionsFor(byId) {
     const out = [];
     const bat = byId.bateria, en = byId.energia, cpu = byId.cpu, disk = byId.disco, mem = byId.memoria;
+    const dirt = byId.sujeira && !byId.sujeira.error && byId.sujeira.sel >= DIRT_TIP ? byId.sujeira : null;
+    const freeUp = dirt ? `Liberar ${gbNb(dirt.sel)}` : null;
     const b = bat && !bat.error && !bat.none && !bat.missing ? bat.b : null;
     if (b && (bat.key === 'trocar' || bat.key === 'gasta')) {
       out.push({ icon: 'btWrench', tone: bat.tone, title: 'Trocar a bateria', text: 'A Apple mostra preço e onde levar pro seu modelo.',
@@ -616,11 +764,20 @@
       out.push({ icon: 'flame', tone: en.tone !== 'good' ? en.tone : null, title: 'Ver quem está puxando', text: `${en.top} está na frente agora.`,
         btn: 'Ver a lista', run: () => go(b ? 'bateria?secao=apps' : 'painel') });
     }
-    if (disk && !disk.error && disk.tone !== 'good') {
+    const diskTight = disk && !disk.error && disk.tone !== 'good';
+    if (diskTight && dirt) {
+      /* disco apertado e sujeira de sobra: a ação do disco já leva pra Faxina */
+      out.push({ icon: 'broom', tone: disk.tone, title: freeUp, text: 'O disco está apertado: isso sai de caches e registros, com segurança.',
+        btn: 'Ver e limpar', run: () => go('faxina') });
+    } else if (diskTight) {
       out.push({ icon: 'disk', tone: disk.tone, title: 'Liberar espaço', text: 'Veja no Painel quanto sobra e o que o macOS libera sozinho.', btn: 'Ver o disco', run: () => go('painel') });
     }
     if (mem && !mem.error && mem.tone !== 'good') {
       out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda.', btn: 'Ver a memória', run: () => go('painel') });
+    }
+    if (dirt && !diskTight) {
+      out.push({ icon: 'broom', title: freeUp, text: 'Caches e registros que os apps recriam. Tudo vai pra Lixeira.',
+        btn: 'Ver e limpar', run: () => go('faxina') });
     }
     if (b && b.pluggedIn) {
       const s = K.settings.value;
@@ -637,6 +794,13 @@
       if (s && s.aviso80) out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Já está ligado: te chamo quando a carga chegar lá.', done: 'Ligado', btn: 'Mudar', run: () => go('bateria?secao=avisos') });
     }
     return out.slice(0, 3);
+  }
+
+  function fillActs(byId) {
+    if (!ui.actsSlot) return;
+    ui.actsSlot.textContent = '';
+    const acts = actionsFor(byId);
+    if (acts.length) ui.actsSlot.appendChild(actionsBlock(acts));
   }
 
   function actionsBlock(acts) {
@@ -791,14 +955,89 @@
     return c;
   }
 
-  function faxinaCard(style) {
-    const c = K.el('article', { class: 'card kz-res kz-fax pop-in', style },
-      K.el('span', { class: 'head-ic', html: K.icon('broom') }),
-      K.el('div', { class: 'kz-fax-text' },
-        K.el('div', { class: 'kz-fax-title' }, K.el('h2', null, 'Faxina'), K.el('span', { class: 'sticker kz-soon' }, 'em breve')),
-        K.el('p', { class: 'kz-res-say' }, 'Caches velhos, downloads esquecidos e restos de apps. Vou mostrar tudo antes, e só vai pra Lixeira o que você marcar.')),
-      K.el('button', { class: 'btn small', type: 'button', onclick: () => go('faxina') }, 'Ver o que vem aí', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
+  /** Sujeira: o número que vai pra Faxina, dividido por tipo. Largura toda, no fim da grade. */
+  function dirtCard(r, style) {
+    const step = DIRT_STEP;
+    const c = K.el('article', { class: 'card kz-res kz-dirt pop-in' + (r.tone === 'tip' ? ' is-tip' : ''), style });
+    c.appendChild(cardHead(step, r));
+    if (!r.error) {
+      const main = K.el('div', { class: 'kz-dirt-main' });
+      if (r.value != null) main.appendChild(K.el('div', { class: 'kz-val-row' }, valueEl(r.value, (v) => K.fmt.bytes(v)), K.el('span', { class: 'kz-val-sub' }, r.sub)));
+      main.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
+      const f = factsEl(r.facts);
+      if (f) main.appendChild(f);
+      const body = K.el('div', { class: 'kz-dirt-body' }, main);
+      if (r.found > 0 && !r.noStack && r.cats && r.cats.length) {
+        const box = K.el('div', { class: 'kz-dirt-stack' });
+        body.appendChild(K.el('div', { class: 'kz-dirt-side' },
+          K.el('div', { class: 'kz-res-kicker' }, 'O que achei, por tipo ', K.el('span', { class: 'muted' }, '(o colorido já vem marcado na Faxina)')),
+          box));
+        afterMount.push(() => {
+          const ch = K.charts.stack(box, {
+            segments: r.cats.map((x) => ({ name: DIRT_SHORT[x.id] || x.titulo, value: x.sel, color: DIRT_COLOR[x.id] })),
+            total: r.found, restName: 'Pra você decidir', restColor: 'var(--panel)', restNote: 'app aberto ou vale olhar antes',
+            format: (v) => K.fmt.bytes(v), height: 30,
+            ariaLabel: 'Sujeira por tipo: o que já vem marcado e o que fica pra você decidir',
+          });
+          charts.push(ch);
+          c._chart = ch;
+        });
+      } else body.classList.add('is-single');
+      c.appendChild(body);
+    } else {
+      c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
+    }
+    const label = !r.error && r.sel > 0 ? 'Ver e limpar' : 'Abrir a Faxina';
+    c.appendChild(K.el('div', { class: 'kz-res-foot' },
+      r.note ? K.el('p', { class: 'kz-note kz-dirt-note' }, r.note) : null,
+      K.el('button', { class: 'btn small' + (r.tone === 'tip' ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
+        label, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
+  }
+
+  function runAfterMount() {
+    const todo = afterMount;
+    afterMount = [];
+    for (const fn of todo) { try { fn(); } catch (e) { console.error('varredura/gráfico: ' + (e.stack || e.message)); } }
+  }
+
+  /** Voltou da Faxina com um resultado guardado: relê só a sujeira (lá dá pra ter limpado) e
+      troca o cartão, as ações e o resumo no lugar, sem refazer a tela. Continua só lendo. */
+  async function refreshDirt() {
+    const my = token;
+    const old = ui.dirtCard;
+    if (old) old.appendChild(K.el('span', { class: 'sticker kz-look kz-redo', role: 'status' }, 'conferindo de novo…'));
+    const byId = () => { const o = {}; for (const r of last.results) o[r.id] = r; return o; };
+    let res;
+    try {
+      const d = await K.dirt.check({ fresh: true });
+      if (my !== token || !last) return;
+      res = anDirt(d, byId().disco);
+    } catch (e) {
+      if (my !== token || !last) return;
+      res = errResult(DIRT_STEP, e);
+    }
+    if (mode !== 'result' || !host) return;
+    /* o resumo diz "Feita às…": o cartão avisa que este número é mais novo */
+    const again = `Conferi de novo às ${K.fmt.time(nowS())}, depois da Faxina.`;
+    res.note = res.note ? `${again} ${res.note}` : again;
+    const i = last.results.findIndex((r) => r.id === 'sujeira');
+    if (i >= 0) last.results[i] = res; else last.results.push(res);
+    last.dirtGen = K.dirt.gen;
+    if (old && old.parentNode) {
+      if (old._chart) {
+        try { old._chart.destroy(); } catch (e) { /* já foi */ }
+        charts = charts.filter((x) => x !== old._chart);
+      }
+      const node = dirtCard(res, null);
+      old.replaceWith(node);
+      ui.dirtCard = node;
+      runAfterMount();
+    }
+    const sm = summaryOf(last.results);
+    if (ui.sumTitle) ui.sumTitle.textContent = sm.title;
+    if (ui.sumSub) ui.sumSub.textContent = sm.sub;
+    if (sm.kind !== 'fail') fillActs(byId());
   }
 
   /* ================= página ================= */
@@ -823,8 +1062,10 @@
       token++;
       await loadMachine();
       if (host !== el) return;
-      if (!pendingScan && last && nowS() - last.at < KEEP_S) paintResult(false);
-      else paintIdle();
+      if (!pendingScan && last && nowS() - last.at < KEEP_S) {
+        paintResult(false);
+        if (last.dirtGen !== K.dirt.gen) refreshDirt();
+      } else paintIdle();
       if (pendingScan) { pendingScan = false; setTimeout(() => runScan(), 300); }
     },
     destroy() {

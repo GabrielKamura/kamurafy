@@ -428,7 +428,7 @@
 /* figurinha "olhe aqui" nos cartões que pedem atenção */
 .kz-look { position: absolute; top: -14px; right: 18px; transform: rotate(4deg); font-size: 14px; z-index: 2; }
 .btn-ic { display: inline-grid; }
-.kz-res-foot .btn-ic svg, .kz-fax .btn-ic svg { width: 17px; height: 17px; }
+.kz-res-foot .btn-ic svg { width: 17px; height: 17px; }
 .kz-res-title .status { font-size: 14px; padding: 2px 10px 2px 6px; }
 .kz-res-title .status svg { width: 16px; height: 16px; }
 
@@ -523,25 +523,44 @@
 .kz-bars { min-height: 40px; }
 .kz-bars .kb-name { font-size: 14px; }
 
-/* faxina: gancho do que vem aí */
-.kz-fax {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  align-items: center;
-  gap: 18px;
-  background: var(--panel);
-  border-style: dashed;
-  box-shadow: none;
+/* sujeira: largura toda, no fim da grade; número à esquerda, divisão por tipo à direita */
+.kz-dirt { grid-column: 1 / -1; }
+.kz-dirt-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 28px;
+  align-items: start;
 }
-.kz-fax .head-ic { background: var(--card); box-shadow: none; }
-.kz-fax-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.kz-fax-title { display: flex; align-items: center; gap: 12px; }
-.kz-fax-title h2 { font-size: 24px; }
-.kz-soon { font-size: 13px; padding: 2px 10px; }
+.kz-dirt-body.is-single { grid-template-columns: minmax(0, 1fr); }
+.kz-dirt-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.kz-dirt-main .kz-res-say { max-width: 34em; }
+.kz-dirt-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 24px;
+  border-left: 2px dashed var(--line);
+}
+.kz-dirt-side .kz-res-kicker { margin-bottom: 0; }
+.kz-dirt .kz-res-foot { justify-content: space-between; align-items: flex-end; gap: 18px; }
+.kz-dirt-note { margin: 0; max-width: 36em; }
+.kz-dirt .kz-res-foot > .btn { margin-left: auto; }
+.kz-dirt .kz-fact { max-width: 100%; }
+.kz-dirt .kz-fact:first-child { color: var(--ink); }
+/* sugestão (não é status de problema): etiqueta e bolinha no ouro da casa, com brilho */
+.page-inicio .status.tip { background: var(--gold); }
+.page-inicio .status.tip svg { color: var(--ink); }
+.kz-bub.t-tip { background: var(--gold) !important; }
+.kz-bub.t-tip svg { color: var(--ink); }
+/* relendo depois da Faxina */
+.kz-redo { transform: rotate(-3deg); background: var(--card); }
 
 /* ===================== tamanhos ===================== */
 @media (max-width: 1100px) {
   .kz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kz-dirt-body { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .kz-dirt-side { padding: 14px 0 0; border-left: 0; border-top: 2px dashed var(--line); }
   .kz-stage { gap: 30px; }
   .page-inicio[data-mode="idle"] .kz-stage { gap: 48px; }
   .kz-head h1 { font-size: 44px; }
