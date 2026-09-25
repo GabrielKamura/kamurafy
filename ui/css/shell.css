@@ -1,0 +1,45 @@
+/* Kamurafy — detalhes da casca (rodapé da barra lateral, tela "em breve"). */
+
+.side-battery {
+  padding: 12px;
+  border: var(--bw) solid #fff;
+  border-radius: 14px;
+  cursor: pointer;
+  min-height: 62px;
+}
+.side-battery:hover { background: #1f1f1f; }
+.side-bat-row { display: flex; align-items: center; gap: 8px; }
+.side-bat-icon svg { width: 22px; height: 22px; color: var(--gold); display: block; }
+.side-bat-pct { font-size: 22px; line-height: 1; }
+.side-bat-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; margin-left: auto; }
+.side-bat-dot.good { background: var(--st-good); }
+.side-bat-dot.warn { background: var(--st-warn); }
+.side-bat-dot.serious { background: var(--st-serious); }
+.side-bat-dot.crit { background: var(--st-crit); }
+.side-bat-sub { font-size: 13px; color: #d1d5db; margin-top: 4px; }
+.side-sound { font-size: 15px; color: #d1d5db; }
+.side-sound svg { width: 20px; height: 20px; }
+
+.soon-card {
+  max-width: 520px;
+  margin: 30px auto 0;
+  text-align: center;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.soon-icon {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  border: var(--bw-thick) solid var(--ink);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 8px;
+}
+.soon-icon svg { width: 54px; height: 54px; }
+.soon-card p { margin: 0 0 8px; }
