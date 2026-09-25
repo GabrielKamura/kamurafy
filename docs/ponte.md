@@ -195,7 +195,7 @@ Na interface (`K.energyItems`): `isApp` ganha de `isSystem`. App com janela que 
 
 ## cleanup.* (Faxina)
 
-Regras (ver CLAUDE.md): a interface só manda **IDs** que o Swift devolveu numa varredura (o
+Regras (ver [CONTRIBUTING.md](../CONTRIBUTING.md)): a interface só manda **IDs** que o Swift devolveu numa varredura (o
 caminho nunca sai da interface); tudo vai pra Lixeira; apagar de vez exige `confirmado: true`
 e só vale pro que a Faxina mandou (ou esvaziar a Lixeira toda pelo Finder). IDs valem por 1 h
 e morrem ao serem limpos. No terminal (`--cmd`/`--seq`) e no modo foto, limpar só funciona com
