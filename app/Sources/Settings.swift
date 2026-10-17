@@ -14,6 +14,7 @@ struct AppSettings: Codable {
     var vigiaIgnorar: [String] = [] // nomes que a vigia não avisa mais
     var tema: String = "auto"    // auto · claro · escuro
     var idioma: String = "auto"  // auto · pt-BR · en · es
+    var atualizacoes: Bool = false // avisar de versão nova (consulta o GitHub uma vez por dia)
 
     static let defaults = AppSettings(aviso80: true, limiteAviso: 80, avisoQuente: true, som: true,
                                       iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false)
@@ -40,6 +41,7 @@ struct AppSettings: Codable {
         vigiaIgnorar = try c.decodeIfPresent([String].self, forKey: .vigiaIgnorar) ?? []
         tema = try c.decodeIfPresent(String.self, forKey: .tema) ?? "auto"
         idioma = try c.decodeIfPresent(String.self, forKey: .idioma) ?? "auto"
+        atualizacoes = try c.decodeIfPresent(Bool.self, forKey: .atualizacoes) ?? false
     }
 }
 
@@ -71,6 +73,7 @@ enum Settings {
         if let v = args["vigiaIgnorar"] as? [String] {
             s.vigiaIgnorar = Array(v.map { CleanScan.sanitize(String($0.prefix(80))) }.filter { !$0.isEmpty }.prefix(50))
         }
+        if let v = args.bool("atualizacoes") { s.atualizacoes = v }
         if let v = args.string("tema"), ["auto", "claro", "escuro"].contains(v) { s.tema = v }
         if let v = args.string("idioma"), v == "auto" || Lang.supported.contains(v) { s.idioma = v }
         current = s

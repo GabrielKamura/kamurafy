@@ -75,6 +75,7 @@ enum Commands {
         MenuBarModule.register(r)
         SpeedModule.register(r)
         LocaleModule.register(r)
+        UpdateModule.register(r)
     }
 }
 

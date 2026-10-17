@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import IOKit.ps
 import UserNotifications
 
@@ -52,6 +52,7 @@ final class Sampler {
         DispatchQueue.global(qos: .utility).async { History.record(b) }
         onReading?(b)
         checkAlerts(b)
+        Updater.tick()
     }
 
     private func checkAlerts(_ b: BatteryNow) {
@@ -120,11 +121,14 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let info = response.notification.request.content.userInfo
         let rota = info["rota"] as? String
+        let link = (info["url"] as? String).flatMap { $0.hasPrefix(Updater.pagina) ? URL(string: $0) : nil }
         let nome = info["nome"] as? String
         let acao = response.actionIdentifier
         DispatchQueue.main.async {
             if acao == "ignorar", let nome { Vigia.shared.ignore(nome) }
-            else if acao == UNNotificationDefaultActionIdentifier { AppDelegate.shared?.showWindow(route: rota) }
+            else if acao == UNNotificationDefaultActionIdentifier {
+                if let link { NSWorkspace.shared.open(link) } else { AppDelegate.shared?.showWindow(route: rota) }
+            }
             completionHandler()
         }
     }

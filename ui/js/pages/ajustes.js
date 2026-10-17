@@ -20,7 +20,7 @@
     ajDisk: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="12" cy="11.5" r="4"/><path d="M6.5 17h2"/><path d="M14.8 8.7 17.5 6"/>',
   });
 
-  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false, vigia: true, tema: 'auto', idioma: 'auto' };
+  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false, vigia: true, tema: 'auto', idioma: 'auto', atualizacoes: false };
   /* o mesmo texto do cartão "Vigia" no Otimizar › Por que tá lento? */
   const VIGIA_T = K.t('Me avisar quando um app ficar no talo ou a memória chegar no limite');
   const LIMITES = [70, 75, 80, 85, 90];
@@ -369,6 +369,11 @@
     V.sw80 = makeSwitch(K.t('Aviso de carga'), (on) => save({ aviso80: on }, err));
     V.swHot = makeSwitch(K.t('Aviso de calor'), (on) => save({ avisoQuente: on }, err));
     V.swVigia = makeSwitch(VIGIA_T, (on) => save({ vigia: on }, err));
+    /* versão nova: desligado por padrão (é a única coisa que fala com a internet) */
+    V.swUpd = makeSwitch(K.t('Avisar quando sair versão nova'), (on) => save({ atualizacoes: on }, err));
+    V.updTx = K.el('span', null, K.t('Consulta o GitHub uma vez por dia. Desligado, o Kamurafy não fala com a internet.'));
+    V.updGet = K.el('button', { class: 'btn small gold', type: 'button', style: { display: 'none' } }, K.t('Baixar'));
+    V.updBtn = K.el('button', { class: 'btn small', type: 'button', onclick: checkUpdate }, K.t('Procurar agora'));
     V.lims = K.el('div', { class: 'aj-lims', role: 'radiogroup', 'aria-label': K.t('Avisar quando a carga chegar em') });
     V.limErr = err;
     V.limRow = K.el('div', { class: 'aj-limrow' }, K.el('span', { class: 'aj-limrow-l' }, K.t('Avisar em')), V.lims);
@@ -385,16 +390,42 @@
         K.el('span', null, K.avisosTxt.quenteSub), V.swHot),
       setting(K.el('b', null, VIGIA_T),
         K.el('span', null, K.t('Olho a cada minuto. Processo do macOS fica de fora.')), V.swVigia),
+      /* os botões ficam embaixo do texto: três controles do lado espremiam a frase */
+      setting(K.el('b', null, K.t('Avisar quando sair versão nova')),
+        K.el('div', { class: 'aj-upd' }, V.updTx, K.el('div', { class: 'aj-upd-btns' }, V.updBtn, V.updGet)), V.swUpd),
       setting(K.el('b', null, K.t('Notificações do macOS'), V.notifPill), V.notifTx, V.notifBtns, 'aj-notif'),
       err, V.notifErr, V.alertNote);
     return c;
   }
+  /** "Procurar agora": consulta a última versão no GitHub só quando a pessoa pede */
+  async function checkUpdate() {
+    K.sound.plop();
+    V.updBtn.disabled = true;
+    V.updTx.textContent = K.t('Procurando…');
+    try {
+      const r = await withTimeout(K.api('update.check'), 20000);
+      if (r && r.nova && r.url) {
+        V.updTx.textContent = K.t('A versão {0} chegou. Você está na {1}.', r.nova, r.atual);
+        V.updGet.style.display = '';
+        V.updGet.onclick = () => { K.sound.plop(); K.api('open.url', { url: r.url }).catch(() => K.sound.oops()); };
+        K.sound.tada();
+      } else {
+        V.updTx.textContent = K.t('Você está na versão mais nova ({0}).', (r && r.atual) || '');
+      }
+    } catch (e) {
+      K.sound.oops();
+      V.updTx.textContent = msgOf(e);
+    }
+    V.updBtn.disabled = false;
+  }
+
   function paintAlerts() {
     if (!V.sw80) return;
     V.t80.textContent = K.avisosTxt.carga(S.limiteAviso);
     V.sw80.paint(!!S.aviso80, !loaded);
     V.swHot.paint(!!S.avisoQuente, !loaded);
     V.swVigia.paint(S.vigia !== false, !loaded);
+    V.swUpd.paint(!!S.atualizacoes, !loaded);
     const list = LIMITES.includes(S.limiteAviso) ? LIMITES : LIMITES.concat([S.limiteAviso]).sort((a, b) => a - b);
     if (V.lims.childElementCount !== list.length) {
       V.lims.textContent = '';
@@ -484,7 +515,7 @@
     const left = K.el('div', { class: 'aj-priv-main' },
       K.el('p', { class: 'aj-priv-lead' }, K.t('Nada sai do seu Mac.')),
       K.el('ul', { class: 'aj-facts' },
-        fact('ajNoCloud', K.t('Não manda nada pra internet.'), K.t(' Links só abrem no navegador quando você clica.')),
+        fact('ajNoCloud', K.t('Não manda nada pra internet.'), K.t(' Só consulta o GitHub se você ligar o aviso de versão nova.')),
         fact('ajNoUser', K.t('Sem conta, login nem assinatura.'), ''),
         fact('ajNoEye', K.t('Sem anúncio e sem rastreamento.'), K.t(' Ninguém sabe o que você faz aqui, nem eu.'))),
       K.el('div', { class: 'aj-where' },

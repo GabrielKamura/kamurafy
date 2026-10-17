@@ -1,110 +1,123 @@
 <p align="center">
-  <img src="docs/img/icone.png" width="128" alt="Ícone do Kamurafy: uma bateria sorridente">
+  <img src="docs/img/icone.png" width="128" alt="Kamurafy icon: a smiling battery">
 </p>
 
 <h1 align="center">Kamurafy</h1>
 
 <p align="center">
-  <b>Cuida do seu Mac e, principalmente, da sua bateria.</b><br>
-  Grátis, de código aberto, sem assinatura e sem mandar nada pra internet.
+  <b>The free, open-source CleanMyMac alternative that actually cares about your battery.</b><br>
+  No subscription, no account, no ads, and nothing ever leaves your Mac.
+</p>
+
+<p align="center"><b>English</b> · <a href="README.pt-BR.md">Português</a></p>
+
+<p align="center">
+  <a href="../../releases/latest"><b>⬇️ Download Kamurafy</b></a> ·
+  <a href="#what-it-does">What it does</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#cleanup-safety">Safety</a> ·
+  <a href="#build-from-source">Build</a>
 </p>
 
 <p align="center">
-  <a href="../../releases/latest"><b>⬇️ Baixar o Kamurafy</b></a> ·
-  <a href="#o-que-ele-faz">O que ele faz</a> ·
-  <a href="#instalar">Instalar</a> ·
-  <a href="#segurança-da-faxina">Segurança</a> ·
-  <a href="#compilar">Compilar</a>
+  <img src="docs/img/en/speed.png" width="880" alt="Kamurafy's Speed screen: what is slowing the Mac down right now, ranked, with a fix for each">
 </p>
 
-<p align="center">
-  <img src="docs/img/bateria.png" width="880" alt="Tela da bateria do Kamurafy">
-</p>
+## What it does
 
-## O que ele faz
+**🚀 Speed: "Why is my Mac slow?"**
+- One click tells you what is slowing your Mac down *right now*, from worst to least: memory pressure, an app maxed out on the CPU, a browser with too many tabs, Spotlight / Time Machine / iCloud / Photos working in the background, heat throttling the CPU, Low Power Mode, a nearly full disk, days without a restart, too many login items.
+- Every item comes with the fix: quit the app, free up space, open the right System Settings pane. What the system will finish on its own is marked as such.
+- No snake oil: no "free up RAM" button, no fake speed boost. Just what is really weighing on your Mac.
 
-**🔋 Bateria (a estrela)**
-- Saúde de verdade: quanto da capacidade de fábrica ela ainda guarda, do jeito que o macOS mede, e o que isso quer dizer.
-- Ciclos, temperatura, tensão de cada célula, watts entrando e saindo, carregador ligado.
-- Os últimos 7 dias de carga (lidos do próprio registro do macOS) e a saúde dia a dia.
-- Previsão honesta de quando ela chega a 80%, explicando como a conta é feita.
-- Quem mais gasta bateria agora, com as abas e ajudantes somados no app certo.
-- Aviso quando a carga chega no limite que você escolher (ex.: 80%) e quando a bateria esquenta.
+**✈️ Make it fly**: after a scan, one button does the safe fixes at once (caches to the Trash, the maxed-out apps you tick, the 80% charge alert), only after you review and confirm.
 
-**🔍 Varredura**: um botão confere bateria, energia, memória, processador, velocidade, disco e sujeira, e diz o que dá pra fazer agora. O **Deixar voando** faz tudo de uma vez, depois que você marca e confirma.
+**👀 Watchdog**: warns you when an app stays maxed out for 10 minutes or memory hits the limit, even with the window closed. It never nags about the app you are using (a game, a video export).
 
-**📊 Painel**: processador, memória (com a explicação de por que "liberar RAM" não ajuda), disco e o seu Mac, ao vivo.
+**🔋 Battery (the star)**
+- Real health: how much of its factory capacity it still holds, measured the way macOS does, and what that means.
+- Cycles, temperature, per-cell voltage, watts in and out, the charger plugged in.
+- The last 7 days of charge (from macOS's own log) and health day by day.
+- An honest forecast of when it will reach 80%, showing how the math works.
+- Who is draining it right now, with helpers and tabs added up under the right app.
+- An alert when the charge reaches the limit you pick (say, 80%) and when the battery gets hot.
 
-**🧹 Faxina**: caches de apps, caches de programação (npm, pip, Xcode…), logs, downloads esquecidos, arquivos grandes e duplicados. Tudo vai pra Lixeira, com desfazer.
+**🧹 Storage**: app caches, developer caches (npm, pip, Xcode, Gradle, Cargo…), logs, forgotten downloads, large files and duplicates. Everything goes to the Trash, with undo.
 
-**🚀 Otimizar**: **por que seu Mac tá lento** (o que pesa agora, do que mais pesa pro que menos pesa, com o botão pra resolver), o que abre sozinho quando o Mac liga, o que está pesando agora e tarefas de manutenção (DNS, Spotlight, "Abrir com").
+**📦 Uninstall**: removes an app together with the leftovers it scatters around your home folder.
 
-**👀 Vigia**: avisa quando um app fica 10 minutos no talo ou a memória chega no limite, mesmo com a janela fechada. Não avisa do app que está na sua frente (jogo, exportação).
+**📊 Live**: CPU, memory (and why "freeing RAM" does not help), disk and your Mac, live. Plus a menu bar battery with a one-click summary.
 
-**📦 Desinstalar**: tira o app junto com as sobras que ele espalha pela sua pasta.
+**🪶 Lightweight**: idle with the window open it uses about 180 MB and next to no CPU. The current number is in Settings.
 
-**Na barra de menus**: a bateria sempre à vista, com um resumo a um clique.
-
-**Leve**: aberto e parado, ele usa uns 180 MB e quase nada do processador. O número de agora fica nos Ajustes.
+**🌙 Dark mode and three languages**: follows your macOS appearance (or the one you pick) and speaks English, Portuguese and Spanish.
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/img/varredura.png" alt="Varredura conferindo bateria, energia, memória, processador, disco e sujeira"></td>
-    <td width="50%"><img src="docs/img/faxina.png" alt="Faxina mostrando quanto dá pra liberar, com tudo marcado pra conferir antes"></td>
+    <td width="50%"><img src="docs/img/en/home.png" alt="Scan results with the Make it fly button"></td>
+    <td width="50%"><img src="docs/img/en/battery.png" alt="Battery health, cycles, temperature and forecast"></td>
   </tr>
   <tr>
-    <td><img src="docs/img/otimizar.png" alt="Otimizar: o que abre com o Mac, o que está pesando e manutenção"></td>
-    <td><img src="docs/img/painel.png" alt="Painel ao vivo com processador, memória e disco"></td>
+    <td><img src="docs/img/en/storage.png" alt="Storage: how much can be freed, everything reviewed first"></td>
+    <td><img src="docs/img/en/dark.png" alt="Dark mode"></td>
   </tr>
 </table>
 
-<p align="center"><img src="docs/img/menubar.png" width="300" alt="Resumo da bateria na barra de menus"></p>
+## Install
 
-## Instalar
+1. Download `Kamurafy.dmg` from the [latest release](../../releases/latest) and drag Kamurafy to Applications.
+2. Kamurafy is not signed with a paid Apple developer account yet, so macOS asks you to confirm the first time:
+   - **macOS 15 or newer:** open it, close the warning, go to **System Settings › Privacy & Security** and click **Open Anyway**.
+   - **macOS 13 and 14:** right-click the app › **Open** › **Open**.
 
-1. Baixe o `Kamurafy.dmg` na [última versão](../../releases/latest) e arraste o Kamurafy pra pasta Aplicativos.
-2. Na primeira vez, abra com o **botão direito › Abrir › Abrir**. O Kamurafy ainda não é assinado com uma conta de desenvolvedor da Apple, então o macOS pede essa confirmação uma vez. No macOS 15 ou mais novo: abra, feche o aviso, vá em **Ajustes do Sistema › Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
+Requires macOS 13 (Ventura) or newer. Universal: Intel and Apple Silicon.
 
-Precisa do macOS 13 (Ventura) ou mais novo. Funciona em Mac Intel e Apple Silicon.
-
-## Segurança da Faxina
-
-A Faxina foi feita pra nunca apagar o que não devia:
-
-- **Você vê tudo antes.** Nada sai sem você ver a lista e confirmar.
-- **Tudo vai pra Lixeira.** Dá pra desfazer com um clique. Apagar de vez só acontece se você mandar, com uma confirmação que avisa que não tem volta.
-- **Só pastas conhecidas** da sua pasta de usuário. Nada do sistema, sem senha de administrador, sem seguir atalhos pra fora.
-- **Conferência dupla.** Antes de mover, o app confere de novo se o arquivo é o mesmo da varredura e se continua no lugar permitido.
-- **Arquivos pessoais nunca vêm marcados** (downloads, arquivos grandes, duplicados). Nos duplicados, sempre sobra uma cópia.
-- **App aberto não tem o cache limpo.** O Kamurafy pede pra fechar antes.
-
-## Privacidade
-
-O Kamurafy não tem conta, não tem anúncio e não manda nada pra internet. Tudo o que ele lê (bateria, histórico, arquivos) fica no seu Mac, em `~/Library/Application Support/Kamurafy`.
-
-## Compilar
-
-Não precisa de Xcode: bastam as ferramentas de linha de comando da Apple (`xcode-select --install`).
+Or with Homebrew:
 
 ```bash
-git clone <este repositório>
+brew install --cask gabrielkamura/tap/kamurafy
+```
+
+## Cleanup safety
+
+Cleaning was designed to never delete what it should not:
+
+- **You see everything first.** Nothing goes without you reviewing the list and confirming.
+- **Everything goes to the Trash.** One click to undo. Deleting for good only happens when you ask, with a confirmation that says there is no way back.
+- **Only known folders** in your home folder. Nothing from the system, no admin password, no following links out.
+- **Double check.** Right before moving, the app checks again that the file is the same one it scanned and still in an allowed place.
+- **Personal files are never pre-selected** (downloads, large files, duplicates). For duplicates, one copy always stays.
+- **An open app does not get its cache cleaned.** Kamurafy asks you to quit it first.
+
+Every change runs in CI against a fake home folder full of traps, and the build fails if anything outside it changes.
+
+## Privacy
+
+No account, no ads, no telemetry. Everything it reads (battery, history, files) stays on your Mac, in `~/Library/Application Support/Kamurafy`. The only time it talks to the internet is the optional new-version alert (off by default): once a day it asks GitHub for the latest release number, and nothing else.
+
+## Build from source
+
+No Xcode needed, just Apple's command line tools (`xcode-select --install`).
+
+```bash
+git clone https://github.com/GabrielKamura/kamurafy.git
 cd kamurafy
-./build.sh                 # gera build/Kamurafy.app (Intel + Apple Silicon)
+./build.sh                 # builds build/Kamurafy.app (Intel + Apple Silicon)
 open build/Kamurafy.app
 ```
 
-- `ARCHS=x86_64 ./build.sh` compila só pra uma arquitetura (mais rápido).
-- `PUBLICO=1 ./build.sh` gera a versão de distribuição (sem os ganchos de teste).
-- `ASSINATURA="Developer ID Application: …" PUBLICO=1 ./build.sh` assina com hardened runtime, pronto pra notarizar.
+- `ARCHS=x86_64 ./build.sh` builds for one architecture only (faster).
+- `PUBLICO=1 ./build.sh` builds the distribution version (no test hooks).
+- `ASSINATURA="Developer ID Application: …" PUBLICO=1 ./build.sh` signs with the hardened runtime, ready to notarize.
 
-A casca é Swift (AppKit + WKWebView) e a interface é HTML, CSS e JavaScript puros em `ui/`. O contrato entre as duas partes está em [`docs/ponte.md`](docs/ponte.md) e o visual em [`docs/design.md`](docs/design.md).
+The shell is Swift (AppKit + WKWebView) and the interface is plain HTML, CSS and JavaScript in `ui/`. The bridge between them is documented in [`docs/ponte.md`](docs/ponte.md) and the look in [`docs/design.md`](docs/design.md) (both in Portuguese). Translations live in `ui/i18n/` (the Portuguese text in the code is the key): fixes and new languages are welcome.
 
-## Licença
+## License
 
-[GPL-3.0](LICENSE): você pode usar, estudar, mudar e distribuir, desde que o que você distribuir também tenha o código aberto sob a mesma licença.
+[GPL-3.0](LICENSE): you can use, study, change and share it, as long as what you share is open source under the same license.
 
-Inclui a fonte [Fredoka](https://github.com/hafontia/Fredoka-One) (SIL Open Font License 1.1) e a biblioteca [Rough.js](https://roughjs.com) (MIT).
+Includes the [Fredoka](https://github.com/hafontia/Fredoka-One) font (SIL Open Font License 1.1) and [Rough.js](https://roughjs.com) (MIT). Mac and macOS are trademarks of Apple Inc.; Kamurafy is not affiliated with Apple or with MacPaw (CleanMyMac).
 
 ---
 
-<p align="center">Feito com carinho por Gabriel Kamura.</p>
+<p align="center">Made with care by Gabriel Kamura.</p>
