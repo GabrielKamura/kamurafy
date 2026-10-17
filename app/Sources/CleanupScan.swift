@@ -13,23 +13,23 @@ import CoreServices
 ///    aparece desmarcado e com o custo dito na nota;
 ///  - arquivos pessoais (downloads, grandes, duplicados) nunca vêm marcados.
 enum CleanScan {
-    static let categories: [CategoryInfo] = [
-        .init(id: "caches", titulo: "Caches de apps",
-              descricao: "Arquivos temporários que os apps guardam pra abrir mais rápido. Eles recriam sozinhos quando precisam. Só vem marcado o que eu sei de qual app é, com o app fechado.",
+    static var categories: [CategoryInfo] { [
+        .init(id: "caches", titulo: L("Caches de apps"),
+              descricao: L("Arquivos temporários que os apps guardam pra abrir mais rápido. Eles recriam sozinhos quando precisam. Só vem marcado o que eu sei de qual app é, com o app fechado."),
               precisaPermissao: false),
-        .init(id: "dev", titulo: "Caches de programação",
-              descricao: "Downloads e compilações guardados por npm, pip, Xcode e companhia. A maioria volta sozinha na próxima vez que você usar a ferramenta; o que não volta vem desmarcado e avisado.",
+        .init(id: "dev", titulo: L("Caches de programação"),
+              descricao: L("Downloads e compilações guardados por npm, pip, Xcode e companhia. A maioria volta sozinha na próxima vez que você usar a ferramenta; o que não volta vem desmarcado e avisado."),
               precisaPermissao: false),
-        .init(id: "logs", titulo: "Registros (logs)",
-              descricao: "Anotações que os apps fazem do que aconteceu, inclusive relatórios de travamento. Só servem pra quem investiga um erro.",
+        .init(id: "logs", titulo: L("Registros (logs)"),
+              descricao: L("Anotações que os apps fazem do que aconteceu, inclusive relatórios de travamento. Só servem pra quem investiga um erro."),
               precisaPermissao: false),
-        .init(id: "sistema", titulo: "Caches do macOS",
-              descricao: "Temporários dos apps da Apple. O macOS recria sozinho, mas pode ficar mais lento e gastar um pouco de bateria refazendo na primeira vez. Nada vem marcado.",
+        .init(id: "sistema", titulo: L("Caches do macOS"),
+              descricao: L("Temporários dos apps da Apple. O macOS recria sozinho, mas pode ficar mais lento e gastar um pouco de bateria refazendo na primeira vez. Nada vem marcado."),
               precisaPermissao: false),
-        .init(id: "downloads", titulo: "Downloads esquecidos",
-              descricao: "Coisas na pasta Downloads que o Mac não viu você abrir nem mudar há mais de 3 meses. São arquivos seus: nada vem marcado, confira antes.",
+        .init(id: "downloads", titulo: L("Downloads esquecidos"),
+              descricao: L("Coisas na pasta Downloads que o Mac não viu você abrir nem mudar há mais de 3 meses. São arquivos seus: nada vem marcado, confira antes."),
               precisaPermissao: true),
-    ]
+    ] }
 
     // MARK: listas
 
@@ -249,6 +249,7 @@ enum CleanScan {
                                  members: [String] = [], hash: String? = nil, owners: [String] = [],
                                  vinculo: String? = nil, nome: String? = nil) -> CleanItem? {
         guard let st = SafeFS.lstatInfo(url.path), !st.isLink else { return nil }
+        let nota = nota.map { L($0) }
         let item = CleanItem(id: id ?? UUID().uuidString, categoria: categoria, nome: sanitize(nome ?? url.lastPathComponent),
                              caminho: sanitize(CleanEnv.display(url)), bytes: m.bytes, arquivos: m.files,
                              modificado: m.newest?.timeIntervalSince1970, usado: usado?.timeIntervalSince1970,

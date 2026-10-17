@@ -228,7 +228,7 @@ enum Uninstall {
         itens = itens.filter { $0.bytes > 0 || $0.semAcesso }.sorted { $0.bytes > $1.bytes }
         AppRegistry.shared.setLeftovers(id, Set(itens.map { $0.id }))
         let total = itens.reduce(Int64(0)) { $0 + $1.bytes }
-        return CleanCategory(id: "restos", titulo: "Sobras de \(e.app.nome)", descricao: "O que o app deixou espalhado na sua pasta.",
+        return CleanCategory(id: "restos", titulo: "Sobras de \(e.app.nome)", descricao: L("O que o app deixou espalhado na sua pasta."),
                              bytes: total, bytesSelecionados: itens.filter { $0.selecionado }.reduce(0) { $0 + $1.bytes },
                              itens: itens, semAcesso: semAcesso, incompleto: Date() > deadline,
                              ms: Int(Date().timeIntervalSince(t0) * 1000), aviso: avisos.isEmpty ? nil : avisos.joined(separator: " "))

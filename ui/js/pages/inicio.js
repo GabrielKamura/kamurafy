@@ -251,12 +251,12 @@
         /* notebook sem bateria à vista: é leitura que faltou (ou bateria removida), não Mac de mesa */
         return Object.assign(r, {
           unknown: true, missing: true, tone: 'none', key: 'desconhecida', pill: { label: 'Sem leitura', icon: 'info' }, snippet: 'bateria sem leitura',
-          say: 'Não consegui ler a bateria deste MacBook. Se ela foi removida ou está com defeito, vale levar numa assistência autorizada.',
+          say: 'Não consegui ler a bateria deste MacBook. Se continuar assim, vale uma assistência autorizada.',
         });
       }
       return Object.assign(r, {
         none: true, tone: null, pill: { label: 'Mac de mesa', icon: 'desktop' }, snippet: 'sem bateria',
-        say: 'Este Mac não tem bateria, então aqui não tem o que medir. Ligado direto na tomada, isso não é problema nenhum.',
+        say: 'Este Mac vive na tomada: não tem bateria pra medir.',
       });
     }
     const key = K.batStatusKey(b);
@@ -269,16 +269,16 @@
     if (hot && !(RANK[tone] >= RANK.warn)) { tone = 'warn'; pill = { label: 'Com calor', icon: 'thermo' }; }
 
     let say;
-    if (key === 'trocar') say = 'O próprio macOS está pedindo revisão da bateria. Vale levar numa assistência autorizada pra conferir.';
-    else if (key === 'gasta') say = `Ela guarda ${hTxt || 'menos'} da carga de quando era nova, abaixo dos 80% que a Apple usa como limite. A carga dura menos; trocar é uma opção quando isso incomodar.`;
-    else if (key === 'de-olho' && dc && cyc != null && cyc >= dc * 0.8) say = `Já são ${K.fmt.num(cyc)} ciclos, perto dos ${K.fmt.num(dc)} pra que ela foi feita. Ainda funciona bem, mas vale acompanhar.`;
-    else if (key === 'de-olho') say = `Ela guarda ${hTxt || 'um pouco menos'} da carga de quando era nova. Funciona bem, mas já vale acompanhar: abaixo de 80% a Apple considera gasta.`;
-    else if (key === 'desconhecida') say = 'O Mac não informou a saúde da bateria agora, então não dá pra dizer como ela está. Tente escanear de novo daqui a pouco.';
-    else say = `Ela guarda ${hTxt} da carga de quando era nova. A Apple só considera gasta abaixo de 80%, então está tranquilo.`;
+    if (key === 'trocar') say = 'O macOS pede revisão. Vale levar numa assistência autorizada.';
+    else if (key === 'gasta') say = 'Abaixo dos 80% que a Apple usa como limite: a carga dura menos.';
+    else if (key === 'de-olho' && dc && cyc != null && cyc >= dc * 0.8) say = `Já são ${K.fmt.num(cyc)} de ${K.fmt.num(dc)} ciclos previstos. Vale acompanhar.`;
+    else if (key === 'de-olho') say = 'Funciona bem, mas vale acompanhar: abaixo de 80% a Apple considera gasta.';
+    else if (key === 'desconhecida') say = 'O Mac não informou a saúde agora. Tente de novo daqui a pouco.';
+    else say = 'A Apple só considera gasta abaixo de 80%. Está tranquilo.';
 
     let tip = null;
-    if (hot) tip = { icon: 'thermo', text: `Está quente (${K.fmt.temp(b.temperatureC)}), e calor é o que mais desgasta bateria. Deixe o Mac numa superfície dura, com as saídas de ar livres.` };
-    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { id: 'otimizado', icon: 'leaf', text: 'Ficar em 100% o tempo todo desgasta um pouco mais. Se o Mac vive na tomada, deixe ligado o Carregamento otimizado (Ajustes do Sistema › Bateria).' };
+    if (hot) tip = { icon: 'thermo', text: `Está quente (${K.fmt.temp(b.temperatureC)}). Deixe as saídas de ar livres: calor é o que mais gasta bateria.` };
+    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { id: 'otimizado', icon: 'leaf', text: 'Ficar sempre em 100% desgasta mais. Ligue o Carregamento otimizado (Ajustes do Sistema › Bateria).' };
 
     const side = [];
     side.push({ icon: b.isCharging ? 'bolt' : b.pluggedIn ? 'plug' : 'battery', label: 'Carga agora',
@@ -297,7 +297,7 @@
     const top = list.find((a) => a.note !== 'este app');
     if (!top) {
       return Object.assign(r, { tone: 'good', pill: { label: 'Tudo calmo', icon: 'check' }, snippet: 'tudo calmo',
-        say: 'Ninguém está gastando energia de verdade agora. Tudo calmo.' });
+        say: 'Nenhum app gastando de verdade agora.' });
     }
     const name = top.label;
     const sys = top.note === 'do sistema';
@@ -305,13 +305,12 @@
     const onBattery = !desk && !b.pluggedIn;
     const heavy = top.value >= 60;
     const tone = heavy && onBattery ? 'warn' : 'good';
-    const who = sys ? `${name}, do sistema,` : name;
     let say;
-    if (heavy && onBattery && sys) say = `${who} está puxando bastante. Costuma passar sozinho; se durar muito, reiniciar o Mac costuma resolver.`;
-    else if (heavy && onBattery) say = `${name} está puxando bastante. Se não estiver usando agora, fechar ajuda a bateria durar mais.`;
-    else if (heavy && desk) say = `${sys ? 'Quem mais gasta é ' + name + ', do sistema' : name + ' é quem mais gasta'}. Num Mac de mesa isso só esquenta um pouco mais.`;
-    else if (heavy) say = `${sys ? 'Quem mais gasta é ' + name + ', do sistema' : name + ' é quem mais gasta'}. Na tomada isso não pesa na bateria, mas conta quando você sair dela.`;
-    else say = sys ? `Quem mais gasta agora é ${name}, do sistema. Nada fora do normal.` : `${name} é quem mais gasta agora, mas nada fora do normal.`;
+    if (heavy && onBattery && sys) say = `${name}, do sistema, está puxando bastante. Costuma passar sozinho.`;
+    else if (heavy && onBattery) say = `${name} está puxando bastante. Fechar ajuda a bateria durar mais.`;
+    else if (heavy && desk) say = sys ? `${name}, do sistema, é quem mais gasta. Num Mac de mesa, só esquenta um pouco.` : `${name} é quem mais gasta. Num Mac de mesa, só esquenta um pouco.`;
+    else if (heavy) say = sys ? `${name}, do sistema, é quem mais gasta. Na tomada, não pesa na bateria.` : `${name} é quem mais gasta. Na tomada, não pesa na bateria.`;
+    else say = sys ? `${name}, do sistema, é quem mais gasta. Nada fora do normal.` : `${name} é quem mais gasta. Nada fora do normal.`;
     return Object.assign(r, {
       tone, say, top: name, heavy,
       pill: tone === 'warn' ? { label: 'Tem app puxando', icon: 'flame' } : { label: 'Tranquilo', icon: 'check' },
@@ -322,11 +321,11 @@
 
   const PRESSURE = {
     normal: { tone: 'good', label: 'Folgada', icon: 'check',
-      say: 'Usar boa parte da memória é normal: o macOS aproveita pra deixar tudo rápido. O que importa é a pressão, e ela está baixa.' },
+      say: 'Usar bastante memória é normal. O que conta é a pressão, e ela está baixa.' },
     atencao: { tone: 'warn', label: 'Apertada', icon: 'eye',
-      say: 'Está ficando apertada, e o Mac já começou a comprimir e usar o disco. Fechar abas e apps parados alivia.' },
+      say: 'O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.' },
     critica: { tone: 'serious', label: 'No limite', icon: 'alert',
-      say: 'Está sem folga e o Mac usa muito o disco no lugar dela, o que deixa tudo lento. Feche o que não estiver usando.' },
+      say: 'Sem folga: o Mac usa o disco no lugar dela. Feche o que não estiver usando.' },
   };
 
   function anMemory(m) {
@@ -359,16 +358,16 @@
     let pill, say;
     if (th && th.tone === 'crit') {
       pill = { label: 'Quente demais', icon: 'flame' };
-      say = 'O Mac está muito quente e já segura a velocidade pra se proteger. Dê uma pausa no que é pesado e deixe as saídas de ar livres.';
+      say = 'Muito quente: o Mac já segura a velocidade. Dê uma pausa no que é pesado.';
     } else if (th && th.tone === 'warn') {
       pill = { label: 'Esquentando', icon: 'thermo' };
-      say = 'O Mac está quente, e o macOS pode diminuir a velocidade pra esfriar. Vale deixar as saídas de ar livres.';
+      say = 'O macOS pode diminuir a velocidade pra esfriar. Deixe as saídas de ar livres.';
     } else if (busy) {
       pill = { label: 'A todo vapor', icon: 'eye' };
-      say = 'Normal enquanto algo pesado roda. Se ficar assim com o Mac parado, veja no Painel quem está puxando.';
+      say = 'Normal enquanto algo pesado roda. Se seguir assim parado, veja quem está puxando.';
     } else if (working) {
       pill = { label: 'Trabalhando', icon: 'check' };
-      say = 'O processador está trabalhando, mas ainda com folga.';
+      say = 'Trabalhando, mas com folga.';
     } else {
       pill = { label: 'Tranquilo', icon: 'check' };
       say = 'O processador está folgado.';
@@ -378,8 +377,7 @@
       id: 'cpu', tone, pill, say, busy,
       value: usage, valueFmt: (v) => K.fmt.pct(v, 0), sub: 'em uso agora' + (cores ? ` · ${cores}` : ''),
       meter: usage, meterTone: busy ? 'warn' : null,
-      facts: th ? [{ icon: 'thermo', text: `Temperatura do Mac: ${th.txt}` }] : [],
-      note: 'É a leitura geral do macOS, não um sensor em graus.',
+      facts: th ? [{ icon: 'thermo', text: `Calor do Mac: ${th.txt}` }] : [],
       snippet: [usage != null ? K.fmt.pct(usage, 0) : null, th ? th.txt : null].filter(Boolean).join(' · '),
     };
   }
@@ -393,32 +391,31 @@
     let pill, say;
     if (tone === 'crit') {
       pill = { label: 'Quase cheio', icon: 'alert' };
-      say = 'Quase sem espaço. O macOS precisa de folga pra memória extra e atualizações: vale tirar arquivos grandes que você não usa.';
+      say = 'Quase sem espaço. Vale tirar arquivos grandes que você não usa.';
     } else if (tone === 'warn') {
       pill = { label: 'Ficando cheio', icon: 'eye' };
-      say = 'Está ficando cheio. Abaixo de 10% livre o Mac pode ficar lento e as atualizações podem não caber.';
+      say = 'Abaixo de 10% livre, o Mac pode ficar lento.';
     } else if (free >= 40) {
       pill = { label: 'Espaço de sobra', icon: 'check' };
-      say = 'O macOS gosta de ter uns 10 a 20% livres pra trabalhar folgado, e você está bem acima disso.';
+      say = 'Bem acima dos 10 a 20% que o macOS gosta de ter livres.';
     } else {
       pill = { label: 'Espaço ok', icon: 'check' };
-      say = 'O macOS gosta de ter uns 10 a 20% livres pra trabalhar folgado. Por enquanto está ok.';
+      say = 'O macOS gosta de ter de 10 a 20% livres. Por enquanto, ok.';
     }
     return {
       id: 'disco', tone, pill, say,
-      value: avail, valueFmt: (v) => K.fmt.bytes(v), sub: `livres pra usar, de ${K.fmt.bytes(total)} (${K.fmt.num(free, 0)}%)`,
+      value: avail, valueFmt: (v) => K.fmt.bytes(v), sub: `livres de ${K.fmt.bytes(total)} (${K.fmt.num(free, 0)}%)`,
       meter: 100 - free, meterLabel: 'ocupado',
-      note: 'Conta também o que o macOS libera sozinho quando precisa.',
       snippet: `${K.fmt.bytes(avail)} livres`,
     };
   }
 
   /* ---------- velocidade (speed.diagnose): o veredito manda no tom ---------- */
   const SPEED = {
-    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: 'Só coisa leve rodando agora. O Mac está livre pra correr.' },
-    deboa: { tone: 'good', label: 'De boa', icon: 'check', say: 'Uma coisinha ou outra pesando, mas nada que trave.' },
-    pesado: { tone: 'warn', label: 'Tá pesado', icon: 'eye', say: 'Tem coisa pesando agora. Dá pra aliviar sem reiniciar o Mac.' },
-    travando: { tone: 'serious', label: 'Tá travando', icon: 'alert', say: 'Muita coisa pesando ao mesmo tempo. Comece pelo primeiro da lista: é o que mais ajuda.' },
+    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: 'Só coisa leve rodando agora.' },
+    deboa: { tone: 'good', label: 'De boa', icon: 'check', say: 'Uma coisinha ou outra pesando, nada que trave.' },
+    pesado: { tone: 'warn', label: 'Tá pesado', icon: 'eye', say: 'Dá pra aliviar sem reiniciar o Mac.' },
+    travando: { tone: 'serious', label: 'Tá travando', icon: 'alert', say: 'Comece pelo primeiro da lista: é o que mais ajuda.' },
   };
   const FUNDO = {
     spotlight: { icon: 'scan', text: 'Spotlight indexando' },
@@ -459,7 +456,7 @@
       case 'economia': return out({ icon: 'leaf', text: 'Pouca Energia ligado', sub: 'deixa o Mac mais lento de propósito' });
       case 'disco': return out({ icon: 'disk', text: 'Disco quase cheio', sub: num(f.valor) ? `${K.fmt.bytes(f.valor)} livres` : 'pouco espaço sobrando' });
       case 'reiniciar': return out({ icon: 'cycle', text: num(f.valor) ? `Ligado há ${K.fmt.num(f.valor, 0)} dias` : 'Muito tempo sem reiniciar', sub: 'reiniciar alivia' });
-      case 'inicio': return out({ icon: 'rocket', text: `${num(f.processos) || 'Vários'} itens abrem com o Mac`, sub: 'dá pra desligar no Otimizar' });
+      case 'inicio': return out({ icon: 'rocket', text: `${num(f.processos) || 'Vários'} itens abrem com o Mac`, sub: 'dá pra desligar em Velocidade' });
       default: return out({ icon: 'gauge', text: 'Algo pesando', sub: '' });
     }
   }
@@ -471,9 +468,9 @@
     const lines = finds.slice(0, 2).map((f) => speedLine(f, rep));
     return {
       id: 'velocidade', rep, tone: v.tone, pill: { label: v.label, icon: v.icon }, lines,
-      say: finds.length ? v.say : 'Nada pesando agora. O Mac está livre pra correr.',
+      say: finds.length ? v.say : 'Nada pesando agora.',
       snippet: v.label + (lines.length ? ' · ' + lines[0].text : ''),
-      note: 'Média do último minuto: pico de um segundo não conta.',
+      note: 'Média do último minuto.',
     };
   }
 
@@ -492,34 +489,31 @@
     for (const c of d.cats) if (c.top && c.top.nome && (!top || c.top.bytes > top.bytes)) top = c.top;
     const tight = !!(disk && !disk.error && RANK[disk.tone] > 0);
     const selTxt = gbNb(d.sel);
-    const least = r.partial ? 'pelo menos ' : '';
     r.tight = tight;
     r.facts = [];
     if (top && d.sel > 0 && top.bytes >= 1e7) r.facts.push({ icon: 'box', text: `O maior: ${top.nome}, ${gbNb(top.bytes)}` });
     if (d.errs.length) r.facts.push({ icon: 'info', text: `Não deu pra ver: ${listPt(d.errs.map((e) => e.nome))}` });
-    else if (d.incompleto) r.facts.push({ icon: 'info', text: 'Tinha muita coisa e parei de contar no meio: o número é o mínimo' });
-    r.note = 'Contei caches de apps, de programação e registros (os do macOS só aparecem na Faxina). Lá você revisa item por item, e tudo vai pra Lixeira.';
+    else if (d.incompleto) r.facts.push({ icon: 'info', text: 'Parei de contar no meio: o número é o mínimo' });
+    r.note = 'Em Espaço você revisa item por item, e tudo vai pra Lixeira.';
 
     if (d.bytes <= 0) {
       return Object.assign(r, { tone: 'good', pill: { label: 'Limpinho', icon: 'check' }, snippet: 'nada sobrando', value: null, note: null,
-        say: 'Não achei cache nem registro sobrando. Nada pra fazer aqui.' });
+        say: 'Não achei cache nem registro sobrando.' });
     }
     if (d.sel <= 0) {
       /* sem nada marcado, a barra seria 100% "pra você decidir": não diz nada, fica de fora */
       return Object.assign(r, { tone: 'good', pill: { label: 'Nada marcado', icon: 'check' }, snippet: 'nada pra tirar sozinho', value: null, noStack: true,
-        note: 'Na Faxina você revisa item por item, e tudo vai pra Lixeira.',
-        say: `Achei ${least}${gbNb(d.bytes)} em caches e registros, mas nada que eu tiraria sozinho: é de app aberto ou coisa que vale você olhar antes. Na Faxina dá pra ver item por item.` });
+        say: r.partial ? `Achei pelo menos ${gbNb(d.bytes)}, mas nada que eu tiraria sozinho.` : `Achei ${gbNb(d.bytes)}, mas nada que eu tiraria sozinho.` });
     }
     const out = { value: d.sel, snippet: `${selTxt} pra liberar`, sub: r.partial ? 'pra liberar, pelo menos' : 'pra liberar com segurança' };
     if (d.sel < DIRT_TIP) {
       return Object.assign(r, out, { tone: 'good', pill: { label: 'Tranquilo', icon: 'check' },
-        say: `Só ${least}${selTxt} em caches e registros. Não pesa no disco: dá pra deixar pra outro dia.` });
+        say: 'Pouca coisa: dá pra deixar pra outro dia.' });
     }
-    const bigTxt = `os ${K.dirt.NAMES[big.id]} (${gbNb(big.sel)})`;
-    let say = d.sel >= 10 * GB ? 'Juntou bastante coisa. ' : '';
-    say += tight
-      ? `O que mais pesa são ${bigTxt}. Com o disco apertado, é um bom lugar pra começar: os apps recriam o que precisarem com o tempo.`
-      : `O que mais pesa são ${bigTxt}. Não é urgente, e não é isso que deixa o Mac lento: é espaço de volta. Os apps recriam o que precisarem com o tempo.`;
+    const bigName = K.dirt.NAMES[big.id], bigGb = gbNb(big.sel);
+    const say = tight
+      ? `Quem mais pesa: ${bigName}, ${bigGb}. Com o disco apertado, é um bom começo.`
+      : `Quem mais pesa: ${bigName}, ${bigGb}. Não é urgente: é só espaço de volta.`;
     return Object.assign(r, out, { tone: 'tip', pill: { label: 'Dá pra liberar', icon: 'sparkle' }, say });
   }
 
@@ -528,12 +522,12 @@
     if (step.id === 'sujeira') {
       return {
         id: step.id, error: true, tone: null, pill: { label: 'Não consegui ver', icon: 'info' }, snippet: 'não consegui ver',
-        say: `Não consegui ver a sujeira agora${msg ? ` (${msg})` : ''}. Não mexi em nada: dá pra escanear de novo ou abrir a Faxina e olhar com calma.`,
+        say: `Não consegui ver a sujeira agora${msg ? ` (${msg})` : ''}. Não mexi em nada.`,
       };
     }
     return {
       id: step.id, error: true, tone: null, pill: { label: 'Sem leitura', icon: 'info' }, snippet: 'não deu pra ler',
-      say: `Não consegui ler agora${msg ? ` (${msg})` : ''}. Tente escanear de novo daqui a pouco.`,
+      say: `Não consegui ler agora${msg ? ` (${msg})` : ''}. Tente de novo daqui a pouco.`,
     };
   }
 
@@ -711,12 +705,12 @@
     ui.stage.classList.add('is-scanning');
     ui.hello.textContent = 'Varrendo…';
     ui.h1.textContent = 'Dando uma geral…';
-    ui.p.textContent = 'Só olhando, sem mexer em nada. Mais uns segundinhos.';
+    ui.p.textContent = 'Só olhando, sem mexer em nada.';
     if (ui.bubble) ui.bubble.hidden = true;
     ui.listHead.textContent = 'Conferindo';
     ui.mascot.set({ face: 'happy' });
     ui.steps.forEach((s, i) => setStep(i, 'wait'));
-    const ring = K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Varredura', busy: true, size, thickness: 13 });
+    const ring = K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Escaneando o Mac', busy: true, size, thickness: 13 });
     charts.push(ring);
 
     const ctx = {};
@@ -790,41 +784,37 @@
     const missing = results.filter((r) => r.error || r.unknown);
     const skipped = results.filter((r) => r.none);
     const read = results.filter((r) => !r.error && !r.none);
-    const ok = read.filter((r) => !isAttention(r) && !r.unknown);
     const w = worst(...att.map((r) => r.tone));
     const total = results.length - skipped.length;
-    const deskNote = skipped.length ? ' (este Mac não tem bateria)' : '';
     const out = { att, errs, w };
     if (!read.length) {
       out.kind = 'fail';
       out.title = 'Não consegui ler o Mac agora';
-      out.sub = `Nenhuma das ${total} leituras respondeu. Às vezes o macOS demora logo depois de acordar: tente de novo daqui a pouco.`;
+      out.sub = 'Nenhuma leitura respondeu. Às vezes o macOS demora logo depois de acordar.';
       out.face = 'worried';
       return out;
     }
     if (att.length) {
       out.kind = 'att';
       out.title = att.length === 1 ? 'Achei 1 ponto de atenção' : `Achei ${att.length} pontos de atenção`;
-      out.sub = `${ok.length ? `${ok.length} em ordem e ${att.length} pra olhar com calma. ` : ''}Nada de pânico: cada cartão diz o que é e o que dá pra fazer.`;
+      out.sub = 'Nada de pânico: cada cartão diz o que fazer.';
       out.face = RANK[w] >= RANK.serious ? 'worried' : 'happy';
     } else if (missing.length) {
       out.kind = 'partial';
       const n = total - missing.length;
-      out.title = `Li ${n} de ${total} coisas${deskNote}`;
-      out.sub = `O que deu pra ler está em ordem, mas não dá pra falar do resto.`;
+      out.title = `Li ${n} de ${total} coisas`;
+      out.sub = 'O que deu pra ler está em ordem.';
       out.face = 'happy';
     } else {
       out.kind = 'ok';
       out.title = 'Tudo certo por aqui!';
-      out.sub = skipped.length
-        ? `Conferi ${total} coisas${deskNote} e está tudo em ordem. Nada pede sua atenção agora.`
-        : `Conferi as ${total} coisas e está tudo em ordem. Nada pede sua atenção agora.`;
+      out.sub = 'Nada pede sua atenção agora.';
       /* sujeira não é problema: vira só um "se quiser" no fim */
       const dirt = results.find((r) => r.id === 'sujeira' && r.tone === 'tip');
-      if (dirt) out.sub += ` Se quiser, dá pra liberar ${gbNb(dirt.sel)} na Faxina.`;
+      if (dirt) out.sub = `Nada pede sua atenção. Se quiser, dá pra liberar ${gbNb(dirt.sel)} em Espaço.`;
       out.face = 'joy';
     }
-    if (missing.length) out.sub += ` Ficou sem leitura: ${listPt(missing.map((r) => lower(r.id)))}. Vale escanear de novo daqui a pouco.`;
+    if (missing.length) out.sub += ` Sem leitura: ${listPt(missing.map((r) => lower(r.id)))}.`;
     return out;
   }
 
@@ -927,7 +917,7 @@
       ui.sumAct.appendChild(again);
       if (F.moved) {
         ui.sumAct.appendChild(K.el('button', { class: 'kz-link', type: 'button', html: K.icon('kzUndo'), onclick: () => go('faxina?aba=lixeira') },
-          'Desfazer na Faxina'));
+          'Desfazer no Espaço'));
       }
       face = F.ok ? 'joy' : 'worried';
     } else {
@@ -1017,9 +1007,9 @@
     }
     const asking = K.confirm({
       title: 'Deixar o Mac voando?',
-      text: 'Marque o que eu faço agora. O resto fica como está.',
+      text: 'Marque o que eu faço agora.',
       body: list,
-      note: plan.caches ? { icon: 'kzUndo', tone: 'good', text: 'Os caches vão pra Lixeira: dá pra desfazer na Faxina.' } : null,
+      note: plan.caches ? { icon: 'kzUndo', tone: 'good', text: 'Os caches vão pra Lixeira: dá pra desfazer no Espaço.' } : null,
       ok: 'Fazer agora', cancel: 'Agora não', icon: 'rocket', mascot: 'happy',
     });
     /* o modal já está na tela (monta na hora): o botão só libera com algo marcado */
@@ -1178,7 +1168,7 @@
     c.appendChild(cardHead(step, r));
     c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
     if (!r.error && r.lines && r.lines.length) {
-      c.appendChild(K.el('div', { class: 'kz-res-kicker' }, r.lines.length === 1 ? 'O que mais pesa agora' : 'O que mais pesa agora, em ordem'));
+      c.appendChild(K.el('div', { class: 'kz-res-kicker' }, 'O que mais pesa agora'));
       c.appendChild(K.el('ul', { class: 'kz-sf-row' }, r.lines.map((l) => {
         const bub = K.el('span', { class: `kz-sf-bub t-${l.tone}`, 'aria-hidden': 'true' });
         if (l.img) bub.appendChild(K.el('img', { src: l.img, alt: '' })); else bub.innerHTML = K.icon(l.icon);
@@ -1225,13 +1215,13 @@
     const diskTight = disk && !disk.error && disk.tone !== 'good';
     if (diskTight && dirt) {
       /* disco apertado e sujeira de sobra: a ação do disco já leva pra Faxina */
-      out.push({ icon: 'broom', tone: disk.tone, title: freeUp, text: 'O disco está apertado: isso sai de caches e registros, com segurança.',
+      out.push({ icon: 'broom', tone: disk.tone, title: freeUp, text: 'Disco apertado: sai de caches e registros, com segurança.',
         btn: 'Ver e limpar', run: () => go('faxina') });
     } else if (diskTight) {
-      out.push({ icon: 'disk', tone: disk.tone, title: 'Liberar espaço', text: 'Veja no Painel quanto sobra e o que o macOS libera sozinho.', btn: 'Ver o disco', run: () => go('painel') });
+      out.push({ icon: 'disk', tone: disk.tone, title: 'Liberar espaço', text: 'Veja quanto sobra e o que ocupa.', btn: 'Ver o disco', run: () => go('painel') });
     }
     if (mem && !mem.error && mem.tone !== 'good') {
-      out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda. No Otimizar você vê quem pesa mais.',
+      out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda.',
         btn: 'Ver quem pesa', run: () => go('otimizar?aba=pesando') });
     }
     if (dirt && !diskTight) {
@@ -1241,10 +1231,10 @@
     if (b && b.pluggedIn) {
       const s = K.settings.value;
       if (s && s.aviso80 === false) {
-        out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá, pra tirar da tomada se quiser.',
+        out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá.',
           btn: 'Ligar o aviso', toggle: true });
       } else if (!b.optimizedChargingEngaged && b.percent >= 99) {
-        out.push({ id: 'otimizado', icon: 'btShield', title: 'Carregamento otimizado', text: 'Ficar sempre em 100% desgasta mais. O macOS pode segurar em 80% pra você.',
+        out.push({ id: 'otimizado', icon: 'btShield', title: 'Carregamento otimizado', text: 'O macOS pode segurar a carga em 80% pra você.',
           btn: 'Abrir Ajustes', run: () => K.api('open.settings', { painel: 'bateria' }).catch(() => go('bateria?secao=cuidados')) });
       }
     }
@@ -1255,12 +1245,12 @@
       const rest = su.n - shown.length;
       const who = shown.length ? listPt(rest > 0 ? shown.concat([`mais ${rest}`]) : shown) + '. ' : '';
       out.push({ icon: 'rocket', title: `${su.n} ${su.names.length === su.n ? 'apps abrem' : 'itens abrem'} com o Mac`,
-        text: `${who}Dá pra desligar o que você não usa, e religar depois.`,
-        btn: 'Ver no Otimizar', run: () => go('otimizar?aba=login') });
+        text: `${who}Dá pra desligar e religar depois.`,
+        btn: 'Ver em Velocidade', run: () => go('otimizar?aba=login') });
     }
     if (b && out.length && out.length < 3) {
       const s = K.settings.value;
-      if (s && s.aviso80) out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Já está ligado: te chamo quando a carga chegar lá.', done: 'Ligado', btn: 'Mudar', run: () => go('bateria?secao=avisos') });
+      if (s && s.aviso80) out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá.', done: 'Ligado', btn: 'Mudar', run: () => go('bateria?secao=avisos') });
     }
     return out.slice(0, 3);
   }
@@ -1408,7 +1398,7 @@
         color: 'var(--s2)', valueName: 'de impacto', labelName: 'App', labelWidth: wide ? 260 : 170, thickness: 14,
         format: (v) => K.fmt.num(v, v < 10 ? 1 : 0),
         table: true,
-        empty: 'Ninguém gastando energia de verdade agora. Tudo calmo.',
+        empty: 'Tudo calmo: ninguém gastando agora.',
         ariaLabel: 'Apps que mais gastam energia agora',
       })));
     }
@@ -1448,7 +1438,7 @@
       if (r.found > 0 && !r.noStack && r.cats && r.cats.length) {
         const box = K.el('div', { class: 'kz-dirt-stack' });
         body.appendChild(K.el('div', { class: 'kz-dirt-side' },
-          K.el('div', { class: 'kz-res-kicker' }, 'O que achei, por tipo ', K.el('span', { class: 'muted' }, '(o colorido já vem marcado na Faxina)')),
+          K.el('div', { class: 'kz-res-kicker' }, 'Por tipo ', K.el('span', { class: 'muted' }, '(o colorido já vem marcado)')),
           box));
         afterMount.push(() => {
           const ch = K.charts.stack(box, {
@@ -1465,7 +1455,7 @@
     } else {
       c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
     }
-    const label = !r.error && r.sel > 0 ? 'Ver e limpar' : 'Abrir a Faxina';
+    const label = !r.error && r.sel > 0 ? 'Ver e limpar' : 'Abrir o Espaço';
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note ? K.el('p', { class: 'kz-note kz-dirt-note' }, r.note) : null,
       K.el('button', { class: 'btn small' + (r.tone === 'tip' ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
@@ -1498,7 +1488,7 @@
     }
     if (mode !== 'result' || !host) return;
     /* o resumo diz "Feita às…": o cartão avisa que este número é mais novo */
-    const again = `Conferi de novo às ${K.fmt.time(nowS())}, ${depois || 'depois da Faxina'}.`;
+    const again = depois ? `Conferi de novo às ${K.fmt.time(nowS())}, ${depois}.` : `Conferi de novo às ${K.fmt.time(nowS())}.`;
     res.note = res.note ? `${again} ${res.note}` : again;
     const i = last.results.findIndex((r) => r.id === 'sujeira');
     if (i >= 0) last.results[i] = res; else last.results.push(res);
@@ -1534,7 +1524,7 @@
   }
 
   K.pages.inicio = {
-    title: 'Varredura',
+    title: 'Início',
     async render(el) {
       host = el;
       token++;

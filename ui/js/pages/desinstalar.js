@@ -40,14 +40,14 @@
     { id: 'todos', label: 'Todos', icon: 'apps', title: 'Todos os apps que dá pra desinstalar', test: () => true },
     { id: 'grandes', label: 'Grandes', icon: 'unWeight', title: 'Apps com 500 MB ou mais', test: (a) => (a.bytes || 0) >= BIG },
     { id: 'parados', label: 'Parados há 6+ meses', icon: 'moon',
-      title: 'Abertos pela última vez há seis meses ou mais. Apps sem registro de uso ficam de fora: o macOS não anotou quando foram abertos.',
+      title: 'Sem abrir há seis meses ou mais. Apps sem registro de uso ficam de fora.',
       test: (a) => stale(a) },
     { id: 'loja', label: 'App Store', icon: 'unBag', title: 'Baixados pela App Store', test: (a) => !!a.appStore },
   ];
   const SORTS = [
     { id: 'tamanho', label: 'Tamanho', title: 'Os maiores primeiro' },
     { id: 'nome', label: 'Nome', title: 'De A a Z' },
-    { id: 'uso', label: 'Uso', title: 'Os parados há mais tempo primeiro; os sem registro de uso vão pro fim' },
+    { id: 'uso', label: 'Uso', title: 'Os parados há mais tempo primeiro' },
   ];
 
   /* pasta da sobra (~/Library/<pasta>/…) → nome de gente. data: guarda o que o app criou (logins,
@@ -179,11 +179,11 @@
 
   function appTags(a) {
     const out = [];
-    if (a.aberto) out.push(K.el('span', { class: 'un-tag open', title: `${vis(a.nome)} está aberto agora. Pra desinstalar, feche o app antes.` },
+    if (a.aberto) out.push(K.el('span', { class: 'un-tag open', title: `Feche ${vis(a.nome)} antes de desinstalar.` },
       K.el('i', { class: 'un-dot', 'aria-hidden': 'true' }), 'aberto agora'));
     if (a.appStore) out.push(tag('plain', 'unBag', 'App Store', 'Baixado pela App Store'));
     if (a.apple) out.push(tag('plain', 'unMac', 'da Apple', 'App da Apple (não faz parte do macOS: dá pra tirar)'));
-    if (tricky(a.nome)) out.push(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar dele.'));
+    if (tricky(a.nome)) out.push(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
     return out;
   }
 
@@ -193,7 +193,7 @@
     const g = ago(a.usado);
     return g ? `último uso ${g}` : 'sem registro de uso';
   }
-  const NO_USE = 'O macOS não anotou quando este app foi aberto. Pode ser que nunca tenha sido, ou que o Spotlight não acompanhe essa pasta.';
+  const NO_USE = 'O macOS não anotou quando este app foi aberto.';
 
   function visibleApps() {
     const f = FILTERS.find((x) => x.id === S.filter) || FILTERS[0];
@@ -352,13 +352,13 @@
   function paintShell() {
     host.innerHTML = '';
     V.sandbox = K.el('span', { class: 'sticker has-ic un-sandbox', html: K.icon('unFlask'),
-      title: 'Caixa de areia: estou mexendo numa pasta de mentira, com uma Lixeira de mentira. Nada seu é tocado.' }, 'modo de teste');
+      title: 'Caixa de areia: pasta e Lixeira de mentira. Nada seu é tocado.' }, 'modo de teste');
     /* resumo numa figurinha de uma linha, como nas outras telas ("15 apps · 9,0 GB · 4 abertos") */
     V.sum = K.el('span', { class: 'sticker un-sum', role: 'status' });
     host.appendChild(K.el('header', { class: 'page-head un-head', 'data-drag': true },
       K.el('div', { class: 'un-head-text' },
         K.el('h1', null, 'Desinstalar'),
-        K.el('p', null, 'Tiro o app e o que ele deixou espalhado na sua pasta. Tudo vai pra Lixeira: dá pra desfazer.')),
+        K.el('p', null, 'O app e as sobras vão pra Lixeira: dá pra desfazer.')),
       K.el('div', { class: 'un-head-side' }, V.sandbox, V.sum)));
     V.tools = K.el('div', { class: 'un-tools' });
     V.banner = K.el('div', { class: 'un-banner-box' });
@@ -473,7 +473,7 @@
       V.sorts[s.id].classList.toggle('on', on);
       V.sorts[s.id].setAttribute('aria-pressed', String(on));
     }
-    V.refresh.title = S.refreshing ? 'Atualizando a lista…' : `Lista lida às ${K.fmt.time(S.at)}. Clique pra ler de novo (leva uns segundos).`;
+    V.refresh.title = S.refreshing ? 'Atualizando a lista…' : `Lista lida às ${K.fmt.time(S.at)}.`;
     V.refresh.setAttribute('aria-disabled', String(!!S.refreshing));
     V.refresh.classList.toggle('is-busy', S.refreshing);
     V.refreshT.textContent = S.refreshing ? 'Procurando…' : 'Procurar de novo';
@@ -495,7 +495,7 @@
     if (j.mode === 'running') {
       box = K.el('div', { class: 'tip un-banner', role: 'status' },
         K.el('span', { class: 'un-banner-spin', 'aria-hidden': 'true' }),
-        K.el('p', null, `Desinstalando ${nome}… Se o Finder pedir sua senha, é o próprio macOS pedindo.`));
+        K.el('p', null, `Desinstalando ${nome}… Se pedir senha, é o macOS.`));
     } else if (j.mode === 'error') {
       box = K.el('div', { class: 'tip un-banner crit', role: 'alert', html: K.icon('alert') },
         K.el('p', null, K.el('b', null, `Não consegui desinstalar ${nome}. `), `O motivo: ${why(j.err)}. Nada foi mexido.`), x);
@@ -548,7 +548,7 @@
       K.el('div', { class: 'un-bubble' }, 'Quantos apps\nserá que tem?'));
     const secs = K.el('span', { class: 'num' }, '');
     const msg = K.el('h2', { class: 'un-wait-msg' }, WAIT_MSGS[0]);
-    const slow = K.el('p', { class: 'un-wait-slow muted', hidden: true }, 'Está demorando mais que o normal: tem bastante app grande pra medir. Pode trocar de tela, eu continuo.');
+    const slow = K.el('p', { class: 'un-wait-slow muted', hidden: true }, 'Demorando mais que o normal. Pode trocar de tela, eu continuo.');
     const tick = () => {
       const s = Math.max(0, Math.floor((performance.now() - S.t0) / 1000));
       secs.textContent = K.fmt.num(s, 0) + ' s';
@@ -561,7 +561,7 @@
       K.el('div', { class: 'un-wait-text' },
         K.el('span', { class: 'sticker un-when-st' }, 'Contando seus apps… ', secs),
         msg,
-        K.el('p', null, 'Meço cada app e vejo quando ele foi aberto pela última vez. Leva uns 8 segundos.'),
+        K.el('p', null, 'Leva uns 8 segundos.'),
         K.el('div', { class: 'un-wait-track', 'aria-hidden': 'true' }, K.el('i')),
         K.el('div', { class: 'un-places' }, K.el('span', { class: 'un-places-t' }, 'Onde eu olho:'),
           K.el('span', { class: 'un-place', html: K.icon('unFolder') }, 'Aplicativos'),
@@ -590,7 +590,7 @@
       art,
       K.el('div', { class: 'un-wait-text' },
         K.el('h2', null, 'Nenhum app pra desinstalar por aqui'),
-        K.el('p', null, 'Olhei a pasta Aplicativos e a sua pasta Meus aplicativos. Os apps que vêm com o macOS (Safari, Mail, Fotos…) nem aparecem aqui, e o Kamurafy também não.'),
+        K.el('p', null, 'Os apps do macOS (Safari, Mail, Fotos…) não aparecem aqui.'),
         K.el('div', { class: 'un-act' },
           K.el('button', { class: 'btn', type: 'button', html: K.icon('unRefresh'), onclick: () => { K.sound.plop(); load(); } }, 'Procurar de novo')))));
     addMascot(art.firstChild, 128, { face: 'joy' });
@@ -623,8 +623,8 @@
   function filterEmpty() {
     const q = S.q.trim();
     let title, text;
-    if (q) { title = `Nenhum app com “${inl(q)}” no nome`; text = S.filter !== 'todos' ? 'A busca está junto com um filtro: tente “Todos”.' : 'Confira a grafia, ou busque só um pedaço do nome.'; }
-    else if (S.filter === 'parados') { title = 'Nenhum app parado há 6 meses ou mais'; text = 'Bom sinal: você usa o que tem instalado. Apps sem registro de uso ficam de fora desse filtro.'; }
+    if (q) { title = `Nenhum app com “${inl(q)}” no nome`; text = S.filter !== 'todos' ? 'A busca está junto com um filtro: tente “Todos”.' : 'Confira a grafia ou busque um pedaço do nome.'; }
+    else if (S.filter === 'parados') { title = 'Nenhum app parado há 6 meses ou mais'; text = 'Bom sinal: você usa o que tem instalado.'; }
     else if (S.filter === 'grandes') { title = 'Nenhum app com 500 MB ou mais'; text = 'Seus apps são levinhos.'; }
     else { title = 'Nenhum app da App Store aqui'; text = 'Os apps desta lista vieram de fora da App Store.'; }
     const art = K.el('div', { class: 'un-empty-art' });
@@ -642,7 +642,7 @@
     const big3 = !!top3 && top3.has(a.id);
     const pct = Math.max(a.bytes > 0 ? 1.5 : 0, Math.min(100, ((a.bytes || 0) / max) * 100));
     const used = K.el('span', { class: 'un-app-used' + (a.aberto ? ' is-open' : !isNum(a.usado) ? ' is-none' : stale(a) ? ' is-stale' : ''),
-      title: a.aberto ? 'Pra desinstalar, feche o app antes (salve o que estiver fazendo).' : isNum(a.usado) ? `Aberto pela última vez em ${dateTxt(a.usado)}` : NO_USE, html: K.icon(a.aberto ? 'lock' : stale(a) ? 'moon' : 'clock') },
+      title: a.aberto ? 'Salve e feche o app antes de desinstalar.' : isNum(a.usado) ? `Aberto pela última vez em ${dateTxt(a.usado)}` : NO_USE, html: K.icon(a.aberto ? 'lock' : stale(a) ? 'moon' : 'clock') },
     usedTxt(a));
     const card = K.el('button', {
       class: 'card un-app pop-in' + (a.aberto ? ' is-open' : '') + (S.openId === a.id ? ' is-on' : ''), type: 'button',
@@ -779,8 +779,8 @@
     if (a.aberto) {
       notes.push(K.el('div', { class: 'tip un-note warn un-open-note', html: K.icon('lock') },
         K.el('p', null, K.el('b', null, `${inl(a.nome)} ${S.stillOpen ? 'ainda está aberto' : 'está aberto agora'}. `),
-          S.stillOpen ? 'Às vezes o app continua rodando sem nenhuma janela: feche pelo menu dele (Encerrar) ou com ⌘Q, e confira de novo.'
-            : 'Feche o app antes (salve o que estiver fazendo) e depois confira de novo aqui.'),
+          S.stillOpen ? 'Ele pode rodar sem janela: feche com ⌘Q e confira de novo.'
+            : 'Salve, feche o app e confira de novo.'),
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('unRefresh'), disabled: S.checking || S.refreshing,
           onclick: () => { K.sound.plop(); S.checking = true; paintDrawer(); load({ silent: true }); } },
         S.checking || S.refreshing ? 'Conferindo…' : 'Já fechei, conferir')));
@@ -788,9 +788,9 @@
     if (a.appStore || a.apple || a.doAdministrador) {
       notes.push(K.el('div', { class: 'tip un-note', html: K.icon(a.appStore ? 'unBag' : 'unMac') },
         K.el('p', null, a.appStore
-          ? 'Veio da App Store: o Finder pode pedir sua senha. Se quiser de volta um dia, ele fica nas suas compras da App Store.'
-          : a.apple ? 'É da Apple, mas não faz parte do macOS: dá pra tirar. O Finder pode pedir sua senha.'
-          : 'Foi instalado com a senha do administrador: o Finder pode pedir sua senha pra tirar.')));
+          ? 'Da App Store: o Finder pode pedir sua senha. Dá pra baixar de novo nas suas compras.'
+          : a.apple ? 'É da Apple, mas dá pra tirar. O Finder pode pedir sua senha.'
+          : 'Instalado com senha de administrador: o Finder pode pedir sua senha.')));
     }
     if (a.outrasCopias > 0) {
       notes.push(K.el('div', { class: 'tip un-note warn', html: K.icon('info') },
@@ -802,9 +802,9 @@
     parts.push(restSection(a, R, running));
 
     parts.push(K.el('ul', { class: 'un-d-facts2' },
-      K.el('li', { html: K.icon('unCard') }, 'Tirar o app não cancela assinatura: isso se faz na App Store ou no site do serviço.'),
-      K.el('li', { html: K.icon('unSafe') }, 'Só mexo na sua pasta de usuário. O que o app instalou pro Mac todo (com senha de administrador) fica de fora.'),
-      K.el('li', { html: K.icon('unFolder') }, 'Eu só procuro pelo nome exato do app. Alguns guardam dados numa pasta com outro nome (o VS Code usa “Code”, por exemplo): se quiser tirar tudo, confira a pasta Biblioteca da sua conta.')));
+      K.el('li', { html: K.icon('unCard') }, 'Tirar o app não cancela assinatura.'),
+      K.el('li', { html: K.icon('unSafe') }, 'Só mexo na sua pasta. O que foi instalado pro Mac todo fica de fora.'),
+      K.el('li', { html: K.icon('unFolder') }, 'Procuro pelo nome exato do app. Pasta com outro nome (o VS Code usa “Code”) fica de fora.')));
 
     box.appendChild(K.el('div', { class: 'un-d-scroll' }, parts));
     box.appendChild(footEl(a, R, running));
@@ -823,7 +823,7 @@
     if (R.mode === 'error') {
       sec.append(K.el('div', { class: 'un-rest-head' }, K.el('span', { class: 'head-ic none', html: K.icon('info') }), K.el('div', null, title)),
         K.el('div', { class: 'tip un-note', html: K.icon('info') },
-          K.el('p', null, `Não consegui procurar as sobras (${why(R.err)}). Tente de novo; se preferir, dá pra desinstalar só o app.`),
+          K.el('p', null, `Não consegui procurar as sobras (${why(R.err)}). Dá pra desinstalar só o app.`),
           K.el('button', { class: 'btn small', type: 'button', html: K.icon('unRefresh'), onclick: () => { K.sound.plop(); loadRest(a.id, true); paintDrawer(); } }, 'Tentar de novo')));
       return sec;
     }
@@ -832,13 +832,13 @@
     const d = R.data || {};
     if (!items.length) {
       sec.append(K.el('div', { class: 'un-rest-head' }, K.el('span', { class: 'head-ic good', html: K.icon('sparkle') }),
-        K.el('div', null, title, K.el('p', null, d.incompleto ? 'Nada até onde consegui olhar.' : `Não achei nada do ${inl(a.nome)} espalhado na sua pasta. Só o app vai pra Lixeira.`))));
+        K.el('div', null, title, K.el('p', null, d.incompleto ? 'Nada até onde consegui olhar.' : 'Nada espalhado na sua pasta. Só o app vai pra Lixeira.'))));
     } else {
       const all = K.checkbox({ label: 'Marcar todas as sobras', onchange: () => toggleAll(a.id) });
       const selT = K.el('span', { class: 'un-rest-sel' });
       sec.append(K.el('div', { class: 'un-rest-head' }, all,
         K.el('div', { class: 'un-rest-ht' }, title,
-          K.el('p', null, `${plural(items.length, 'item', 'itens')}, ${fmtB(sum(items))}. Já marquei os que têm o identificador exato do app.`)),
+          K.el('p', null, `${plural(items.length, 'item', 'itens')}, ${fmtB(sum(items))}. Marquei os que são do app com certeza.`)),
         selT));
       const ul = K.el('ul', { class: 'un-rest-list' });
       const rows = new Map();
@@ -847,10 +847,10 @@
       V.rr = { id: a.id, all, selT, rows, ok, running };
     }
     const extra = [];
-    if (d.incompleto) extra.push(K.el('div', { class: 'tip un-note warn', html: K.icon('clock') }, K.el('p', null, 'Parei no meio porque demorou demais: pode ter mais coisa.')));
+    if (d.incompleto) extra.push(K.el('div', { class: 'tip un-note warn', html: K.icon('clock') }, K.el('p', null, 'Parei no meio: pode ter mais.')));
     if (d.semAcesso > 0) {
       extra.push(K.el('div', { class: 'tip un-note', html: K.icon('lock') },
-        K.el('p', null, `O macOS não me deixou ler ${d.semAcesso === 1 ? 'uma pasta' : `${K.fmt.num(d.semAcesso)} pastas`}. Com Acesso Total ao Disco eu vejo tudo; sem ele, só não mexo nelas.`),
+        K.el('p', null, `O macOS não me deixou ler ${d.semAcesso === 1 ? 'uma pasta' : `${K.fmt.num(d.semAcesso)} pastas`}. Com Acesso Total ao Disco eu vejo tudo.`),
         K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, 'Abrir Ajustes')));
     }
     if (extra.length) sec.appendChild(K.el('div', { class: 'un-d-notes' }, extra));
@@ -866,9 +866,9 @@
     if (k.data) tags.appendChild(tag('data', 'unData', 'guarda dados', 'O que o app guardou (logins, ajustes, arquivos dele). Vai junto com o app.'));
     if (it.semAcesso) tags.appendChild(tag('none', 'lock', 'sem acesso', 'O macOS não deixou ler esta pasta (falta Acesso Total ao Disco).'));
     else if (it.parcial) tags.appendChild(tag('warn', 'lock', 'parte sem acesso', 'Uma parte desta pasta não deu pra ler: o tamanho é o mínimo.'));
-    if (tricky(it.caminho)) tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O caminho tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar dele.'));
+    if (tricky(it.caminho)) tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O caminho tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
     const note = byName(it)
-      ? `${k.note ? k.note + ' ' : ''}Achei pelo nome, não pelo identificador do app: pode ser de outro programa. Marque só se tiver certeza.`
+      ? `${k.note ? k.note + ' ' : ''}Pode ser de outro programa: marque só se tiver certeza.`
       : k.note || vis(String(it.nota || '').replace(BYNAME, '').trim());
     const unread = it.semAcesso && !it.bytes;
     const revealBtn = K.el('button', { class: 'un-reveal', type: 'button', title: 'Mostrar no Finder', 'aria-label': `Mostrar ${k.label} no Finder`, html: K.icon('unFinder'),
@@ -970,7 +970,7 @@
     if (running) {
       f.lab.textContent = 'Levando pra Lixeira…';
       f.big.textContent = fmtB(total);
-      f.sub.textContent = 'Se o Finder pedir sua senha, é o próprio macOS pedindo.';
+      f.sub.textContent = 'Se pedir senha, é o macOS.';
       f.goT.textContent = 'Desinstalando…';
       f.go.disabled = true;
       return;
@@ -978,7 +978,7 @@
     if (a.aberto) {
       f.lab.textContent = 'O app está aberto';
       f.big.textContent = fmtB(total);
-      f.sub.textContent = 'Feche o app antes: com ele aberto, eu não mexo.';
+      f.sub.textContent = 'Com ele aberto, eu não mexo.';
       f.goT.textContent = 'Feche o app antes';
       f.go.disabled = true;
       return;
@@ -1033,7 +1033,7 @@
     if (data.length) {
       const kinds = Array.from(new Set(data.map((it) => kindOf(it).label)));
       bits.push(K.el('b', null, 'Os dados do app vão junto '),
-        `(${kinds.join(' e ')}): logins, ajustes e o que ele guardou. Se instalar de novo depois, ele começa do zero.`);
+        `(${kinds.join(' e ')}). Se instalar de novo, ele começa do zero.`);
     }
     const named = items.filter(byName);
     if (named.length) {
@@ -1068,12 +1068,12 @@
         title: n ? `Mandar o app ${inl(a.nome)} e ${plural(n, 'sobra', 'sobras')} (${parcial}${fmtN(total)}) pra Lixeira?` : `Mandar o app ${inl(a.nome)} (${fmtN(total)}) pra Lixeira?`,
         text: (n ? `Vão o app e ${n === 1 ? 'a sobra marcada' : `as ${K.fmt.num(n)} sobras marcadas`}.` : 'Só o app vai.')
           + (left ? ` ${left === 1 ? 'A desmarcada fica' : 'As desmarcadas ficam'} onde ${left === 1 ? 'está' : 'estão'}.` : '')
-          + (a.appStore ? ' Como veio da App Store, o Finder pode pedir sua senha.' : a.apple ? ' Como é da Apple, o Finder pode pedir sua senha.' : a.doAdministrador ? ' Como foi instalado com a senha do administrador, o Finder pode pedir sua senha.' : ''),
+          + (a.appStore || a.apple || a.doAdministrador ? ' O Finder pode pedir sua senha.' : ''),
         body: [confirmList(a, items), ...confirmNotes(a, items)],
         /* app do administrador (App Store) vai pelo Finder: esse volta pela Lixeira do Finder, não pelo Desfazer daqui */
         note: (a.appStore || a.doAdministrador)
-          ? { icon: 'unUndo', tone: 'good', text: `Dá pra desfazer enquanto estiver na Lixeira. As sobras voltam pelo botão Desfazer aqui, ou em Faxina › Lixeira. O app, como ${a.appStore ? 'é da App Store' : 'é do administrador'}, vai pelo Finder: ele volta pela Lixeira do Finder (botão direito › Colocar de volta).` }
-          : { icon: 'unUndo', tone: 'good', text: 'Dá pra desfazer enquanto estiver na Lixeira: pelo botão Desfazer aqui, ou em Faxina › Lixeira.' },
+          ? { icon: 'unUndo', tone: 'good', text: 'Dá pra desfazer enquanto estiver na Lixeira. As sobras voltam pelo Desfazer; o app volta pela Lixeira do Finder (botão direito › Colocar de volta).' }
+          : { icon: 'unUndo', tone: 'good', text: 'Dá pra desfazer enquanto estiver na Lixeira: aqui ou em Espaço › Lixeira.' },
         /* o mascote em cima do modal custa altura: em janela baixa os avisos valem mais */
         ok: 'Desinstalar', cancel: 'Agora não', icon: 'unTrash', mascot: innerHeight >= 720 ? 'happy' : null,
       });
@@ -1173,16 +1173,16 @@
     let title, sub, face = 'joy';
     if (u) {
       const back = undoBack(j);
-      if (back.app && !back.failRest) { title = 'Voltou tudo pro lugar'; sub = `${nome}${moved.rest ? ` e ${moved.rest === 1 ? 'a sobra estão' : `as ${K.fmt.num(moved.rest)} sobras estão`}` : ' está'} exatamente onde estava${moved.rest ? 'm' : ''} antes. Nada foi apagado.`; face = 'happy'; }
-      else if (back.app) { title = 'O app voltou, mas nem tudo'; sub = `${plural(back.failRest, 'sobra continua', 'sobras continuam')} na Lixeira. O motivo está logo abaixo.`; face = 'worried'; }
-      else { title = 'Não consegui devolver'; sub = 'Continua tudo na Lixeira, sem perder nada. Dá pra devolver pela Lixeira do Finder, com “Devolver”.'; face = 'worried'; }
+      if (back.app && !back.failRest) { title = 'Voltou tudo pro lugar'; sub = 'Nada foi apagado.'; face = 'happy'; }
+      else if (back.app) { title = 'O app voltou, mas nem tudo'; sub = `${plural(back.failRest, 'sobra continua', 'sobras continuam')} na Lixeira. O motivo está abaixo.`; face = 'worried'; }
+      else { title = 'Não consegui devolver'; sub = 'Continua tudo na Lixeira. Dá pra devolver pelo Finder.'; face = 'worried'; }
     } else if (j.undo && j.undo.err) {
       title = 'Não consegui desfazer';
-      sub = `O motivo: ${why(j.undo.err)}. Continua tudo na Lixeira, sem perder nada.`;
+      sub = `O motivo: ${why(j.undo.err)}. Continua tudo na Lixeira.`;
       face = 'worried';
     } else {
       title = `Pronto! O app ${nome} foi pra Lixeira`;  // o tamanho vai no parágrafo
-      sub = `${moved.rest ? `Junto com ${plural(moved.rest, 'sobra', 'sobras')}: ` : ''}${fmtB(moved.bytes)} no total${restFails.length ? `; ${plural(restFails.length, 'sobra ficou', 'sobras ficaram')} (motivo abaixo)` : ''}. O espaço volta pro disco quando a Lixeira for esvaziada; até lá, dá pra desfazer.`;
+      sub = `${moved.rest ? `Com ${plural(moved.rest, 'sobra', 'sobras')}: ` : ''}${fmtB(moved.bytes)} no total${restFails.length ? `; ${plural(restFails.length, 'sobra ficou', 'sobras ficaram')} (motivo abaixo)` : ''}. Até esvaziar a Lixeira, dá pra desfazer.`;
     }
     const busy = j.undo && j.undo.busy;
     const acts = K.el('div', { class: 'un-act' });
@@ -1231,12 +1231,12 @@
     parts.push(...failBlocks);
     if (!r.appLixeiraId && r.app && !u) {
       parts.push(K.el('div', { class: 'tip un-note', html: K.icon('info') },
-        K.el('p', null, 'O app foi pela Lixeira do Finder e eu não consegui anotar onde ele ficou. Pra devolver, abra a Lixeira e use “Devolver”.')));
+        K.el('p', null, 'O app foi pela Lixeira do Finder. Pra devolver, use “Devolver” lá.')));
     }
     if (!u) {
       parts.push(K.el('ul', { class: 'un-d-facts2' },
-        K.el('li', { html: K.icon('unCard') }, 'Lembrete: tirar o app não cancela assinatura. Isso se faz na App Store ou no site do serviço.'),
-        K.el('li', { html: K.icon('unTrash') }, 'Mudou de ideia depois? Tudo que eu mando pra Lixeira aparece em Faxina › Lixeira, e dá pra devolver cada item.')));
+        K.el('li', { html: K.icon('unCard') }, 'Lembrete: tirar o app não cancela assinatura.'),
+        K.el('li', { html: K.icon('unTrash') }, 'Mudou de ideia? Em Espaço › Lixeira dá pra devolver cada item.')));
     }
     box.appendChild(K.el('div', { class: 'un-d-scroll' }, parts));
     addMascot(art, 96, { face }, V.dr.mascots);

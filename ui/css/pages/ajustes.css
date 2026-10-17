@@ -61,7 +61,7 @@
 .aj-note-box p { flex: 1 1 220px; margin: 0; font-size: 14px; line-height: 1.42; }
 .aj-note-ic { display: grid; flex: none; margin-top: 1px; }
 .aj-note-ic svg { width: 20px; height: 20px; }
-.aj-note-box.warn .aj-note-ic { color: #b77800; }
+.aj-note-box.warn .aj-note-ic { color: var(--st-warn-ink); }
 .aj-note-box .btn { margin-left: 30px; }
 
 /* ---------- barra de menus: prévia ---------- */
@@ -292,3 +292,17 @@
 .aj-sobre .aj-note { font-size: 13px; }
 
 .snap .aj-saved.aj-bump { animation: none; }
+
+/* ===== modo escuro (tokens em base.css; o painel dourado do mascote .aj-about-stage é ilha de dia) ===== */
+@media (prefers-color-scheme: dark) {
+  .aj-about-stage { border-right-color: var(--cream); }
+  .aj-about-logo { background: var(--slab); box-shadow: inset 0 0 0 2px #4a443a; }
+  .aj-lim[aria-checked="true"] { color: var(--on-gold); }
+  .aj-fda { background-image: radial-gradient(circle, rgba(243, 234, 214, .07) 1.2px, transparent 1.6px); }
+  .aj-fda-tag { color: var(--ink); }
+
+  /* a barra de menus em miniatura fica escura como a do macOS no modo escuro */
+  .aj-mb { background: linear-gradient(180deg, #2e2a23, #24201a); }
+  .aj-mb-fade { background-image: repeating-linear-gradient(90deg, transparent 0 18px, rgba(243, 234, 214, .14) 18px 52px, transparent 52px 70px); }
+  .aj-mb-ours:not(.is-empty) { --ink: var(--on-gold); color: var(--on-gold); border-color: var(--cream); }
+}

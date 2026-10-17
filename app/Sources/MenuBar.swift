@@ -60,9 +60,9 @@ final class MenuBar: NSObject, NSPopoverDelegate {
 
     private func showMenu() {
         let m = NSMenu()
-        m.addItem(withTitle: "Abrir o Kamurafy", action: #selector(openMain), keyEquivalent: "").target = self
+        m.addItem(withTitle: L("Abrir o Kamurafy"), action: #selector(openMain), keyEquivalent: "").target = self
         m.addItem(.separator())
-        m.addItem(withTitle: "Sair do Kamurafy", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        m.addItem(withTitle: L("Sair do Kamurafy"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item?.menu = m
         item?.button?.performClick(nil)
         item?.menu = nil
@@ -89,6 +89,12 @@ final class MenuBar: NSObject, NSPopoverDelegate {
     }
 
     func closePopover() { popover?.performClose(nil) }
+
+    /// Idioma novo: o balão é refeito na próxima vez que abrir.
+    func reloadLanguage() {
+        popover?.close()
+        popover = nil
+    }
 
     func resize(height: Double) {
         let h = min(max(height, 200), 700)

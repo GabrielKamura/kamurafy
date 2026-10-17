@@ -58,8 +58,8 @@
 .head-ic.serious { background: var(--st-serious-soft); }
 .head-ic.crit { background: var(--st-crit-soft); }
 .head-ic.none { background: var(--panel); }
-.head-ic.s1 { background: #dbe9fa; }
-.head-ic.s2 { background: #fde3d7; }
+.head-ic.s1 { background: var(--s1-soft); }
+.head-ic.s2 { background: var(--s2-soft); }
 
 /* ===== botões ===== */
 .btn {
@@ -110,9 +110,9 @@
 .status.good { background: var(--st-good-soft); }
 .status.good svg { color: var(--st-good); }
 .status.warn { background: var(--st-warn-soft); }
-.status.warn svg { color: #b77800; }
+.status.warn svg { color: var(--st-warn-ink); }
 .status.serious { background: var(--st-serious-soft); }
-.status.serious svg { color: #c2521f; }
+.status.serious svg { color: var(--st-serious-ink); }
 .status.crit { background: var(--st-crit-soft); }
 .status.crit svg { color: var(--st-crit); }
 .status.none { background: var(--panel); }
@@ -471,7 +471,7 @@
 .kmodal-note.crit { background: var(--st-crit-soft); }
 .kmodal-note.crit svg { color: var(--st-crit); }
 .kmodal-note.warn { background: var(--st-warn-soft); }
-.kmodal-note.warn svg { color: #b77800; }
+.kmodal-note.warn svg { color: var(--st-warn-ink); }
 .kmodal-ack {
   display: flex;
   align-items: center;
@@ -541,7 +541,7 @@
   border: 2px solid var(--ink);
   padding: 1px 7px 2px 5px;
 }
-.ktab-badge.warn svg { width: 13px; height: 13px; color: #b77800; }
+.ktab-badge.warn svg { width: 13px; height: 13px; color: var(--st-warn-ink); }
 .ktab-badge.warn[hidden] { display: none; }
 
 /* ===== cartão de erro (K.errorCard): o mesmo em todas as telas ===== */
@@ -568,4 +568,27 @@
 @media (max-width: 1100px) {
   .kerr { grid-template-columns: 130px minmax(0, 1fr); gap: 18px; }
   .kerr-art .km { transform: rotate(-5deg) scale(.87); }
+}
+
+/* ===== modo escuro ("caderno à noite"; tokens em base.css) ===== */
+@media (prefers-color-scheme: dark) {
+  /* tudo que é ouro leva tinta escura por cima */
+  .btn.gold, .sticker, .ktab.on, .head-ic, .kmodal-ic { color: var(--on-gold); }
+  .head-ic.good, .head-ic.warn, .head-ic.serious, .head-ic.crit, .head-ic.none, .head-ic.s1, .head-ic.s2,
+  .kmodal-ic.crit { color: var(--ink); }
+  .kcheck[aria-checked="true"] svg { stroke: var(--on-gold); }
+
+  /* o que era bloco de tinta preta vira bloco mais escuro que o papel */
+  .card.ink, .btn.ink { background: var(--slab); color: var(--on-slab); }
+  .btn.danger { background: #c63d37; color: #fff; }
+  .btn.danger:disabled { background: var(--st-crit-soft); color: var(--ink-2); }
+
+  /* interruptor: bolinha creme; no ouro ganha contorno escuro pra não sumir */
+  .switch::after { background: var(--ink); }
+  .switch[aria-checked="true"]::after { border-color: var(--on-gold); }
+
+  .ktab-badge { background: var(--ink); color: var(--paper); }
+  .ktab.on .ktab-badge { background: #fffaf0; color: var(--on-gold); border-color: var(--on-gold); }
+
+  .kmodal-back { background: rgba(0, 0, 0, .58); }
 }

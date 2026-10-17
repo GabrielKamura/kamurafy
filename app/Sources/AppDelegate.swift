@@ -44,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         if snapshot != nil { RunMode.current = .snapshot }
         Commands.registerAll()
         NSApp.setActivationPolicy(snapshot == nil ? .regular : .accessory)
+        Theme.apply()
         buildMenu()
         buildWindow()
 
@@ -80,6 +81,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    /// Idioma novo: a janela e o balão recarregam com o catálogo dele (depois de responder ao JS).
+    func reloadLanguage() {
+        DispatchQueue.main.async {
+            WebUI.reloadLanguage(self.web, snapshot: self.snapshot != nil)
+            self.buildMenu()
+            MenuBar.shared.reloadLanguage()
+        }
+    }
+
     func windowWillClose(_ notification: Notification) {
         // "só na barra": sem janela, o Kamurafy some do Dock e fica no ícone da bateria
         let s = Settings.current
@@ -106,7 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
         }
         window.title = "Kamurafy"
         window.isReleasedWhenClosed = false
-        window.backgroundColor = NSColor(calibratedRed: 1, green: 0.99, blue: 0.97, alpha: 1)
+        window.backgroundColor = Theme.windowBackground
         window.delegate = self
         window.contentView = web
         web.load(URLRequest(url: WebUI.startURL(route: snapshot?.route)))
@@ -201,33 +211,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Sobre o Kamurafy", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: L("Sobre o Kamurafy"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Ocultar Kamurafy", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        let others = appMenu.addItem(withTitle: "Ocultar outros", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: L("Ocultar Kamurafy"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        let others = appMenu.addItem(withTitle: L("Ocultar outros"), action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
         others.keyEquivalentModifierMask = [.command, .option]
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Sair do Kamurafy", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: L("Sair do Kamurafy"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
         let editItem = NSMenuItem()
-        let edit = NSMenu(title: "Editar")
-        edit.addItem(withTitle: "Desfazer", action: Selector(("undo:")), keyEquivalent: "z")
-        edit.addItem(withTitle: "Refazer", action: Selector(("redo:")), keyEquivalent: "Z")
+        let edit = NSMenu(title: L("Editar"))
+        edit.addItem(withTitle: L("Desfazer"), action: Selector(("undo:")), keyEquivalent: "z")
+        edit.addItem(withTitle: L("Refazer"), action: Selector(("redo:")), keyEquivalent: "Z")
         edit.addItem(.separator())
-        edit.addItem(withTitle: "Recortar", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        edit.addItem(withTitle: "Copiar", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        edit.addItem(withTitle: "Colar", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        edit.addItem(withTitle: "Selecionar tudo", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        edit.addItem(withTitle: L("Recortar"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        edit.addItem(withTitle: L("Copiar"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        edit.addItem(withTitle: L("Colar"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        edit.addItem(withTitle: L("Selecionar tudo"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editItem.submenu = edit
         main.addItem(editItem)
 
         let winItem = NSMenuItem()
-        let win = NSMenu(title: "Janela")
-        win.addItem(withTitle: "Minimizar", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        win.addItem(withTitle: "Fechar", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        win.addItem(withTitle: "Recarregar interface", action: #selector(reloadUI), keyEquivalent: "r")
+        let win = NSMenu(title: L("Janela"))
+        win.addItem(withTitle: L("Minimizar"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        win.addItem(withTitle: L("Fechar"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        win.addItem(withTitle: L("Recarregar interface"), action: #selector(reloadUI), keyEquivalent: "r")
         winItem.submenu = win
         main.addItem(winItem)
         NSApp.windowsMenu = win

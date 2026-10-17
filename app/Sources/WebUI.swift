@@ -119,12 +119,7 @@ enum WebUI {
         cfg.setURLSchemeHandler(UIScheme(root: UIScheme.defaultRoot()), forURLScheme: UIScheme.scheme)
         let ucc = WKUserContentController()
         ucc.addScriptMessageHandler(bridge, contentWorld: .page, name: "kamurafy")
-        ucc.addUserScript(WKUserScript(source: errorHook, injectionTime: .atDocumentStart, forMainFrameOnly: true))
-        if snapshot {
-            // modo foto: sem som e sem esperar animação de entrada
-            ucc.addUserScript(WKUserScript(source: "document.documentElement.classList.add('snap');",
-                                           injectionTime: .atDocumentStart, forMainFrameOnly: true))
-        }
+        installScripts(ucc, snapshot: snapshot)
         cfg.userContentController = ucc
         #if KAMURAFY_DEV
         if ProcessInfo.processInfo.environment["KAMURAFY_DEV"] == "1" {
@@ -144,6 +139,26 @@ enum WebUI {
         }
         #endif
         return web
+    }
+
+    /// Scripts que rodam antes da página: erros pro Swift, modo foto e o idioma (o catálogo
+    /// chega antes dos scripts da interface, então até as constantes das páginas saem traduzidas).
+    static func installScripts(_ ucc: WKUserContentController, snapshot: Bool) {
+        ucc.removeAllUserScripts()
+        ucc.addUserScript(WKUserScript(source: errorHook, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        if snapshot {
+            // modo foto: sem som e sem esperar animação de entrada
+            ucc.addUserScript(WKUserScript(source: "document.documentElement.classList.add('snap');",
+                                           injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+        ucc.addUserScript(WKUserScript(source: L10n.pageScript(), injectionTime: .atDocumentStart, forMainFrameOnly: true))
+    }
+
+    /// Idioma trocado nos Ajustes: refaz os scripts e recarrega a página.
+    static func reloadLanguage(_ web: WKWebView?, snapshot: Bool) {
+        guard let web else { return }
+        installScripts(web.configuration.userContentController, snapshot: snapshot)
+        web.reload()
     }
 
     static func startURL(route: String?) -> URL {

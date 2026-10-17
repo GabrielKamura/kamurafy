@@ -152,7 +152,7 @@
   function noteFor(it) {
     if (!it || it.appAberto || it.semAcesso) return null;
     if (it.categoria === 'caches' && !it.app && it.selecionado && !suggested(it)) {
-      return 'Não sei de qual app é: pode ser de um serviço do macOS ou de uma ferramenta aberta agora. Deixei desmarcado; se você reconhece, pode marcar.';
+      return 'Não sei de qual app é. Deixei desmarcado; se reconhecer, pode marcar.';
     }
     return it.nota || null;
   }
@@ -283,15 +283,15 @@
     host.innerHTML = '';
     host.dataset.tab = S.tab;
     V.sandbox = K.el('span', { class: 'sticker has-ic fx-sandbox', html: K.icon('fxFlask'),
-      title: 'Caixa de areia: a Faxina está mexendo numa pasta de mentira, com uma Lixeira de mentira. Nada seu é tocado.' },
+      title: 'Caixa de areia: pasta e Lixeira de mentira. Nada seu é tocado.' },
       'modo de teste');
     host.appendChild(K.el('header', { class: 'page-head fx-head', 'data-drag': true },
       K.el('div', { class: 'fx-head-text' },
-        K.el('h1', null, 'Faxina'),
-        K.el('p', null, 'Acho o que sobra no Mac e mostro tudo antes. Só vai pra Lixeira o que você marcar.')),
+        K.el('h1', null, 'Espaço'),
+        K.el('p', null, 'O que ocupa o disco e o que dá pra tirar. Só vai pra Lixeira o que você marcar.')),
       K.el('div', { class: 'fx-head-side' }, V.sandbox)));
 
-    const nav = K.el('nav', { class: 'ktabs fx-tabs', role: 'tablist', 'aria-label': 'Partes da Faxina' });
+    const nav = K.el('nav', { class: 'ktabs fx-tabs', role: 'tablist', 'aria-label': 'Partes do Espaço' });
     V.tabs = {};
     for (const t of TABS) {
       const badge = K.el('span', { class: 'ktab-badge fx-tab-badge num' });
@@ -321,7 +321,7 @@
     if (id === 'lixeira') {
       const m = S.lix.moved;
       const n = m && Array.isArray(m.itens) ? m.itens.filter((x) => x.naLixeira).length : 0;
-      return n ? { text: K.fmt.num(n), title: `${plural(n, 'item que a Faxina mandou está', 'itens que a Faxina mandou estão')} na Lixeira` } : null;
+      return n ? { text: K.fmt.num(n), title: `${plural(n, 'item que o Kamurafy mandou está', 'itens que o Kamurafy mandou estão')} na Lixeira` } : null;
     }
     const st = S[KIND[id]];
     if (st.mode === 'scanning') return { text: '…', title: 'Procurando…' };
@@ -411,7 +411,7 @@
     V.bar.count.textContent = ids.length ? plural(ids.length, 'item marcado', 'itens marcados') : 'Nada marcado ainda';
     let sub;
     if (cleaning) sub = 'Levando pra Lixeira…';
-    else if (!ids.length) sub = kind === 'suj' ? 'Marque o que quer mandar pra Lixeira.' : 'São arquivos seus: nada vem marcado, você escolhe.';
+    else if (!ids.length) sub = kind === 'suj' ? 'Marque o que quer mandar pra Lixeira.' : 'Arquivos seus: nada vem marcado.';
     else {
       sub = 'Vai pra Lixeira · dá pra desfazer';
       if (kind === 'gra') {
@@ -613,13 +613,13 @@
     const s = st.stale;
     if (s) {
       const bits = [];
-      if (s.gone) bits.push(`${plural(s.gone, 'item daqui já foi', 'itens daqui já foram')} pra Lixeira pela ${s.by.join(' e ')}, e ${s.gone === 1 ? 'saiu' : 'saíram'} da lista`);
-      if (s.dissolved) bits.push(`${s.dissolved === 1 ? 'um grupo ficou' : `${K.fmt.num(s.dissolved)} grupos ficaram`} com uma cópia só e ${s.dissolved === 1 ? 'saiu' : 'saíram'} também: essa cópia é a última fora da Lixeira`);
-      if (s.changed.size) bits.push(`${plural(s.changed.size, 'pasta daqui tinha', 'pastas daqui tinham')} coisa que foi pra Lixeira, então o tamanho mostrado ficou maior que o de verdade`);
-      if (s.back) bits.push('algo voltou da Lixeira e ainda não aparece aqui');
+      if (s.gone) bits.push(`${plural(s.gone, 'item daqui já foi', 'itens daqui já foram')} pra Lixeira`);
+      if (s.dissolved) bits.push(`${s.dissolved === 1 ? 'um grupo ficou' : `${K.fmt.num(s.dissolved)} grupos ficaram`} só com a última cópia`);
+      if (s.changed.size) bits.push(plural(s.changed.size, 'pasta mostra mais do que tem', 'pastas mostram mais do que têm'));
+      if (s.back) bits.push('algo voltou da Lixeira');
       const txt = bits.join('; ');
       out.push(K.el('div', { class: 'tip fx-note warn fx-stale', html: K.icon('cycle') },
-        K.el('p', null, K.el('b', null, 'A lista mudou. '), `${txt.charAt(0).toUpperCase()}${txt.slice(1)}. Procure de novo pra ver tudo certinho.`),
+        K.el('p', null, K.el('b', null, 'A lista mudou. '), `${txt.charAt(0).toUpperCase()}${txt.slice(1)}.`),
         K.el('button', { class: 'btn small', type: 'button', onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, 'Procurar de novo')));
     }
     return out;
@@ -632,7 +632,7 @@
     const names = last.slice(0, 2).map((it) => `“${inl(it.nome)}”`).join(' e ');
     return K.el('div', { class: 'tip fx-note warn fx-cf-warn', html: K.icon('fxCopy') },
       K.el('p', null, K.el('b', null, last.length === 1 ? 'É a última cópia. ' : 'São as últimas cópias. '),
-        `${names}${last.length > 2 ? ` e mais ${K.fmt.num(last.length - 2)}` : ''}: as outras cópias você já mandou pra Lixeira pela aba Duplicados. Se mandar ${last.length === 1 ? 'esta' : 'estas'} também, não sobra nenhuma fora da Lixeira.`));
+        `${names}${last.length > 2 ? ` e mais ${K.fmt.num(last.length - 2)}` : ''}: as outras já estão na Lixeira. Se mandar ${last.length === 1 ? 'esta' : 'estas'} também, não sobra nenhuma fora dela.`));
   }
 
   function selectAll() {
@@ -782,21 +782,21 @@
     const list = K.el('div', { class: 'fx-list' }, K.el('div', { class: 'fx-list-head' }, ui.listHead, ui.count), ol, promise);
 
     const expired = st.expired ? K.el('div', { class: 'tip fx-expired', html: K.icon('clock') },
-      K.el('p', null, 'A lista da última procura venceu (ela vale por uma hora). Procure de novo pra ver o que tem agora.')) : null;
+      K.el('p', null, 'A lista venceu (vale uma hora). Procure de novo.')) : null;
     ui.stage = K.el('section', { class: 'fx-stage' + (scanning ? ' is-scanning' : ''), 'data-drag': true }, orb, list);
     V.panel.append(...[expired, ui.stage].filter(Boolean));
 
     if (scanning) {
       const size = small ? 196 : 220;
-      ui.ring = keepChart(K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Faxina', busy: true, size, thickness: 13 }));
+      ui.ring = keepChart(K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Procurando sujeira', busy: true, size, thickness: 13 }));
       st.steps.forEach((s, i) => paintStep(i));
     }
   }
 
   function dlNote() {
     return S.withDownloads
-      ? 'Ligado. Se o macOS perguntar se o Kamurafy pode ver a pasta Downloads, é só permitir. Nada vem marcado: são arquivos seus.'
-      : 'Desligado. Se ligar, o macOS vai pedir sua permissão pra eu ver a pasta Downloads. São arquivos seus: nada vem marcado.';
+      ? 'Ligado. Se o macOS pedir acesso a Downloads, é só permitir. Nada vem marcado.'
+      : 'Desligado. Ligando, o macOS pede permissão. Nada vem marcado.';
   }
 
   function paintStep(i) {
@@ -948,7 +948,7 @@
     let heroBlock;
     if (clean) {
       heroBlock = [K.el('h1', { class: 'fx-sum-title' }, 'Tudo limpinho por aqui'),
-        K.el('p', null, 'Não achei nada que valha limpar agora. Cache volta a crescer com o uso: dá uma olhada de novo daqui a umas semanas.')];
+        K.el('p', null, 'Nada que valha limpar agora. Volte daqui a umas semanas.')];
     } else {
       V.hero = K.el('span', { class: 'fx-hero num' }, '');
       V.heroLab = K.el('span', null, 'pra liberar');
@@ -982,9 +982,9 @@
     if (errs.length || incompletos.length) {
       const bits = [];
       if (errs.length) bits.push(`não consegui ler ${errs.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')}`);
-      if (incompletos.length) bits.push(`parei no meio em ${incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')} porque demorou demais`);
+      if (incompletos.length) bits.push(`parei no meio em ${incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')}`);
       notes.push(K.el('div', { class: 'tip fx-note warn', html: K.icon('alert') },
-        K.el('p', null, K.el('b', null, 'Procura incompleta. '), `Nessa rodada ${bits.join(', e ')}. O que aparece aqui está certo, mas pode ter mais.`),
+        K.el('p', null, K.el('b', null, 'Procura incompleta. '), `Nessa rodada ${bits.join(', e ')}. Pode ter mais.`),
         K.el('button', { class: 'btn small', type: 'button', onclick: () => { scanSujeira(); } }, 'Tentar de novo')));
     }
     if (denied > 0) notes.push(permissionTip(denied));
@@ -993,7 +993,7 @@
       const b = openApps.reduce((a, it) => a + (it.bytes || 0), 0);
       const who = names.length <= 2 ? names.join(' e ') : `${names.slice(0, 2).join(', ')} e mais ${names.length - 2}`;
       notes.push(K.el('div', { class: 'tip fx-note', html: K.icon('info') },
-        K.el('p', null, `${who} ${names.length === 1 ? 'está aberto' : 'estão abertos'}: o cache ${names.length === 1 ? 'dele' : 'deles'} (${fmtB(b)}) fica de fora pra não atrapalhar. Feche e procure de novo se quiser incluir.`)));
+        K.el('p', null, names.length === 1 ? `${who} está aberto: o cache (${fmtB(b)}) fica de fora. Feche e procure de novo pra incluir.` : `${who} estão abertos: o cache (${fmtB(b)}) fica de fora. Feche e procure de novo pra incluir.`)));
     }
     if (notes.length) V.panel.appendChild(K.el('div', { class: 'fx-notes' }, notes));
 
@@ -1018,13 +1018,13 @@
     V.heroLab.textContent = n ? 'pra liberar' : 'marcado agora';
     let p;
     if (!st.touched) {
-      p = n ? `Já marquei o que é seguro: ${plural(n, 'item', 'itens')}. Abra cada tipo pra ver item por item e mudar o que quiser.`
-        : 'Nada veio marcado: aqui só tem coisa que eu prefiro que você olhe antes. Abra cada tipo pra escolher.';
+      p = n ? `Já marquei o que é seguro: ${plural(n, 'item', 'itens')}. Abra cada tipo pra conferir.`
+        : 'Nada veio marcado: vale você olhar antes. Abra cada tipo pra escolher.';
     } else if (n) {
       const mine = dl ? `, ${dl === 1 ? 'um deles é arquivo seu' : `${K.fmt.num(dl)} deles são arquivos seus`} da pasta Downloads` : '';
-      p = `${plural(n, 'item marcado', 'itens marcados')}${mine}. Abra cada tipo pra conferir item por item.`;
+      p = `${plural(n, 'item marcado', 'itens marcados')}${mine}.`;
     } else {
-      p = 'Abra cada tipo e marque o que quiser mandar pra Lixeira: nada sai daqui sem você marcar.';
+      p = 'Nada sai daqui sem você marcar.';
     }
     V.heroP.textContent = p;
   }
@@ -1032,7 +1032,7 @@
   function permissionTip(n) {
     return K.el('div', { class: 'tip fx-note', html: K.icon('lock') },
       K.el('p', null, K.el('b', null, 'O macOS não me deixou ler tudo. '),
-        `${n === 1 ? 'Uma pasta ficou' : `${K.fmt.num(n)} pastas ficaram`} de fora. Se quiser que eu olhe tudo, dê Acesso Total ao Disco pro Kamurafy nos Ajustes. Sem isso, eu só não mexo nelas.`),
+        `${n === 1 ? 'Uma pasta ficou' : `${K.fmt.num(n)} pastas ficaram`} de fora. Pra eu olhar tudo, dê Acesso Total ao Disco.`),
       K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } },
         'Abrir Ajustes', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
   }
@@ -1049,7 +1049,7 @@
       card.classList.add('is-err');
       card.appendChild(K.el('div', { class: 'fx-cat-head' }, ic,
         K.el('div', { class: 'fx-cat-text' }, K.el('h3', null, info.titulo, K.statusPill('none', 'Não deu pra ler', 'info')),
-          K.el('p', null, `Não consegui olhar agora (${why(d.error)}). Tente procurar de novo daqui a pouco.`))));
+          K.el('p', null, `Não consegui olhar agora (${why(d.error)}).`))));
       return card;
     }
     if (!items.length) {
@@ -1062,15 +1062,15 @@
     /* Downloads esquecidos: sem "marcar tudo" (são arquivos da pessoa, um por um) */
     const bulk = id !== 'downloads';
     const chk = bulk ? K.checkbox({ label: `Marcar tudo em ${info.titulo}`, onchange: () => toggleCat(id) })
-      : K.el('span', { class: 'fx-cat-solo', title: 'São arquivos seus: aqui não tem “marcar tudo”. Abra a lista e marque um por um.', 'aria-hidden': 'true', html: K.icon('fxFile') });
+      : K.el('span', { class: 'fx-cat-solo', title: 'Arquivos seus: marque um por um.', 'aria-hidden': 'true', html: K.icon('fxFile') });
     const open = st.open.has(id);
     const chev = K.el('span', { class: 'fx-chev', html: K.icon('fxChevron') });
     const openBtn = K.el('button', { class: 'btn small fx-open', type: 'button', 'aria-expanded': String(open), onclick: (e) => { e.stopPropagation(); toggleOpen(id); } },
       K.el('span', { class: 'fx-open-t' }, open ? 'Esconder' : 'Ver itens'), chev);
     const selTxt = K.el('span', { class: 'fx-cat-sel' });
     const pills = [];
-    if (d.incompleto) pills.push(tag('warn', 'clock', 'parei no meio', 'Demorou demais e parei no meio: pode ter mais coisa aqui.'));
-    if (!bulk) pills.push(tag('plain', null, 'um por um', 'São arquivos seus: aqui não tem “marcar tudo”. Abra a lista e marque um por um.'));
+    if (d.incompleto) pills.push(tag('warn', 'clock', 'parei no meio', 'Parei no meio: pode ter mais.'));
+    if (!bulk) pills.push(tag('plain', null, 'um por um', 'Arquivos seus: marque um por um.'));
     const head = K.el('div', { class: 'fx-cat-head is-click' }, chk, ic,
       K.el('div', { class: 'fx-cat-text' },
         K.el('h3', null, info.titulo, ...pills),
@@ -1151,19 +1151,19 @@
     const tags = K.el('span', { class: 'fx-tags' });
     if (extra && extra.first) {
       tags.appendChild(extra.tie
-        ? tag('keep', 'fxKeep', 'parece o original', 'As cópias têm a mesma data. Sugiro manter esta porque parece o original, pela pasta e pelo nome.')
-        : tag('keep', 'clock', 'a mais antiga', 'A cópia mais antiga: a sugestão é manter esta.'));
+        ? tag('keep', 'fxKeep', 'parece o original', 'Mesma data: sugiro manter esta, pela pasta e pelo nome.')
+        : tag('keep', 'clock', 'a mais antiga', 'A mais antiga: sugiro manter esta.'));
     }
     let keep = null;
     if (kind === 'dup') { keep = tag('good', 'fxKeep', 'fica'); keep.hidden = true; tags.appendChild(keep); }
-    if (it.appAberto) tags.appendChild(tag('warn', 'lock', 'aberto: feche antes', `${nameTxt} está aberto. Feche o app e procure de novo pra poder limpar.`));
+    if (it.appAberto) tags.appendChild(tag('warn', 'lock', 'aberto: feche antes', `${nameTxt} está aberto. Feche e procure de novo pra limpar.`));
     if (it.semAcesso) tags.appendChild(tag('none', 'lock', 'sem acesso', 'O macOS não deixou ler esta pasta (falta Acesso Total ao Disco).'));
-    else if (it.parcial) tags.appendChild(tag('warn', 'lock', 'parte sem acesso', 'O macOS não deixou ler uma parte desta pasta: o tamanho é o mínimo, pode ter mais.'));
+    else if (it.parcial) tags.appendChild(tag('warn', 'lock', 'parte sem acesso', 'O macOS não deixou ler parte desta pasta: o tamanho é o mínimo.'));
     if (kind !== 'dup' && S.lastCopy.has(it.caminho)) {
-      tags.appendChild(tag('warn', 'fxCopy', 'última cópia', 'As outras cópias deste arquivo você já mandou pra Lixeira pela aba Duplicados. Esta é a que sobrou fora dela.'));
+      tags.appendChild(tag('warn', 'fxCopy', 'última cópia', 'As outras cópias já estão na Lixeira. Esta é a que sobrou.'));
     }
     if (tricky(it.nome) || tricky(it.caminho)) {
-      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras (pode fazer um .exe parecer .jpg). Mostro um � no lugar dele.'));
+      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
     }
     const lines = [K.el('span', { class: 'fx-item-top' }, K.el('span', { class: 'fx-item-name' }, nameTxt), tags),
       K.el('span', { class: 'fx-item-path', title: vis(it.caminho) }, vis(it.caminho))];
@@ -1217,14 +1217,14 @@
   const INTRO = {
     gra: {
       icon: 'fxBig', title: 'Arquivos grandes esquecidos',
-      text: 'Procuro arquivos de 100 MB ou mais nas suas pastas. Costumam ser vídeos, instaladores e cópias de segurança velhas. São arquivos seus: nada vem marcado, você escolhe um por um.',
+      text: 'De 100 MB pra cima, nas suas pastas. Nada vem marcado: você escolhe um por um.',
       btn: 'Procurar arquivos grandes', wait: 'Pode levar até 40 segundos.',
       doing: 'Procurando arquivos de 100 MB ou mais…', bubble: 'Coisa grande\nescondida?',
     },
     dup: {
       icon: 'fxCopy', title: 'Arquivos repetidos',
-      text: 'Procuro arquivos iguais byte por byte (de 1 MB pra cima) nas suas pastas. Nome parecido não conta: só o conteúdo idêntico. Em cada grupo, pelo menos uma cópia sempre fica.',
-      btn: 'Procurar duplicados', wait: 'Pode levar até um minuto: comparo o conteúdo de verdade.',
+      text: 'Conteúdo idêntico, de 1 MB pra cima. Em cada grupo, uma cópia sempre fica.',
+      btn: 'Procurar duplicados', wait: 'Pode levar até um minuto.',
       doing: 'Comparando o conteúdo dos arquivos…', bubble: 'Tem coisa\nem dobro?',
     },
   };
@@ -1237,7 +1237,7 @@
       K.el('span', { class: 'fx-intro-badge', html: K.icon(t.icon) }),
       K.el('div', { class: 'fx-bubble fx-intro-bubble' }, t.bubble));
     const expired = st.expired ? K.el('div', { class: 'tip fx-expired', html: K.icon('clock') },
-      K.el('p', null, 'A lista da última procura venceu (ela vale por uma hora). Procure de novo pra ver o que tem agora.')) : null;
+      K.el('p', null, 'A lista venceu (vale uma hora). Procure de novo.')) : null;
     const card = K.el('section', { class: 'card fx-intro pop-in' },
       art,
       K.el('div', { class: 'fx-intro-text' },
@@ -1246,7 +1246,7 @@
         K.el('div', { class: 'fx-folders' }, K.el('span', { class: 'fx-folders-t' }, 'Onde eu olho:'),
           PERSONAL.map((f) => K.el('span', { class: 'fx-folder', html: K.icon('fxFolder') }, f))),
         K.el('div', { class: 'tip fx-perm', html: K.icon('lock') },
-          K.el('p', null, 'O macOS pode perguntar se o Kamurafy pode ver essas pastas. É só permitir. Se você negar, eu pulo a pasta e aviso.')),
+          K.el('p', null, 'Se o macOS pedir acesso, é só permitir. Se negar, eu pulo a pasta.')),
         K.el('div', { class: 'fx-intro-act' },
           K.el('button', { class: 'btn gold fx-intro-go', type: 'button', html: K.icon('scan'), onclick: () => { search(kind); } }, t.btn),
           K.el('span', { class: 'muted fx-intro-wait' }, t.wait))));
@@ -1267,9 +1267,9 @@
       K.el('div', { class: 'fx-search-text' },
         K.el('span', { class: 'sticker fx-when' }, 'Procurando… ', secs),
         K.el('h2', null, t.doing),
-        K.el('p', null, `Olho ${PERSONAL.slice(0, -1).join(', ')} e ${PERSONAL[PERSONAL.length - 1]}. ${t.wait}`),
+        K.el('p', null, t.wait),
         K.el('div', { class: 'fx-folders' }, PERSONAL.map((f) => K.el('span', { class: 'fx-folder', html: K.icon('fxFolder') }, f))),
-        K.el('p', { class: 'muted fx-search-hint' }, 'Se aparecer um pedido de permissão do macOS, é só permitir. Pode trocar de aba enquanto isso.')));
+        K.el('p', { class: 'muted fx-search-hint' }, 'Pode trocar de aba enquanto isso.')));
     V.panel.appendChild(card);
     V.after.push(() => keepChart(K.charts.ring(ringEl, { value: null, busy: true, tone: 'gold', text: '', size: 150, thickness: 13 })));
     if (!snap()) V.timers.push(setInterval(tick, 1000));
@@ -1342,7 +1342,7 @@
     const out = stateNotes(kind);
     if (st.data && st.data.incompleto) {
       out.push(K.el('div', { class: 'tip fx-note warn', html: K.icon('clock') },
-        K.el('p', null, K.el('b', null, 'Procura incompleta. '), 'Tinha arquivo demais e parei antes de olhar tudo. O que aparece aqui está certo, mas pode ter mais.')));
+        K.el('p', null, K.el('b', null, 'Procura incompleta. '), 'Parei antes de olhar tudo: pode ter mais.')));
     }
     if (st.data && st.data.semAcesso > 0) out.push(permissionTip(st.data.semAcesso));
     return out.length ? K.el('div', { class: 'fx-notes' }, out) : null;
@@ -1356,18 +1356,18 @@
       /* procura incompleta: "tudo leve" seria mentira, é "nada até onde consegui olhar" */
       const part = partialSearch(st);
       V.panel.appendChild(summaryCard('gra', part
-        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'Nas pastas que consegui ler, nada passa de 100 MB. Mas a procura não viu tudo: explico logo abaixo.' }
-        : { big: 'Nenhum', label: 'arquivo grande', text: 'Nenhum arquivo de 100 MB ou mais nessas pastas. Tudo leve por aqui.' }));
+        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'A procura não viu tudo: o aviso abaixo diz o quê.' }
+        : { big: 'Nenhum', label: 'arquivo grande', text: 'Tudo leve por aqui.' }));
       const n = searchNotes('gra');
       if (n) V.panel.appendChild(n);
       V.panel.appendChild(part
-        ? emptyBox('Nada até onde consegui olhar', 'Pode ter arquivo grande no que ficou de fora da procura: o aviso acima diz o quê.', 'happy')
-        : emptyBox('Tudo leve por aqui', 'Nada de 100 MB ou mais em Downloads, Mesa, Documentos, Filmes, Música ou Imagens.'));
+        ? emptyBox('Nada até onde consegui olhar', 'Pode ter algo no que ficou de fora.', 'happy')
+        : emptyBox('Tudo leve por aqui', 'Nada de 100 MB ou mais nas suas pastas.'));
       return;
     }
     V.panel.appendChild(summaryCard('gra', {
       big: fmtB(total), label: `em ${plural(items.length, 'arquivo grande', 'arquivos grandes')}`,
-      text: 'Do maior pro menor. Nada vem marcado: marque só o que você tem certeza que não precisa mais.',
+      text: 'Nada vem marcado: marque só o que não precisa mais.',
     }));
     const n = searchNotes('gra');
     if (n) V.panel.appendChild(n);
@@ -1419,20 +1419,19 @@
     if (!grupos.length) {
       const part = partialSearch(st);
       V.panel.appendChild(summaryCard('dup', part
-        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'Nas pastas que consegui ler, não achei arquivos iguais. Mas a procura não viu tudo: explico logo abaixo.' }
-        : { big: 'Nenhum', label: 'repetido', text: 'Não achei arquivos iguais nas suas pastas. Cada coisa no seu lugar.' }));
+        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'A procura não viu tudo: o aviso abaixo diz o quê.' }
+        : { big: 'Nenhum', label: 'repetido', text: 'Cada coisa no seu lugar.' }));
       const n = searchNotes('dup');
       if (n) V.panel.appendChild(n);
       V.panel.appendChild(part
-        ? emptyBox('Nada até onde consegui olhar', 'Pode ter cópia repetida no que ficou de fora da procura: o aviso acima diz o quê.', 'happy')
-        : emptyBox('Nada em dobro', 'Nenhum arquivo de 1 MB ou mais aparece repetido em Downloads, Mesa, Documentos, Filmes, Música ou Imagens.'));
+        ? emptyBox('Nada até onde consegui olhar', 'Pode ter algo no que ficou de fora.', 'happy')
+        : emptyBox('Nada em dobro', 'Nenhum arquivo de 1 MB ou mais repetido nas suas pastas.'));
       return;
     }
-    const nFiles = grupos.reduce((a, g) => a + g.itens.length, 0);
     const mark = K.el('button', { class: 'btn small gold', type: 'button', html: K.icon('fxCopy'), onclick: () => { markCopies(); } }, 'Marcar as cópias (mantém a mais antiga)');
     V.panel.appendChild(summaryCard('dup', {
       big: fmtB(st.data.desperdicio), label: 'em cópias repetidas',
-      text: `${plural(grupos.length, 'grupo', 'grupos')} de arquivos iguais, ${plural(nFiles, 'arquivo', 'arquivos')} no total. Em cada grupo, pelo menos uma cópia sempre fica.`,
+      text: `${plural(grupos.length, 'grupo', 'grupos')} de arquivos iguais. Em cada grupo, uma cópia sempre fica.`,
       actions: mark,
     }));
     const n = searchNotes('dup');
@@ -1454,7 +1453,7 @@
     const lo = Math.min(...sizes), hi = Math.max(...sizes);
     const each = fmtB(lo) === fmtB(hi)
       ? K.el('span', null, `${fmtB(hi)} cada`)
-      : K.el('span', { title: 'O conteúdo é idêntico, mas o espaço que cada cópia ocupa no disco pode variar um pouco.' }, `conteúdo igual, de ${fmtB(lo)} a ${fmtB(hi)} no disco`);
+      : K.el('span', { title: 'Conteúdo idêntico; o espaço no disco pode variar um pouco.' }, `conteúdo igual, de ${fmtB(lo)} a ${fmtB(hi)} no disco`);
     const tie = g.itens.length > 1 && sameAge(g.itens[0], g.itens[1]);
     const card = K.el('article', { class: 'card fx-group pop-in', dataset: { grupo: g.id }, style: { animationDelay: 80 + Math.min(i, 8) * 60 + 'ms' } },
       K.el('div', { class: 'fx-group-head' },
@@ -1515,7 +1514,7 @@
       if (shown.length) out.push(fileList(shown));
       if (hidden.length) {
         const f = TIPOS[st.filter] ? TIPOS[st.filter].label : st.filter;
-        out.push(K.el('p', { class: 'fx-cf-t' }, `E ${hidden.length === 1 ? 'mais 1 marcado' : `mais ${K.fmt.num(hidden.length)} marcados`} fora do filtro “${f}”, que não ${hidden.length === 1 ? 'aparece' : 'aparecem'} na lista agora:`),
+        out.push(K.el('p', { class: 'fx-cf-t' }, `E ${hidden.length === 1 ? 'mais 1 marcado' : `mais ${K.fmt.num(hidden.length)} marcados`} fora do filtro “${f}”:`),
           fileList(hidden));
       }
     }
@@ -1528,13 +1527,13 @@
   function confirmText(kind, items) {
     const n = items.length;
     if (kind === 'gra') return `${isAre(n)} ${plural(n, 'arquivo seu', 'arquivos seus')}, ${n === 1 ? 'escolhido' : 'escolhidos'} por você.`;
-    if (kind === 'dup') return `${isAre(n)} ${plural(n, 'cópia repetida', 'cópias repetidas')}. Em cada grupo, pelo menos uma cópia continua onde está.`;
+    if (kind === 'dup') return `${isAre(n)} ${plural(n, 'cópia repetida', 'cópias repetidas')}. Em cada grupo, uma cópia fica.`;
     const dl = items.filter(isDl).length;
-    if (!dl) return `${isAre(n)} ${plural(n, 'item', 'itens')} de cache e registro. Os apps recriam os caches quando precisarem; na primeira vez, algum app pode abrir um tiquinho mais devagar.`;
+    if (!dl) return `${isAre(n)} ${plural(n, 'item', 'itens')} de cache e registro. Os apps recriam o que precisarem.`;
     if (dl === n) {
-      return `${isAre(n)} ${plural(n, 'arquivo seu', 'arquivos seus')} da pasta Downloads, que você marcou. Não é cache: se a Lixeira for esvaziada, ${n === 1 ? 'ele não volta' : 'eles não voltam'}. Confira ${n === 1 ? 'o nome' : 'os nomes'} abaixo.`;
+      return `${isAre(n)} ${plural(n, 'arquivo seu', 'arquivos seus')} de Downloads. Não é cache: se a Lixeira for esvaziada, ${n === 1 ? 'ele não volta' : 'eles não voltam'}.`;
     }
-    return `${isAre(n)} ${plural(n, 'item', 'itens')}. Inclui ${plural(dl, 'arquivo seu', 'arquivos seus')} da pasta Downloads: não é cache, então ${dl === 1 ? 'não volta sozinho' : 'não voltam sozinhos'} se a Lixeira for esvaziada. O resto é cache e registro, que os apps recriam quando precisarem.`;
+    return `${isAre(n)} ${plural(n, 'item', 'itens')}. Inclui ${plural(dl, 'arquivo seu', 'arquivos seus')} de Downloads, que não ${dl === 1 ? 'volta' : 'voltam'} se a Lixeira for esvaziada.`;
   }
 
   /** os IDs do Swift valem 1 h: lista velha não limpa nada, então pede uma procura nova */
@@ -1570,7 +1569,7 @@
         text: confirmText(kind, items),
         body: confirmBody(kind, ids),
         note: mine
-          ? { icon: 'fxUndo', tone: 'good', text: 'Dá pra desfazer: fica tudo na Lixeira até você esvaziar, e dá pra devolver pela aba Lixeira ou pelo Finder.' }
+          ? { icon: 'fxUndo', tone: 'good', text: 'Dá pra desfazer: fica na Lixeira, e dá pra devolver pela aba Lixeira.' }
           : { icon: 'fxUndo', tone: 'good', text: 'Dá pra desfazer: fica tudo na Lixeira até você esvaziar.' },
         ok: 'Mandar pra Lixeira', cancel: 'Agora não', icon: 'fxTrash', mascot: 'happy',
       });
@@ -1641,17 +1640,17 @@
     if (d.purge && d.purge.res) {
       const p = d.purge.res;
       title = p.ok ? `Apagado de vez: ${fmtB(p.bytes)} livres` : 'Não consegui apagar de vez';
-      sub = p.ok ? 'Já não está mais na Lixeira. Esse espaço voltou pro disco.' : 'Continua tudo na Lixeira. O motivo de cada um está logo abaixo.';
+      sub = p.ok ? 'O espaço voltou pro disco.' : 'Continua tudo na Lixeira. O motivo está abaixo.';
       if (!p.ok) face = 'worried';
     } else if (d.undo && d.undo.res) {
       const u = d.undo.res;
       const total = lixIds.length;
-      if (u.ok === total) { title = 'Voltou tudo pro lugar'; sub = `${total === 1 ? 'O item está' : `Os ${K.fmt.num(total)} itens estão`} exatamente onde estava${total === 1 ? '' : 'm'} antes. Nada foi apagado.`; face = 'happy'; }
-      else if (u.ok > 0) { title = `Voltaram ${K.fmt.num(u.ok)} de ${K.fmt.num(total)}`; sub = 'O resto continua na Lixeira. O motivo de cada um está logo abaixo.'; face = 'worried'; }
-      else { title = 'Não consegui devolver'; sub = 'Continua tudo na Lixeira, sem perder nada. O motivo está logo abaixo, e dá pra devolver pelo Finder também.'; face = 'worried'; }
+      if (u.ok === total) { title = 'Voltou tudo pro lugar'; sub = 'Nada foi apagado.'; face = 'happy'; }
+      else if (u.ok > 0) { title = `Voltaram ${K.fmt.num(u.ok)} de ${K.fmt.num(total)}`; sub = 'O resto continua na Lixeira. O motivo está abaixo.'; face = 'worried'; }
+      else { title = 'Não consegui devolver'; sub = 'Continua tudo na Lixeira. O motivo está abaixo.'; face = 'worried'; }
     } else if (!moved.length) {
       title = 'Não consegui mandar nada pra Lixeira';
-      sub = 'Nada foi mexido. O motivo de cada item está logo abaixo.';
+      sub = 'Nada foi mexido. O motivo está abaixo.';
       face = 'worried';
     } else {
       title = `Pronto! ${fmtB(bytes)} ${moved.length === 1 ? 'foi' : 'foram'} pra Lixeira`;
@@ -1659,11 +1658,12 @@
       if (kind === 'dup') what = 'Em cada grupo, uma cópia continua no lugar.';
       else if (kind === 'suj') {
         const caches = info.length - dlMoved.length;
-        what = !dlMoved.length ? 'Os apps recriam os caches quando precisarem.'
+        what = !dlMoved.length ? 'Os apps recriam o que precisarem.'
           : !caches ? `${dlMoved.length === 1 ? 'É arquivo seu: só volta' : 'São arquivos seus: só voltam'} se você devolver.`
-            : `Os caches, os apps recriam sozinhos; ${dlMoved.length === 1 ? 'o arquivo de Downloads, não: ele só volta' : 'os arquivos de Downloads, não: eles só voltam'} se você devolver.`;
+            : `${dlMoved.length === 1 ? 'O arquivo de Downloads só volta' : 'Os arquivos de Downloads só voltam'} se você devolver.`;
       }
-      sub = `${plural(moved.length, 'item', 'itens')}${fails.length ? `; ${plural(fails.length, 'ficou', 'ficaram')} de fora (motivo abaixo)` : ''}. ${what ? what + ' ' : ''}O espaço volta pro disco quando a Lixeira for esvaziada; até lá, dá pra desfazer.`;
+      const left = fails.length ? `${plural(fails.length, 'item ficou', 'itens ficaram')} de fora: o motivo está abaixo. ` : '';
+      sub = `${left}${what ? what + ' ' : ''}Até esvaziar a Lixeira, dá pra desfazer.`;
     }
 
     const art = K.el('div', { class: 'fx-sum-art' });
@@ -1719,7 +1719,7 @@
     for (const f of failBlocks) V.panel.appendChild(f);
     if ((files || dlMoved.length) && moved.length && !d.undo && !d.purge) {
       V.panel.appendChild(K.el('div', { class: 'tip fx-note', html: K.icon('info') },
-        K.el('p', null, 'Mudou de ideia depois? Tudo que a Faxina manda pra Lixeira aparece na aba Lixeira, e dá pra devolver cada item pro lugar de onde saiu.')));
+        K.el('p', null, 'Mudou de ideia? Na aba Lixeira dá pra devolver cada item pro lugar.')));
     }
   }
 
@@ -1779,10 +1779,10 @@
       const n = ids.length;
       let text;
       if (kind !== 'suj') text = `Isso tira da Lixeira ${n === 1 ? 'o arquivo' : `os ${K.fmt.num(n)} arquivos`} que você acabou de mandar. Depois disso, só um backup (como o Time Machine) traz de volta.`;
-      else if (!dl.length) text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que a Faxina acabou de mandar. Como são caches e registros, os apps recriam o que precisarem.`;
+      else if (!dl.length) text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que eu acabei de mandar. São caches e registros: os apps recriam o que precisarem.`;
       else {
         const mine = dl.length === n ? (n === 1 ? 'É um arquivo seu' : 'São arquivos seus') : `${dl.length === 1 ? 'Um deles é arquivo seu' : `${K.fmt.num(dl.length)} deles são arquivos seus`}`;
-        text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que a Faxina acabou de mandar. ${mine} da pasta Downloads, e não é cache: depois disso, só um backup (como o Time Machine) traz de volta.`;
+        text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que eu acabei de mandar. ${mine} de Downloads: depois disso, só um backup (como o Time Machine) traz de volta.`;
       }
       const ok = await K.confirm({
         title: `Apagar de vez ${fmtB(bytes)}?`,
@@ -1878,26 +1878,26 @@
         total,
         K.el('ul', { class: 'fx-lix-facts' },
           K.el('li', { html: K.icon('broom') }, still.length ? `${fmtB(fromFax)} disso veio do Kamurafy (${plural(still.length, 'item', 'itens')})` : 'Nada ali veio do Kamurafy'),
-          !legivel || info.itens ? K.el('li', { html: K.icon('info') }, 'Enquanto está na Lixeira, ainda ocupa espaço no disco.') : null),
+          !legivel || info.itens ? K.el('li', { html: K.icon('info') }, 'Na Lixeira, ainda ocupa espaço no disco.') : null),
         !legivel && !reading ? K.el('div', { class: 'tip fx-perm', html: K.icon('lock') },
-          K.el('p', null, L.infoErr ? `Não consegui olhar a Lixeira toda: ${String(L.infoErr).replace(/[.!\s]+$/, '')}. O que eu mandei eu sei, porque anoto.`
-            : 'O macOS só deixa eu ver a Lixeira toda com Acesso Total ao Disco. O que eu mandei eu sei, porque anoto.'),
+          K.el('p', null, L.infoErr ? `Não consegui olhar a Lixeira toda: ${String(L.infoErr).replace(/[.!\s]+$/, '')}. O que eu mandei, eu sei.`
+            : 'Pra ver a Lixeira toda, preciso de Acesso Total ao Disco. O que eu mandei, eu sei.'),
           K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, 'Abrir Ajustes')) : null));
     const emptyNow = legivel && !info.itens;
     const busyEmpty = L.busy === 'empty';
     const dangerCard = K.el('section', { class: 'card fx-lix-danger pop-in', style: { animationDelay: '70ms' } },
       K.el('div', { class: 'fx-lix-danger-head' }, K.el('span', { class: 'head-ic crit', html: K.icon('alert') }), K.el('h3', null, 'Esvaziar a Lixeira toda')),
-      K.el('p', null, 'Apaga de vez tudo que está lá, tenha vindo da Faxina ou não, inclusive a Lixeira dos discos externos conectados. Não dá pra desfazer.'),
+      K.el('p', null, 'Apaga de vez tudo, tenha vindo do Kamurafy ou não, inclusive de discos externos. Não dá pra desfazer.'),
       K.el('button', { class: 'btn danger', type: 'button', html: K.icon('flame'), disabled: emptyNow || !!L.busy, onclick: () => { emptyTrash(); } },
         busyEmpty ? 'Esvaziando…' : emptyNow ? 'A Lixeira já está vazia' : 'Esvaziar a Lixeira toda'),
-      K.el('span', { class: 'fx-lix-danger-note muted' }, 'Na primeira vez, o macOS pode perguntar se o Kamurafy pode pedir isso ao Finder.'));
+      K.el('span', { class: 'fx-lix-danger-note muted' }, 'Na primeira vez, o macOS pode pedir permissão.'));
     V.panel.appendChild(K.el('div', { class: 'fx-lix-top' }, nowCard, dangerCard));
     if (lixArt.classList.contains('is-sleep')) addMascot(lixArt, 112, { face: 'sleep', pct: 100 });
 
     /* o que o Kamurafy mandou (Faxina e Desinstalar): "Lixeira" sozinha é só a do macOS */
     const head = K.el('div', { class: 'fx-lix-list-head' },
       K.el('div', null, K.el('h2', null, 'O que o Kamurafy mandou'),
-        K.el('p', null, 'Tudo que a Faxina e o Desinstalar mandaram pra Lixeira. Fica aqui até ela ser esvaziada, e dá pra devolver cada item pro lugar de onde saiu.')));
+        K.el('p', null, 'Fica aqui até a Lixeira ser esvaziada. Dá pra devolver cada item pro lugar.')));
     if (still.length) {
       head.appendChild(K.el('div', { class: 'fx-lix-list-act' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('fxUndo'), disabled: !!L.busy, onclick: () => { restoreMoved(still.map((m) => m.id)); } },
@@ -1907,7 +1907,7 @@
     }
     const listCard = K.el('section', { class: 'card fx-lix-list pop-in', style: { animationDelay: '120ms' } }, head);
     if (L.movedErr && !L.moved) listCard.appendChild(K.errorCard({ compact: true, title: 'Não consegui ler a lista', reason: L.movedErr, retry: () => { L.moved = null; L.movedErr = null; loadLixeira(); paintTab(); } }));
-    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, 'Nada que eu mandei pra Lixeira ainda. Quando a Faxina ou o Desinstalar mandarem, aparece aqui.'));
+    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, 'Nada que eu mandei pra Lixeira ainda.'));
     else {
       /* o que ainda está na Lixeira vem primeiro; o que já saiu fica recolhido (é só histórico) */
       const gone = moved.filter((m) => !m.naLixeira);
@@ -1932,11 +1932,11 @@
 
   function movedRow(m) {
     const L = S.lix;
-    const cat = CATS[m.categoria] ? catInfo(m.categoria).titulo : m.categoria === 'grandes' ? 'Arquivo grande' : m.categoria === 'duplicados' ? 'Cópia repetida' : 'Faxina';
+    const cat = CATS[m.categoria] ? catInfo(m.categoria).titulo : m.categoria === 'grandes' ? 'Arquivo grande' : m.categoria === 'duplicados' ? 'Cópia repetida' : 'Espaço';
     const tags = K.el('span', { class: 'fx-tags' }, tag('plain', null, cat));
     if (!m.naLixeira) tags.appendChild(tag('none', 'info', 'já saiu da Lixeira', 'Foi devolvido, apagado ou a Lixeira foi esvaziada.'));
     if (tricky(m.nome) || tricky(m.original)) {
-      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras (pode fazer um .exe parecer .jpg). Mostro um � no lugar dele.'));
+      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
     }
     const lines = [K.el('span', { class: 'fx-item-top' }, K.el('span', { class: 'fx-item-name' }, vis(m.nome)), tags),
       K.el('span', { class: 'fx-item-path', title: vis(m.original) }, vis(m.original)),
@@ -1994,7 +1994,7 @@
       const one = items.length === 1 ? items[0] : null;
       const ok = await K.confirm({
         title: one ? 'Apagar de vez?' : `Apagar de vez ${fmtB(bytes)}?`,
-        text: one ? `“${inl(one.nome)}” (${fmtB(one.bytes)}) sai da Lixeira pra sempre.` : `${plural(items.length, 'item que a Faxina mandou sai', 'itens que a Faxina mandou saem')} da Lixeira pra sempre. O resto da sua Lixeira fica como está.`,
+        text: one ? `“${inl(one.nome)}” (${fmtB(one.bytes)}) sai da Lixeira pra sempre.` : `${plural(items.length, 'item sai', 'itens saem')} da Lixeira pra sempre. O resto dela fica como está.`,
         note: { tone: 'crit', icon: 'alert', text: 'Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.' },
         ok: 'Apagar de vez', cancel: 'Deixar na Lixeira', tone: 'danger', icon: 'flame',
         ack: items.some((m) => !CATS[m.categoria] || m.categoria === 'downloads') ? 'Entendi: não dá pra desfazer' : null,
@@ -2028,7 +2028,7 @@
       const size = info && info.legivel ? ` (${fmtB(info.bytes)}, ${plural(info.itens || 0, 'item', 'itens')})` : '';
       const ok = await K.confirm({
         title: 'Esvaziar a Lixeira toda?',
-        text: `Isso apaga de vez TUDO que está na Lixeira${size}, tenha vindo da Faxina ou não. O Finder esvazia junto a Lixeira dos discos externos que estiverem conectados.`,
+        text: `Isso apaga de vez TUDO que está na Lixeira${size}, tenha vindo do Kamurafy ou não, inclusive de discos externos.`,
         note: { tone: 'crit', icon: 'alert', text: 'Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.' },
         ok: 'Esvaziar tudo', cancel: 'Agora não', tone: 'danger', icon: 'fxTrash', mascot: 'worried',
         ack: 'Entendi: apaga tudo e não tem volta',
@@ -2080,7 +2080,7 @@
   });
 
   K.pages.faxina = {
-    title: 'Faxina',
+    title: 'Espaço',
     async render(el) {
       host = el;
       V = {};

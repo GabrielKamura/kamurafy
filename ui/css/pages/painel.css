@@ -143,9 +143,9 @@
 .pn-step.on.good { background: var(--st-good-soft); }
 .pn-step.on.good svg { color: var(--st-good); }
 .pn-step.on.warn { background: var(--st-warn-soft); }
-.pn-step.on.warn svg { color: #b77800; }
+.pn-step.on.warn svg { color: var(--st-warn-ink); }
 .pn-step.on.serious { background: var(--st-serious-soft); }
-.pn-step.on.serious svg { color: #c2521f; }
+.pn-step.on.serious svg { color: var(--st-serious-ink); }
 .pn-step.on.crit { background: var(--st-crit-soft); }
 .pn-step.on.crit svg { color: var(--st-crit); }
 
@@ -312,3 +312,8 @@
 .snap .page-painel *, .snap .page-painel *::before, .snap .page-painel *::after { transition: none !important; }
 
 .no-read-sub { color: var(--ink-3); }
+
+/* ===== modo escuro (tokens em base.css) ===== */
+@media (prefers-color-scheme: dark) {
+  .pn-fax[data-state="tip"] .pn-fax-ic { color: var(--on-gold); }
+}

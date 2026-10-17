@@ -37,22 +37,22 @@
   const THERMAL_ORDER = ['normal', 'morno', 'quente', 'critico'];
   const THERMAL = {
     normal: { label: 'Fresco', tone: 'good', icon: 'snow',
-      text: 'Fresco e tranquilo. Nada está segurando o desempenho.' },
+      text: 'Nada está segurando o desempenho.' },
     morno: { label: 'Morno', tone: 'warn', icon: 'thermo',
-      text: 'Um pouco aquecido, o que é comum com o Mac trabalhando ou carregando. Por enquanto o desempenho não muda.' },
+      text: 'Comum com o Mac trabalhando ou carregando.' },
     quente: { label: 'Quente', tone: 'serious', icon: 'flame',
-      text: 'Esquentou: o macOS já está segurando o processador pra esfriar. Deixe as saídas de ar livres e alivie os apps pesados.' },
+      text: 'O macOS já segura o processador pra esfriar. Deixe as saídas de ar livres.' },
     critico: { label: 'Crítico', tone: 'crit', icon: 'flame',
-      text: 'Muito quente: o Mac fica bem mais lento pra se proteger. Feche o que estiver pesado e deixe ele respirar num lugar fresco.' },
+      text: 'O Mac fica bem mais lento pra se proteger. Feche o que estiver pesado.' },
   };
 
   const PRESSURE = {
     normal: { label: 'Pressão normal', tone: 'good', icon: 'check',
-      text: 'Tem memória de sobra pro que está aberto.' },
+      text: 'Tem memória de sobra.' },
     atencao: { label: 'Pressão alta', tone: 'warn', icon: 'eye',
-      text: 'Está apertado: o macOS está comprimindo e usando o disco pra dar conta. Fechar abas e apps pesados alivia.' },
+      text: 'O macOS já usa o disco pra dar conta. Fechar abas e apps pesados alivia.' },
     critica: { label: 'Pressão crítica', tone: 'crit', icon: 'alert',
-      text: 'Falta memória e o Mac pode engasgar. Feche o que não estiver usando.' },
+      text: 'Falta memória. Feche o que não estiver usando.' },
   };
 
   const MAC_NAMES = { 11: 'Big Sur', 12: 'Monterey', 13: 'Ventura', 14: 'Sonoma', 15: 'Sequoia', 26: 'Tahoe' };
@@ -192,8 +192,8 @@
     paintPause(R);
     el.appendChild(K.el('header', { class: 'page-head', 'data-drag': true },
       K.el('div', null,
-        K.el('h1', null, 'Painel'),
-        K.el('p', null, 'O seu Mac agora, ao vivo. Os números se atualizam sozinhos a cada 2 segundos.')),
+        K.el('h1', null, 'Ao vivo'),
+        K.el('p', null, 'O seu Mac agora, a cada 2 segundos.')),
       K.el('div', { class: 'pn-head-right' }, R.live, R.pauseBtn)));
 
     /* erro de leitura: o mesmo cartão das outras telas, na versão compacta (a página tenta de novo sozinha) */
@@ -230,7 +230,7 @@
         splitNum('s2', 'sys', 'Sistema', 'o próprio macOS'),
         splitNum('idle', 'idle', 'Parado', 'folga pra usar')));
     cpu.c.appendChild(K.el('div', { class: 'pn-cpu-body' },
-      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, 'Média do chip todo: 100% seria todos os núcleos no máximo ao mesmo tempo.')),
+      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, 'Média do chip todo: 100% é todos os núcleos no máximo.')),
       side));
 
     /* temperatura (estado térmico do macOS) */
@@ -321,7 +321,7 @@
     R.memStackEl = K.el('div', { class: 'pn-memstack' });
     mm.c.appendChild(R.memStackEl);
     mm.c.appendChild(K.el('div', { class: 'tip pn-tip', html: K.icon('info') },
-      K.el('p', null, 'O cache é memória que o macOS devolve sozinho quando algum app precisa, então não precisa “liberar RAM”. Memória livre sobrando é memória parada: ver pouca livre é normal e até bom.')));
+      K.el('p', null, 'Não precisa “liberar RAM”: o macOS devolve o cache sozinho. Pouca memória livre é normal.')));
     grid.appendChild(mm.c);
 
     /* ----- disco ----- */
@@ -346,11 +346,11 @@
       class: 'btn small pn-fax-btn', type: 'button', html: K.icon('arrow'),
       onclick: () => { K.sound.plop(); location.hash = '#/faxina'; },
     });
-    R.faxBtnText = K.el('span', null, 'Abrir a Faxina');
+    R.faxBtnText = K.el('span', null, 'Abrir o Espaço');
     R.faxBtn.insertBefore(R.faxBtnText, R.faxBtn.firstChild);
     R.fax = K.el('div', { class: 'pn-fax', dataset: { state: 'wait' } },
       K.el('span', { class: 'pn-fax-ic', html: K.icon('broom') }),
-      K.el('div', { class: 'pn-fax-t' }, K.el('b', null, 'Faxina'), R.faxText),
+      K.el('div', { class: 'pn-fax-t' }, K.el('b', null, 'Espaço'), R.faxText),
       R.faxBtn);
     dk.c.appendChild(R.fax);
     R.diskTip = K.el('p', null, '');
@@ -373,7 +373,7 @@
       row('window', 'Sistema', 'os', null),
       row('clock', 'Ligado há', 'uptime', 'uptimeSub')));
     R.upTip = K.el('div', { class: 'tip pn-tip pn-uptip', html: K.icon('moon'), hidden: true },
-      K.el('p', null, 'Mais de uma semana sem reiniciar. Um reinício fecha processos esquecidos e termina atualizações; não é mágica, mas ajuda.'));
+      K.el('p', null, 'Mais de uma semana sem reiniciar. Reiniciar fecha processos esquecidos.'));
     sy.c.appendChild(R.upTip);
     grid.appendChild(sy.c);
   }
@@ -499,10 +499,10 @@
       /* o mesmo texto do "Este Mac" e da Varredura: núcleos de verdade, e as linhas de execução entre parênteses */
       txt(R.cores, coresTxt);
       R.cores.title = isNum(c.physicalCores) && isNum(c.cores) && c.cores > c.physicalCores
-        ? `No Intel com Hyper-Threading, cada núcleo roda duas linhas de execução ao mesmo tempo: o Monitor de Atividade conta ${c.cores} "núcleos".` : '';
+        ? `Com Hyper-Threading, cada núcleo roda duas linhas: o Monitor de Atividade conta ${c.cores}.` : '';
     }
-    if (usage != null && usage > 90) txt(R.cpuNote, 'Normal enquanto algo pesado roda. Se ficar assim com o Mac parado, veja quem está puxando.');
-    else txt(R.cpuNote, 'Média do chip todo: 100% seria todos os núcleos no máximo ao mesmo tempo.');
+    if (usage != null && usage > 90) txt(R.cpuNote, 'Normal enquanto algo pesado roda.');
+    else txt(R.cpuNote, 'Média do chip todo: 100% é todos os núcleos no máximo.');
   }
 
   function paintSpark() {
@@ -569,9 +569,9 @@
     const pr = m.pressure;
     const swapBig = swap != null && swap > 2 * 1024 ** 3;
     txt(R.swapText, swap == null ? 'o macOS não informou'
-      : swap === 0 ? 'nada foi pro disco: sobra memória'
-        : swapBig && pr && pr !== 'normal' ? 'bastante: sinal de que a memória está curta'
-          : 'um pouco é normal, o macOS guarda o que está parado');
+      : swap === 0 ? 'nada foi pro disco'
+        : swapBig && pr && pr !== 'normal' ? 'bastante: memória curta'
+          : 'um pouco é normal');
 
     const p = PRESSURE[pr];
     if (p) pill(R.memPill, p.tone, p.label, p.icon);
@@ -597,7 +597,7 @@
     const R = S.R;
     if (!d || !isNum(d.totalBytes) || d.totalBytes <= 0) {
       txt(R.diskName, 'Não deu pra ler o disco');
-      tween(R.diskFree, null); txt(R.diskPurge, ''); txt(R.diskAvail, ''); txt(R.diskTip, 'O macOS gosta de ter uns 10 a 20% do disco livre pra atualizações e memória extra.');
+      tween(R.diskFree, null); txt(R.diskPurge, ''); txt(R.diskAvail, ''); txt(R.diskTip, 'O macOS gosta de ter de 10 a 20% livres.');
       pill(R.diskPill, null, '');
       S.ring.set((ch) => ch.update({ value: null, sub: '' }));
       return;
@@ -620,10 +620,8 @@
     }
     /* o número principal é o mesmo da Varredura: o que dá pra usar (inclui o que o macOS libera) */
     tween(R.diskFree, avail, (v) => K.fmt.bytes(v));
-    txt(R.diskPurge, purge != null && purge >= 1e8 ? `Inclui ${K.fmt.bytes(purge)} que o macOS libera sozinho quando precisar.` : '');
-    txt(R.diskAvail, purge != null && purge >= 1e8
-      ? 'Esse extra vem de caches e cópias do iCloud que o sistema apaga por conta própria.'
-      : '');
+    txt(R.diskPurge, purge != null && purge >= 1e8 ? `Inclui ${K.fmt.bytes(purge)} que o macOS libera sozinho.` : '');
+    txt(R.diskAvail, '');
 
     const share = avail != null ? avail / total : null;
     if (share == null) pill(R.diskPill, null, '');
@@ -631,9 +629,9 @@
     else if (share < 0.1) pill(R.diskPill, 'serious', 'Pouco espaço', 'alert');
     else if (share < 0.2) pill(R.diskPill, 'warn', 'Enchendo', 'eye');
     else pill(R.diskPill, 'good', 'Espaço de sobra', 'check');
-    R.diskPill.title = 'O macOS gosta de ter pelo menos uns 10% livres pra atualizações e memória virtual.';
-    txt(R.diskTip, share == null ? 'O macOS gosta de ter uns 10 a 20% do disco livre pra atualizações e memória extra.'
-      : `O macOS gosta de ter uns 10 a 20% do disco livre pra atualizações e memória extra. Aqui estão livres ${K.fmt.num(share * 100, 0)}%${share >= 0.2 ? ', folga de sobra.' : share >= 0.1 ? ': ainda dá, mas vale ficar de olho.' : ': está apertado, vale tirar arquivos grandes que você não usa.'}`);
+    R.diskPill.title = 'O macOS gosta de ter pelo menos 10% livres.';
+    txt(R.diskTip, share == null ? 'O macOS gosta de ter de 10 a 20% livres.'
+      : `O macOS gosta de ter de 10 a 20% livres. Aqui são ${K.fmt.num(share * 100, 0)}%.`);
   }
 
   /** estimativa da Faxina: caches, programação e registros (só lê; K.dirt mora na Varredura) */
@@ -652,25 +650,26 @@
 
   function paintDirt(R, d) {
     const sel = d && isNum(d.sel) ? d.sel : null;
-    const least = d && (d.incompleto || (d.errs && d.errs.length)) ? 'pelo menos ' : '';
+    const partial = !!(d && (d.incompleto || (d.errs && d.errs.length)));
+    const gb = sel == null ? '' : K.fmt.bytes(sel).replace(' ', '\u00a0');
     let state, text;
     if (sel == null) {
       state = 'none';
       text = 'Você vê tudo antes e decide o que sai.';
     } else if (sel >= 1e9) {
       state = 'tip';
-      text = `Dá pra liberar ${least}${K.fmt.bytes(sel).replace(' ', '\u00a0')} em caches e registros, com segurança.`;
+      text = partial ? `Dá pra liberar pelo menos ${gb} com segurança.` : `Dá pra liberar ${gb} com segurança.`;
     } else if (sel >= 1e8) {
       state = 'ok';
-      text = `Só ${least}${K.fmt.bytes(sel).replace(' ', '\u00a0')} em caches e registros: nada que pese no disco.`;
+      text = `Só ${gb}: nada que pese no disco.`;
     } else {
       state = 'ok';
-      text = 'Quase nada de cache ou registro sobrando agora.';
+      text = 'Quase nada sobrando agora.';
     }
     R.fax.dataset.state = state;
     txt(R.faxText, text);
     R.faxBtn.classList.toggle('gold', state === 'tip');
-    txt(R.faxBtnText, state === 'tip' ? 'Ver e limpar' : 'Abrir a Faxina');
+    txt(R.faxBtnText, state === 'tip' ? 'Ver e limpar' : 'Abrir o Espaço');
   }
 
   /* ---------- sistema ---------- */
@@ -705,18 +704,18 @@
   /* ---------- bateria ---------- */
 
   function batWords(b) {
-    if (b.isCharging == null && b.pluggedIn == null) return ['Tomada sem leitura', 'O Mac não informou se está no carregador agora.'];
-    if (K.batTopping(b)) return ['Terminando de encher', 'Na tomada, entrando devagar na bateria até completar.'];
+    if (b.isCharging == null && b.pluggedIn == null) return ['Tomada sem leitura', 'O Mac não informou agora.'];
+    if (K.batTopping(b)) return ['Terminando de encher', 'Entrando devagar até completar.'];
     if (!b.isCharging && b.pluggedIn && (b.fullyCharged || b.percent >= 99)) {
-      return ['Cheia na tomada', 'O carregador alimenta o Mac direto e a bateria descansa.'];
+      return ['Cheia na tomada', 'O Mac usa o carregador direto.'];
     }
     if (b.isCharging) {
-      if (b.finishingCharge) return ['Terminando a carga', 'O macOS vai devagar no fim pra poupar a bateria.'];
+      if (b.finishingCharge) return ['Terminando a carga', 'Devagar no fim, pra poupar a bateria.'];
       return ['Carregando', isNum(b.minutesToFull) && b.minutesToFull > 0 ? `Cheia em uns ${K.fmt.mins(b.minutesToFull)}.` : 'Calculando quanto falta…'];
     }
     if (b.pluggedIn) {
       return ['Na tomada, sem carregar', b.optimizedChargingEngaged
-        ? 'Carga otimizada: o macOS segurou a carga pra poupar a bateria.'
+        ? 'O macOS segurou a carga pra poupar a bateria.'
         : 'O macOS pausou a carga por enquanto.'];
     }
     return ['Na bateria', isNum(b.minutesToEmpty) && b.minutesToEmpty > 0
@@ -734,7 +733,7 @@
       S.mascot.set({ pct: null, tone: 'none', face: 'worried', charging: false, plugged: false, full: false, hot: false });
       txt(R.batHealthBig, '');
       txt(R.batState, 'Não deu pra ler a bateria');
-      txt(R.batSub, 'Às vezes o macOS demora pra responder logo depois de acordar.' + (err ? ` O motivo: ${String(err.message || err).trim().replace(/[.!\s]+$/, '')}.` : ''));
+      txt(R.batSub, err ? `O motivo: ${String(err.message || err).trim().replace(/[.!\s]+$/, '')}.` : 'Às vezes o macOS demora logo depois de acordar.');
       pill(R.batPill, null, '');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
@@ -746,7 +745,7 @@
       R.bat.classList.add('pn-nobat');
       txt(R.batHealthBig, '');
       txt(R.batState, 'Este Mac não tem bateria');
-      txt(R.batSub, 'Ele vive na tomada, então não há bateria pra cuidar. Processador, memória e disco seguem aqui do lado, ao vivo do mesmo jeito.');
+      txt(R.batSub, 'Ele vive na tomada: não há bateria pra cuidar.');
       pill(R.batPill, null, 'Sem bateria', 'plug');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
@@ -818,7 +817,7 @@
      ========================================================= */
 
   K.pages.painel = {
-    title: 'Painel',
+    title: 'Ao vivo',
 
     async render(el) {
       if (S) K.pages.painel.destroy();

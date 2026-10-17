@@ -98,9 +98,9 @@
     critico: { word: 'Crítico', tone: 'crit' },
   };
   const PRESSURE = {
-    normal: { word: 'Folgada', tone: 'good', txt: 'Tem memória de sobra pro que está aberto.' },
-    atencao: { word: 'Apertada', tone: 'warn', txt: 'O macOS já está comprimindo e usando o disco pra dar conta. Fechar abas e apps parados alivia.' },
-    critica: { word: 'No limite', tone: 'serious', txt: 'Falta memória e o Mac usa o disco no lugar dela, o que deixa tudo lento.' },
+    normal: { word: 'Folgada', tone: 'good', txt: 'Tem memória de sobra.' },
+    atencao: { word: 'Apertada', tone: 'warn', txt: 'O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.' },
+    critica: { word: 'No limite', tone: 'serious', txt: 'Falta memória e tudo fica lento.' },
   };
 
   /** memória em base 2, como o Monitor de Atividade ("16 GB"): a mesma função das outras telas */
@@ -196,7 +196,7 @@
     } else {
       const txt = {
         desk: ['Mac de mesa', 'Sem bateria por aqui: ele vive na tomada.'],
-        noread: ['Bateria sem leitura', 'O Mac não informou a bateria agora. Tento de novo em 5 segundos.'],
+        noread: ['Bateria sem leitura', 'O Mac não informou agora. Tento de novo em 5 segundos.'],
         err: ['Sem leitura agora', 'Não consegui falar com a bateria. Tento de novo em 5 segundos.'],
       }[mode];
       h.append(box, K.el('div', { class: 'mb-hero-tx' },
@@ -293,13 +293,13 @@
       label: busy ? 'a todo vapor' : 'CPU',
       title: cpu == null
         ? 'Processador: o macOS não informou agora.'
-        : `Processador em ${K.fmt.pct(cpu, 0)} agora${busy ? ', a todo vapor' : ''}. Alto por um instante é normal; se ficar assim parado, veja quem está puxando.`,
+        : `Processador em ${K.fmt.pct(cpu, 0)} agora. Alto por um instante é normal.`,
     });
 
     const m0 = s && s.memory;
     const pr = m0 ? PRESSURE[m0.pressure] : null;
     const used = m0 && isNum(m0.usedBytes) && isNum(m0.totalBytes)
-      ? ` Em uso: ${mem(m0.usedBytes)} de ${mem(m0.totalBytes)} (usar bastante é normal; o que conta é a pressão).` : '';
+      ? ` Em uso: ${mem(m0.usedBytes)} de ${mem(m0.totalBytes)}.` : '';
     paintMini(m.mini.mem, {
       tone: pr ? pr.tone : 'none',
       value: pr ? pr.word : null,
@@ -320,7 +320,7 @@
       label: dt === 'crit' ? 'quase cheio' : dt === 'warn' ? 'enchendo' : 'livres',
       title: avail == null
         ? 'Disco: o macOS não informou agora.'
-        : `${K.fmt.bytes(avail)} livres de ${K.fmt.bytes(total)} (${K.fmt.num(freePct, 0)}%), contando o que o macOS libera sozinho. Ele gosta de ter uns 10 a 20% livres.`,
+        : `${K.fmt.bytes(avail)} livres de ${K.fmt.bytes(total)} (${K.fmt.num(freePct, 0)}%). O ideal é ter de 10 a 20% livres.`,
     });
 
     if (m.mode === 'bat') {
@@ -332,7 +332,7 @@
         label: z && z.word ? z.word : 'bateria',
         title: t == null
           ? 'Temperatura da bateria: o Mac não informou agora.'
-          : `Bateria a ${K.fmt.temp(t)}${z && z.word ? ', ' + z.word : ''}. Abaixo de 35 °C é o ideal: é assim que ela dura mais.`,
+          : `Bateria a ${K.fmt.temp(t)}. O ideal é abaixo de 35 °C.`,
       });
     } else {
       /* sem sensor de bateria: mostra o calor do Mac todo */
@@ -341,7 +341,7 @@
         tone: th ? th.tone : 'none',
         value: th ? th.word : null,
         label: 'calor',
-        title: th ? `Calor do Mac: ${th.word.toLowerCase()}. É a leitura geral do macOS, não um sensor em graus.` : 'Calor do Mac: o macOS não informou agora.',
+        title: th ? `Calor do Mac: ${th.word.toLowerCase()}. Leitura geral do macOS, sem graus.` : 'Calor do Mac: o macOS não informou agora.',
       });
     }
   }
@@ -358,7 +358,7 @@
         K.el('h2', { id: 'mb-apps-t' }, 'Quem mais gasta agora'),
         more),
       m.appsList,
-      K.el('p', { class: 'mb-apps-note', title: 'O número é o "impacto energético" do Monitor de Atividade: não tem unidade e serve só pra comparar um app com outro.' },
+      K.el('p', { class: 'mb-apps-note', title: 'O mesmo número do Monitor de Atividade: serve só pra comparar um app com outro.' },
         'Impacto energético do macOS (não é watt).'));
     c.style.animationDelay = '180ms';
     return c;
@@ -382,7 +382,7 @@
     if (!items.length) {
       box.appendChild(K.el('div', { class: 'mb-apps-empty' },
         K.el('span', { class: 'mb-h-ic good', html: K.icon('leaf') }),
-        K.el('span', null, 'Nenhum app gastando energia de verdade agora. Tudo calmo.')));
+        K.el('span', null, 'Tudo calmo: nenhum app gastando agora.')));
       return;
     }
     /* escala com piso: num Mac calmo o primeiro não aparece com a barra cheia */
@@ -420,8 +420,8 @@
     const logo = K.el('span', { class: 'mb-logo', html: K.logo().replace(/#fff/g, '#000') });
     const c = K.el('nav', { class: 'mb-actions pop-in', 'aria-label': 'Atalhos' },
       K.el('button', { class: 'btn gold mb-open', type: 'button', onclick: () => show(null) }, logo, 'Abrir o Kamurafy'),
-      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('scan'), title: 'Abre o Kamurafy na Varredura, pra olhar o Mac inteiro', onclick: () => show('inicio') }, 'Escanear'),
-      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('broom'), title: 'Abre a Faxina: você vê tudo antes e escolhe o que vai pra Lixeira', onclick: () => show('faxina') }, 'Faxina'));
+      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('scan'), title: 'Abre o Início, pra olhar o Mac inteiro', onclick: () => show('inicio') }, 'Escanear'),
+      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('broom'), title: 'Abre o Espaço: você escolhe o que vai pra Lixeira', onclick: () => show('faxina') }, 'Espaço'));
     c.style.animationDelay = '230ms';
     return c;
   }

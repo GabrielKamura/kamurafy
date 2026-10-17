@@ -93,7 +93,7 @@
 .kw-line { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.35; color: var(--ink-2); flex: 1; min-width: 220px; }
 .kw-line svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 .kw-line.good svg { color: var(--st-good); }
-.kw-line.warn svg { color: #b77800; }
+.kw-line.warn svg { color: var(--st-warn-ink); }
 .kw-line.crit svg { color: var(--st-crit); }
 .kw-line.none svg { color: var(--ink-3); }
 .kw-msg:empty { display: none; }
@@ -179,3 +179,11 @@
   .kw-text { font-size: 15.5px; }
 }
 .snap .kw-back, .snap .kw { animation: none !important; }
+
+/* ===== modo escuro (tokens em base.css; o painel dourado do mascote .kw-art é ilha de dia) ===== */
+@media (prefers-color-scheme: dark) {
+  .kw-back { background: rgba(0, 0, 0, .6); }
+  .kw-art { border-right-color: var(--cream); }
+  .kw-ic, .kw-bar-me { color: var(--on-gold); }
+  .kw-bar { background: var(--panel); }
+}

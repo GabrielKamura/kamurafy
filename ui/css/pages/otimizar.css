@@ -64,7 +64,7 @@
 .ot-tag.good { background: var(--st-good-soft); }
 .ot-tag.good svg { color: var(--st-good); }
 .ot-tag.warn { background: var(--st-warn-soft); }
-.ot-tag.warn svg { color: #b77800; }
+.ot-tag.warn svg { color: var(--st-warn-ink); }
 .ot-tag.none { background: var(--panel); color: var(--ink-2); }
 .ot-tag.keep { background: var(--gold); padding-left: 8px; }
 .ot-tag.plain { padding-left: 8px; background: var(--panel); border-color: var(--line); color: var(--ink-2); }
@@ -103,7 +103,7 @@
 .ot-msg.good { background: var(--st-good-soft); }
 .ot-msg.good svg { color: var(--st-good); }
 .ot-msg.warn { background: var(--st-warn-soft); }
-.ot-msg.warn svg { color: #b77800; }
+.ot-msg.warn svg { color: var(--st-warn-ink); }
 .ot-msg.crit { background: var(--st-crit-soft); }
 .ot-msg.crit svg { color: var(--st-crit); }
 .ot-msg.none svg { color: var(--ink-2); }
@@ -112,7 +112,7 @@
 .ot-note p { flex: 1; min-width: 0; line-height: 1.4; }
 .ot-note p b { font-weight: 400; }
 .ot-note.warn { background: var(--st-warn-soft); }
-.ot-note.warn > svg { color: #b77800; }
+.ot-note.warn > svg { color: var(--st-warn-ink); }
 .ot-note[hidden] { display: none; }
 .ot-note-act { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .ot-blind { background: var(--panel); }
@@ -328,7 +328,7 @@
 .ot-hv:last-child { border-bottom: 0; }
 .ot-hv.is-sys .ot-name { color: var(--ink-2); }
 .ot-hv.is-sys .ot-ic:not(.is-app) { border-color: var(--ink-3); color: var(--ink-2); }
-.ot-hv.is-closing { background: #fffaea; }
+.ot-hv.is-closing { background: var(--row-sel); }
 .ot-hv .ot-meta { flex-direction: row; }
 .ot-cell { display: flex; flex-direction: column; gap: 6px; min-width: 0; border-radius: 8px; outline-offset: 5px; cursor: default; }
 .ot-val { display: flex; align-items: baseline; gap: 7px; line-height: 1.1; white-space: nowrap; min-width: 0; }
@@ -458,7 +458,7 @@
 }
 .ot-chip svg { width: 14px; height: 14px; flex: none; }
 .ot-chip.warn { background: var(--st-warn-soft); }
-.ot-chip.warn svg { color: #b77800; }
+.ot-chip.warn svg { color: var(--st-warn-ink); }
 .ot-task-body { grid-area: body; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .ot-task-desc { margin: 0; font-size: 15px; line-height: 1.45; }
 .ot-when {
@@ -469,12 +469,12 @@
   border-radius: 12px;
   background: var(--panel);
 }
-.ot-when svg { width: 20px; height: 20px; flex: none; margin-top: 1px; color: #b77800; }
+.ot-when svg { width: 20px; height: 20px; flex: none; margin-top: 1px; color: var(--st-warn-ink); }
 .ot-when > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .ot-when-t { font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-3); }
 .ot-when-d { font-size: 14.5px; line-height: 1.38; color: var(--ink); }
 .ot-task-warn { background: var(--st-warn-soft); padding: 9px 12px; border-width: 2px; }
-.ot-task-warn svg { width: 20px; height: 20px; color: #b77800; }
+.ot-task-warn svg { width: 20px; height: 20px; color: var(--st-warn-ink); }
 .ot-task-warn p { font-size: 14px; line-height: 1.38; }
 .ot-task-foot { grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
 .ot-res { flex: 1; min-width: 0; }
@@ -546,7 +546,7 @@
   border-bottom: 1.5px solid var(--line);
 }
 .ot-lt-row:last-child { border-bottom: 0; }
-.ot-lt-row.is-closing { background: #fffaea; }
+.ot-lt-row.is-closing { background: var(--row-sel); }
 .ot-lt-ic.warn { background: var(--st-warn-soft); }
 .ot-lt-ic.serious { background: var(--st-serious-soft); }
 .ot-lt-ic.crit { background: var(--st-crit-soft); }
@@ -667,3 +667,11 @@
 
 /* caminho do programa no modal de ligar: quebra onde precisar */
 .ot-cf-stats b { font-weight: 400; overflow-wrap: anywhere; color: var(--ink); }
+
+/* ===== modo escuro (tokens em base.css; os cartões dourados .ot-sum e .ot-lt-hero são ilhas de dia) ===== */
+@media (prefers-color-scheme: dark) {
+  .ot-tag.keep, .ot-tk-badge { color: var(--on-gold); }
+  .ot-sk-ic, .ot-sk-lines i, .ot-sk-end {
+    background-image: linear-gradient(90deg, var(--panel) 0%, #3d382f 50%, var(--panel) 100%);
+  }
+}

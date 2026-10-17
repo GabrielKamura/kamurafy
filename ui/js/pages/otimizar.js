@@ -60,31 +60,31 @@
 
   const ORIGENS = {
     ajudante: { titulo: 'Ajudantes de apps', icon: 'apps',
-      sub: 'Pedacinhos que um app registra pra abrir junto com o Mac: atualizador, ícone na barra de menus, sincronização.' },
+      sub: 'Atualizador, ícone na barra de menus, sincronização.' },
     agente: { titulo: 'Agentes da sua pasta', icon: 'otScript',
-      sub: 'Programas guardados na sua pasta de usuário (em Biblioteca › LaunchAgents) que o macOS roda sozinho: quando você entra ou de tempos em tempos.' },
+      sub: 'Programas da sua pasta (Biblioteca › LaunchAgents) que o macOS roda sozinho.' },
     sistema: { titulo: 'Do sistema todo', icon: 'lock',
-      sub: 'Instalados pra todos os usuários do Mac. Mexer neles pede senha de administrador, então fica pelos Ajustes. Daqui eu não consigo ver com certeza se estão ligados, por isso ficam fora da conta lá em cima.' },
+      sub: 'Valem pra todos os usuários e pedem senha: é pelos Ajustes. Ficam fora da conta lá em cima.' },
   };
   const ORIGEM_ORDER = ['ajudante', 'agente', 'sistema'];
 
-  const PASS = 'O macOS vai pedir a sua senha de administrador. Quem pede é o próprio macOS: o Kamurafy nunca vê a senha.';
+  const PASS = 'O macOS vai pedir sua senha de administrador. O Kamurafy nunca vê a senha.';
   /* o que a tela sabe a mais de cada tarefa (o Swift manda título, descrição, quando e demora) */
   const TASK_UI = {
     dns: { icon: 'otGlobe', order: 0, ok: 'Limpar o cache',
-      bits: ['Os sites continuam funcionando: o primeiro acesso a cada um só demora um tiquinho a mais.', 'Não apaga senha, histórico nem favorito.'] },
+      bits: ['O primeiro acesso a cada site demora um tiquinho a mais.', 'Não apaga senha, histórico nem favorito.'] },
     abrircom: { icon: 'otMenu', order: 1, ok: 'Arrumar a lista',
-      bits: ['Leva uns segundos. Enquanto isso, o ícone de alguns arquivos pode sumir e voltar.', 'Não apaga app nem arquivo: só refaz a lista.'] },
+      bits: ['Alguns ícones podem sumir e voltar.', 'Não apaga app nem arquivo.'] },
     dock: { icon: 'otDock', order: 2, ok: 'Reiniciar o Dock',
       bits: ['Nenhum app fecha. O Dock some e volta em um ou dois segundos.'] },
     finder: { icon: 'otFolder', order: 3, ok: 'Reiniciar o Finder',
-      card: 'Se o Finder estiver copiando ou movendo arquivos, espere terminar: reiniciar interrompe a cópia.',
-      warn: 'Se o Finder estiver copiando ou movendo arquivos agora, isso para no meio. Espere terminar antes.',
-      bits: ['As janelas do Finder se fecham; os arquivos ficam onde estão.'] },
+      card: 'Se o Finder estiver copiando arquivos, espere terminar.',
+      warn: 'Se o Finder estiver copiando arquivos, isso para no meio. Espere terminar.',
+      bits: ['As janelas do Finder fecham; os arquivos ficam onde estão.'] },
     spotlight: { icon: 'scan', order: 4, ok: 'Refazer o índice',
-      card: 'Enquanto refaz, o Mac fica ocupado por algumas horas: a busca fica incompleta, a ventoinha pode ligar e a bateria gasta mais. Melhor na tomada.',
-      warn: 'O Mac fica ocupado por algumas horas: a busca fica incompleta, a ventoinha pode ligar e a bateria gasta mais. Melhor rodar na tomada.',
-      bits: ['Não apaga arquivo nenhum: só o índice da busca, que o macOS refaz sozinho.', 'Depois de começar, não dá pra parar por aqui: o macOS vai até o fim.'] },
+      card: 'O Mac fica ocupado por algumas horas. Melhor na tomada.',
+      warn: 'O Mac fica ocupado por algumas horas: a busca fica incompleta e a ventoinha pode ligar. Melhor na tomada.',
+      bits: ['Não apaga arquivo: só o índice da busca.', 'Depois de começar, vai até o fim.'] },
   };
 
   const PRESSURE = {
@@ -157,10 +157,10 @@
     if (/só no app aberto/i.test(m)) {
       S.test = true;
       paintTest();
-      return { tone: 'none', icon: 'otFlask', test: true, text: 'Modo de teste: aqui eu só mostro, não mudo nada de verdade. No Kamurafy aberto do jeito normal, isso funciona.' };
+      return { tone: 'none', icon: 'otFlask', test: true, text: 'Modo de teste: aqui eu só mostro, não mudo nada.' };
     }
     if (/não está mais na lista|abra a tela de novo|atualize|o arquivo mudou/i.test(m)) {
-      return { tone: 'warn', icon: 'cycle', stale: true, text: 'A lista tinha ficado velha e eu já olhei de novo. Tente outra vez.' };
+      return { tone: 'warn', icon: 'cycle', stale: true, text: 'A lista estava velha e já olhei de novo. Tente outra vez.' };
     }
     if (/não encerra/i.test(m)) return { tone: 'none', icon: 'lock', text: 'É do macOS: esse eu não fecho.' };
     if (/esse sou eu/i.test(m)) return { tone: 'none', icon: 'info', text: 'Esse sou eu. Pra me fechar, use Kamurafy › Sair.' };
@@ -251,16 +251,16 @@
   function paintShell() {
     host.innerHTML = '';
     V.testTag = K.el('span', { class: 'sticker has-ic ot-test', html: K.icon('otFlask'),
-      title: 'O Kamurafy está em modo de teste (foto ou terminal): ele mostra tudo, mas não muda nada.' }, 'modo de teste');
+      title: 'Modo de teste: mostra tudo, mas não muda nada.' }, 'modo de teste');
     /* a promessa vai no subtítulo, como na Faxina e no Desinstalar; o canto direito fica só pra figurinha */
     host.appendChild(K.el('header', { class: 'page-head ot-head', 'data-drag': true },
       K.el('div', { class: 'ot-head-text' },
-        K.el('h1', null, 'Otimizar'),
-        K.el('p', { title: 'Desligar, fechar e as arrumações só mudam o que roda: nenhum arquivo seu é apagado.' },
-          'Por que o Mac tá lento, o que abre sozinho, quem pesa agora e umas arrumações do macOS. Você decide cada passo, e nada aqui apaga arquivo seu.')),
+        K.el('h1', null, 'Velocidade'),
+        K.el('p', { title: 'Desligar, fechar e as arrumações só mudam o que roda.' },
+          'O que deixa o Mac lento e como resolver. Nada aqui apaga arquivo seu.')),
       K.el('div', { class: 'ot-head-side' }, V.testTag)));
 
-    const nav = K.el('nav', { class: 'ktabs ot-tabs', role: 'tablist', 'aria-label': 'Partes do Otimizar' });
+    const nav = K.el('nav', { class: 'ktabs ot-tabs', role: 'tablist', 'aria-label': 'Partes da Velocidade' });
     V.tabs = {};
     for (const t of TABS) {
       const badge = K.el('span', { class: 'ktab-badge ot-tab-badge num', hidden: true });
@@ -423,11 +423,11 @@
     if (items.length) V.panel.appendChild(startupSummary(items));
     if (st.err) {
       V.panel.appendChild(K.el('div', { class: 'tip ot-note warn', html: K.icon('alert') },
-        K.el('p', null, `Não consegui olhar de novo agora (${noDot(st.err)}). Mostro a última lista que eu vi.`)));
+        K.el('p', null, `Não consegui olhar de novo (${noDot(st.err)}). Mostro a última lista.`)));
     }
     if (!items.length) {
       const box = emptyBox('Nada abre sozinho com o Mac',
-        'Pelo menos nada que eu enxergue daqui. Os apps da lista “Abrir ao iniciar sessão” ficam nos Ajustes do Sistema.');
+        'Pelo menos nada que eu enxergue daqui.');
       V.panel.appendChild(box);
       addMascot(box._art, 96, { face: 'joy' });
     } else {
@@ -460,7 +460,7 @@
         K.el('div', { class: 'ot-sum-num' }, big, lab),
         sub,
         K.el('p', { class: 'ot-promise', html: K.icon('check') },
-          K.el('span', null, 'Desligar não apaga nada: o app só deixa de abrir sozinho. Dá pra ligar de novo aqui.'))),
+          K.el('span', null, 'Desligar não apaga nada. Dá pra ligar de novo aqui.'))),
       K.el('div', { class: 'ot-sum-act' }, again));
     V.sum = { card, big, lab, sub, bubble, again, againT, mascot: null, mascotBox };
     V.sum.mascot = addMascot(mascotBox, 116, { face: 'happy' });
@@ -488,7 +488,7 @@
         if (off) bits.push(plural(off, 'desligado', 'desligados'));
         bits.push(running ? `${plural(running, 'rodando', 'rodando')} agora` : 'nenhum rodando agora');
       }
-      if (sys) bits.push(`${mine.length ? 'e ' : ''}${plural(sys, 'do sistema todo', 'do sistema todo')} (esses, só nos Ajustes)`);
+      if (sys) bits.push(`${mine.length ? 'e ' : ''}${plural(sys, 'do sistema todo', 'do sistema todo')}`);
     }
     setText(R.sub, bits.join(' · '));
     setText(R.bubble, on === 0 ? 'Entrada leve!' : on <= 4 ? 'Esses chegam junto.' : 'Quanta coisa junto!');
@@ -545,7 +545,7 @@
     r.tags.innerHTML = '';
     if (it.rodando) r.tags.appendChild(tag('good run', null, 'rodando agora', 'Está carregado e rodando neste momento'));
     /* agente que não abre no login, só de tempos em tempos (o Swift manda "quando" quando souber) */
-    if (it.quando && !r.sys) r.tags.appendChild(tag('none', 'clock', 'roda de vez em quando', `Não abre no login: roda ${vis(it.quando)}. O interruptor vale do mesmo jeito.`));
+    if (it.quando && !r.sys) r.tags.appendChild(tag('none', 'clock', 'roda de vez em quando', `Não abre no login: roda ${vis(it.quando)}.`));
     if (!it.app && origemOf(it) === 'ajudante') r.tags.appendChild(tag('warn', 'alert', 'app não encontrado', 'Não achei o app que colocou isso: ele pode já ter sido apagado.'));
     if (r.sys) r.tags.appendChild(tag('none', 'lock', 'pede senha', 'Vale pra todos os usuários: mexer pede senha de administrador.'));
     r.meta.innerHTML = '';
@@ -561,7 +561,7 @@
       r.sw.disabled = busy;
       r.sw.classList.toggle('is-busy', busy);
       r.sw.setAttribute('aria-label', `Abrir ${nome} junto com o Mac`);
-      r.sw.title = it.ligado ? 'Ligado: abre sozinho quando você entra no Mac. Toque pra desligar.' : 'Desligado: não abre sozinho. Toque pra ligar.';
+      r.sw.title = it.ligado ? 'Ligado: abre sozinho com o Mac.' : 'Desligado: não abre sozinho.';
     }
     r.li.classList.toggle('is-off', !r.sys && !it.ligado);
     r.li.classList.toggle('is-busy', busy);
@@ -588,7 +588,7 @@
       K.sound.plop();
       const ok = await K.confirm({
         title: `Ligar ${inl(it.nome || it.label)}?`,
-        text: 'Não achei o app que colocou isso: ele pode já ter sido apagado. Ligando, o programa pode rodar na hora, e volta a abrir sozinho quando você entrar no Mac.',
+        text: 'Não achei o app que colocou isso. Ligando, o programa pode rodar na hora.',
         body: it.programa ? K.el('p', { class: 'kmodal-text ot-cf-stats' }, 'O que roda: ', K.el('b', null, vis(it.programa))) : null,
         note: { tone: 'warn', icon: 'alert', text: 'Só ligue se você sabe o que é. Dá pra desligar de novo aqui.' },
         ok: 'Ligar mesmo assim', cancel: 'Deixar desligado', icon: 'otPower',
@@ -598,8 +598,8 @@
       K.sound.plop();
       const ok = await K.confirm({
         title: `Desligar ${inl(it.nome || it.label)}?`,
-        text: 'Ele está rodando agora e para na hora. Depois disso, não abre mais sozinho quando você entrar no Mac.',
-        note: { tone: 'good', icon: 'check', text: 'Não apaga nada: o app continua instalado. Dá pra ligar de novo aqui quando quiser.' },
+        text: 'Ele está rodando e para na hora.',
+        note: { tone: 'good', icon: 'check', text: 'Não apaga nada. Dá pra ligar de novo aqui.' },
         ok: 'Desligar', cancel: 'Deixar ligado', icon: 'otPower',
       });
       if (!ok) return false;
@@ -615,8 +615,8 @@
       if (r && typeof r.rodando === 'boolean') it.rodando = r.rodando;
       let m;
       if (!!it.ligado !== ligar) m = { tone: 'warn', icon: 'alert', text: 'O macOS não aceitou a mudança agora. Tente de novo, ou mude pelos Ajustes.' };
-      else if (ligar) m = { tone: 'good', icon: 'check', text: it.rodando ? 'Ligado e já rodando. Abre sozinho quando você entrar no Mac.' : 'Ligado: abre sozinho a partir do próximo login.' };
-      else m = { tone: 'good', icon: 'check', text: (wasRunning && !it.rodando ? 'Desligado e parado. ' : 'Desligado. ') + 'Não abre mais sozinho; o app continua instalado.' };
+      else if (ligar) m = { tone: 'good', icon: 'check', text: it.rodando ? 'Ligado e já rodando.' : 'Ligado: abre sozinho a partir do próximo login.' };
+      else m = { tone: 'good', icon: 'check', text: wasRunning && !it.rodando ? 'Desligado e parado. O app continua instalado.' : 'Desligado. O app continua instalado.' };
       st.msgs.set(key, m);
       if (m.tone === 'warn') K.sound.oops(); else K.sound.tick();
     } catch (e) {
@@ -649,8 +649,8 @@
   function blindNote() {
     return K.el('div', { class: cls('tip ot-note ot-blind'), style: delay(260), html: K.icon('otEye') },
       K.el('p', null,
-        K.el('b', null, 'O que eu não enxergo daqui: '),
-        'os apps da lista “Abrir ao iniciar sessão” (os que abrem com janela) e alguns itens que só os Ajustes do Sistema mostram. Pra ver tudo, abra Geral › Itens de Início.'),
+        K.el('b', null, 'O que eu não enxergo: '),
+        'os apps de “Abrir ao iniciar sessão”. Eles ficam nos Ajustes do Sistema.'),
       K.el('div', { class: 'ot-note-act' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('otSliders'), onclick: openLoginSettings }, 'Abrir Itens de Início')));
   }
@@ -805,7 +805,7 @@
     R.list = K.el('ul', { class: 'ot-hv-list', 'aria-label': 'Apps que mais pesam agora' });
     R.closed = K.el('div', { class: 'tip ot-closed', role: 'status', 'aria-live': 'polite', hidden: true });
     R.stale = K.el('div', { class: 'tip ot-note warn ot-stale', hidden: true, html: K.icon('alert') }, K.el('p'));
-    R.empty = K.el('div', { class: 'empty ot-hv-empty', hidden: true }, 'Nenhum app pesando agora. Tudo calmo por aqui.');
+    R.empty = K.el('div', { class: 'empty ot-hv-empty', hidden: true }, 'Tudo calmo: nenhum app pesando agora.');
     R.calmT = K.el('span');
     R.calmBtn = K.el('button', { class: 'btn small', type: 'button', dataset: { fk: 'ot-calm' },
       onclick: () => { K.sound.tick(); S.hv.showCalm = !S.hv.showCalm; updateHeavy(); } });
@@ -822,7 +822,7 @@
           K.el('span', { class: 'head-ic', html: K.icon('otWeight') }),
           K.el('div', null,
             K.el('h2', null, 'Quem mais pesa agora'),
-            K.el('div', { class: 'card-sub' }, 'Cada app com as abas e os ajudantes dele somados, como no Monitor de Atividade.'))),
+            K.el('div', { class: 'card-sub' }, 'Cada app com abas e ajudantes somados.'))),
         K.el('div', { class: 'ot-hv-side' }, R.live, R.pause)),
       R.closed,
       R.stale,
@@ -847,9 +847,9 @@
       K.el('div', { class: 'ot-how-grid' },
         item('cpu', 'CPU acima de 100%?', R.coresP),
         item('memory', 'Memória cheia não é defeito',
-          K.el('p', null, 'Fechar um app devolve a memória dele na hora. Mas o macOS usa a sobra como cache de propósito: vale fechar algo quando a pressão fica alta ou o Mac engasga.')),
+          K.el('p', null, 'O macOS usa a sobra como cache. Feche algo quando a pressão ficar alta.')),
         item('otQuit', 'Fechar ou forçar',
-          K.el('p', null, 'Fechar é como o Cmd+Q: se tiver algo sem salvar, o app pergunta. Forçar fecha na hora e perde o que não foi salvo; use só quando ele travou.'))));
+          K.el('p', null, 'Fechar é como o Cmd+Q: o app pergunta se quer salvar. Forçar perde o que não foi salvo.'))));
   }
 
   function paintNow() {
@@ -865,7 +865,7 @@
     const total = m && isNum(m.totalBytes) && m.totalBytes > 0 ? m.totalBytes : null;
     /* memória em base 2, como o Painel e o Monitor de Atividade ("de 16 GB", nunca "de 17,2 GB") */
     K.readOr(R.memV, used, (v) => K.fmt.mem(v));
-    setText(R.memS, total ? `de ${K.fmt.mem(total, 0)} · o cache que o macOS devolve sozinho fica de fora` : 'o cache que o macOS devolve sozinho fica de fora');
+    setText(R.memS, total ? `de ${K.fmt.mem(total, 0)}, sem contar o cache` : 'sem contar o cache');
     const p = m && PRESSURE[m.pressure];
     const pk = p ? m.pressure : '';
     if (R.pillKey !== pk) {
@@ -883,10 +883,9 @@
     else if (isNum(cpu) && cpu >= 45) say = 'Trabalhando de boa.';
     setText(R.bubble, say);
     if (R.mascot && R.face !== face) { R.face = face; R.mascot.set({ face }); }
-    const ct = coresFull
-      ? `Na lista, 100% é um núcleo inteiro trabalhando, como no Monitor de Atividade. Este Mac tem ${coresFull}, então um app pode passar de 100%: 250% são dois núcleos e meio.`
-      : 'Na lista, 100% é um núcleo inteiro trabalhando (como no Monitor de Atividade). Com vários núcleos, um app pode passar de 100%: 250% são dois núcleos e meio.';
-    setText(R.coresP, ct + ' Lá em cima é a média do chip todo, de 0 a 100%.');
+    setText(R.coresP, coresFull
+      ? `Na lista, 100% é um núcleo inteiro. Este Mac tem ${coresFull}.`
+      : 'Na lista, 100% é um núcleo inteiro: 250% são dois núcleos e meio.');
   }
 
   function paintLive() {
@@ -898,12 +897,12 @@
     R.live.classList.toggle('paused', paused);
     R.live.classList.toggle('stale', stale);
     setText(R.liveText, paused ? 'Pausado' : stale ? 'Sem resposta agora' : 'Ao vivo · a cada 5 s');
-    R.live.title = paused ? 'A lista está parada. Toque em Continuar pra voltar a atualizar.' : 'Atualiza a cada 5 segundos enquanto esta aba está aberta';
+    R.live.title = paused ? 'A lista está parada.' : 'Atualiza a cada 5 segundos com esta aba aberta';
     R.pause.innerHTML = K.icon(paused ? 'play' : 'pause');
     R.pause.appendChild(K.el('span', null, paused ? 'Continuar' : 'Pausar'));
     R.pause.setAttribute('aria-pressed', String(paused));
     R.stale.hidden = !stale;
-    if (stale) setText(R.stale.querySelector('p'), `Não consegui atualizar agora (${noDot(hv.err)}). Mostro a última leitura e tento de novo em 5 segundos.`);
+    if (stale) setText(R.stale.querySelector('p'), `Não consegui atualizar (${noDot(hv.err)}). Tento de novo em 5 segundos.`);
   }
 
   function paintClosed() {
@@ -952,9 +951,9 @@
     R.calm.hidden = !nc;
     if (nc) {
       setText(R.calmT, hv.showCalm
-        ? `Mostrando também ${plural(nc, 'processo do macOS que está tranquilo', 'processos do macOS que estão tranquilos')} (menos de 5% de CPU e de 200 MB cada).`
-        : nc === 1 ? 'Deixei de fora 1 processo do macOS que está tranquilo (menos de 5% de CPU e de 200 MB): não pesa e não dá pra fechar.'
-          : `Deixei de fora ${K.fmt.num(nc)} processos do macOS que estão tranquilos (menos de 5% de CPU e de 200 MB cada): não pesam e não dá pra fechar.`);
+        ? `Mostrando também ${plural(nc, 'processo tranquilo do macOS', 'processos tranquilos do macOS')}.`
+        : nc === 1 ? 'Deixei de fora 1 processo tranquilo do macOS: não pesa e não dá pra fechar.'
+          : `Deixei de fora ${K.fmt.num(nc)} processos tranquilos do macOS: não pesam e não dá pra fechar.`);
       setText(R.calmBtn, hv.showCalm ? 'Esconder de novo' : 'Mostrar também');
       R.calmBtn.setAttribute('aria-expanded', String(!!hv.showCalm));
     }
@@ -1016,8 +1015,8 @@
     if (!ph) return null;
     switch (ph.phase) {
       case 'asked': return { tone: 'none', icon: 'clock', text: 'Pedi pra fechar. Se ele perguntar se quer salvar, responda na janela dele.' };
-      case 'stuck': return { tone: 'warn', icon: 'alert', text: 'Ainda aberto. Ele pode estar esperando você responder se quer salvar: dá uma olhada nele. Se travou, dá pra forçar.' };
-      case 'refused': return { tone: 'warn', icon: 'alert', text: 'Ele não quis fechar: pode estar travado ou perguntando algo. Dá uma olhada nele; se travou, dá pra forçar.' };
+      case 'stuck': return { tone: 'warn', icon: 'alert', text: 'Ainda aberto: talvez esperando você salvar. Se travou, dá pra forçar.' };
+      case 'refused': return { tone: 'warn', icon: 'alert', text: 'Não quis fechar: pode estar perguntando algo. Se travou, dá pra forçar.' };
       case 'forced': return { tone: 'none', icon: 'clock', text: 'Mandei fechar à força. Já já ele some da lista.' };
       case 'forcefail': return { tone: 'crit', icon: 'alert', text: 'Nem forçando ele fechou. Tente pelo Monitor de Atividade ou reinicie o Mac.' };
       case 'err': return ph.f;
@@ -1179,9 +1178,9 @@
       const ok = await K.confirm({
         title: a.app ? `Fechar o app ${inl(a.nome)}?` : `Encerrar ${inl(hvName(a))}?`,
         text: a.app ? 'Se tiver algo sem salvar, o próprio app pergunta antes de fechar.'
-          : 'É um programa sem janela. Encerrar pode interromper algo que ele esteja fazendo agora, como uma sincronização ou um download.',
+          : 'Programa sem janela. Encerrar pode interromper uma sincronização ou um download.',
         body: statsLine(a),
-        note: { tone: 'good', icon: 'check', text: a.app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. Se ele for de um app, o app costuma abrir ele de novo quando precisar.' },
+        note: { tone: 'good', icon: 'check', text: a.app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. O app dono costuma abrir ele de novo.' },
         ok: a.app ? 'Fechar' : 'Encerrar', cancel: 'Deixar aberto', icon: 'otQuit',
       });
       if (!ok) return false;
@@ -1274,7 +1273,7 @@
       art,
       K.el('div', { class: 'ot-tk-text' },
         K.el('h2', null, 'Arrumações do próprio macOS'),
-        K.el('p', null, 'Cada uma resolve um defeito específico. Não são pra rodar toda semana: se está tudo funcionando, pode deixar quieto. Nenhuma apaga arquivo seu.')));
+        K.el('p', null, 'Cada uma resolve um defeito específico. Se está tudo funcionando, deixe quieto.')));
     V.panel.appendChild(intro);
     addMascot(art, 92, { face: 'happy' });
     art.appendChild(K.el('span', { class: 'ot-tk-badge', html: K.icon('otWrench') }));
@@ -1386,7 +1385,7 @@
       }
     } catch (e) {
       const f = friendly(e);
-      res = { phase: f.test ? 'test' : 'fail', text: f.test ? 'Modo de teste: nada rodou de verdade. No Kamurafy aberto do jeito normal, isso funciona.' : f.text };
+      res = { phase: f.test ? 'test' : 'fail', text: f.test ? 'Modo de teste: nada rodou de verdade.' : f.text };
       if (!f.test) K.sound.oops();
     }
     tk.busy = null;
@@ -1414,10 +1413,10 @@
     { to: 100, tone: 'good', label: 'Voando' },
   ];
   const FUNDO = {
-    spotlight: { icon: 'scan', t: 'O Spotlight está indexando', d: 'Acontece depois de atualizar o macOS ou copiar muitos arquivos.' },
+    spotlight: { icon: 'scan', t: 'O Spotlight está indexando', d: 'Comum depois de atualizar ou copiar muitos arquivos.' },
     timemachine: { icon: 'clock', t: 'O Time Machine está fazendo backup', d: 'Termina sozinho.' },
     fotos: { icon: 'otPhoto', t: 'O Fotos está analisando a biblioteca', d: 'Na tomada ele termina mais rápido.' },
-    icloud: { icon: 'cloud', t: 'O iCloud está sincronizando', d: 'Termina quando acabar de subir e baixar.' },
+    icloud: { icon: 'cloud', t: 'O iCloud está sincronizando', d: 'Termina sozinho.' },
     atualizacao: { icon: 'otDownload', t: 'O macOS está preparando uma atualização', d: 'Termina sozinho.' },
   };
   const HEAT_TIP = 'Tira de cima de almofada ou cobertor.';
@@ -1463,7 +1462,7 @@
       case 'memoria':
         if (f.detalhe === 'critica') {
           return { icon: 'memory', t: 'A memória está no limite',
-            d: `O Mac está usando o disco como memória${swap ? ` (${K.fmt.mem(swap)} no disco)` : ''}. Fechar abas e apps parados é o que mais ajuda.` };
+            d: `O Mac usa o disco como memória${swap ? ` (${K.fmt.mem(swap)} no disco)` : ''}. Feche abas e apps parados.` };
         }
         if (f.detalhe === 'swap') {
           return { icon: 'memory', t: 'A memória já apertou hoje',
@@ -1484,11 +1483,11 @@
           ? `Usa ${ltCores(f.cpu)} do processador${procs ? ` em ${procs}` : ''}`
           : [procs, mem].filter(Boolean).join(' e ');
         return { icon: 'otGlobe', img, t: `${nome} está pesando`,
-          d: `${what ? what + ': cada' : 'Cada'} aba conta. Fechar as que você não usa alivia.`, act: quit };
+          d: `${what ? what + '. ' : ''}Fechar abas paradas alivia.`, act: quit };
       }
       case 'fundo': {
         const x = FUNDO[f.detalhe] || { icon: 'otMac', t: 'O macOS está trabalhando por baixo', d: 'Termina sozinho.' };
-        return { icon: x.icon, t: x.t, d: x.d, act: { kind: 'tag', tone: 'none', icon: 'clock', text: 'passa sozinho', title: 'É trabalho do próprio macOS: termina sozinho, sem você fazer nada.' } };
+        return { icon: x.icon, t: x.t, d: x.d, act: { kind: 'tag', tone: 'none', icon: 'clock', text: 'passa sozinho', title: 'Trabalho do macOS: termina sozinho.' } };
       }
       case 'calor': {
         const lim = isNum(f.valor) ? f.valor : isNum(rep.limiteCPU) ? rep.limiteCPU : null;
@@ -1509,7 +1508,7 @@
       case 'reiniciar': {
         const dias = isNum(f.valor) ? Math.floor(f.valor) : isNum(rep.uptimeSec) ? Math.floor(rep.uptimeSec / 86400) : null;
         return { icon: 'cycle', t: dias != null ? `Ligado há ${plural(dias, 'dia', 'dias')}` : 'Faz tempo que o Mac não reinicia',
-          d: 'Reiniciar de vez em quando zera a memória acumulada. Menu Apple › Reiniciar, quando der.',
+          d: 'Reiniciar zera a memória acumulada. Menu Apple › Reiniciar.',
           act: { kind: 'tag', tone: 'none', icon: 'otBulb', text: 'dica', title: 'Uma dica: o Kamurafy não reinicia o Mac por você.' } };
       }
       case 'inicio': {
@@ -1691,7 +1690,7 @@
     return K.el('section', { class: cls('ot-empty ot-lt-empty'), style: delay(80) },
       K.el('span', { class: 'ot-lt-empty-ic', 'aria-hidden': 'true', html: K.icon('otEye') }),
       K.el('div', { class: 'ot-empty-text' },
-        K.el('p', null, 'Se ficar lento, volta aqui na hora: eu vejo o que pesa naquele momento.')));
+        K.el('p', null, 'Ficou lento? Volte aqui na hora.')));
   }
 
   function ltRow(f, rep) {
@@ -1812,9 +1811,9 @@
       const ok = await K.confirm({
         title: app ? `Fechar o app ${inl(ltName(f))}?` : `Fechar ${inl(ltName(f))}?`,
         text: app ? 'Se tiver algo sem salvar, o próprio app pergunta antes de fechar.'
-          : 'Se ele estiver no meio de algo, como uma sincronização ou um download, isso para.',
+          : 'Se ele estiver sincronizando ou baixando algo, isso para.',
         body: ltStats(f),
-        note: { tone: 'good', icon: 'check', text: app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. Se ele for de um app, o app costuma abrir ele de novo quando precisar.' },
+        note: { tone: 'good', icon: 'check', text: app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. O app dono costuma abrir ele de novo.' },
         ok: 'Fechar', cancel: 'Deixar aberto', icon: 'otQuit',
       });
       if (!ok) return false;
@@ -1952,8 +1951,8 @@
     /* ocupado salvando: o clique é ignorado, mas o interruptor não perde o foco */
     R.sw.disabled = !ok;
     R.sw.setAttribute('aria-busy', String(vg.busy));
-    R.sw.title = !ok ? '' : vg.vigia ? 'Ligada: eu olho a cada minuto e te aviso. Toque pra desligar.' : 'Desligada: não aviso nada. Toque pra ligar.';
-    const err = vg.status === 'error' ? 'Não consegui ler esse ajuste agora. Tento de novo quando você voltar pra esta aba.' : vg.err;
+    R.sw.title = !ok ? '' : vg.vigia ? 'Ligada: olho a cada minuto.' : 'Desligada: não aviso nada.';
+    const err = vg.status === 'error' ? 'Não consegui ler esse ajuste. Tento de novo quando você voltar aqui.' : vg.err;
     R.err.hidden = !err;
     setText(R.err, err || '');
     const list = ok ? vg.ignorar : [];
@@ -1992,7 +1991,7 @@
   }
 
   K.pages.otimizar = {
-    title: 'Otimizar',
+    title: 'Velocidade',
     async render(el) {
       teardown();
       host = el;

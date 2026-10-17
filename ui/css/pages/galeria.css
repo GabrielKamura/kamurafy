@@ -84,3 +84,8 @@
 @media (max-width: 980px) {
   .gal-play { grid-template-columns: 1fr; }
 }
+
+/* ===== modo escuro (tokens em base.css) ===== */
+@media (prefers-color-scheme: dark) {
+  .gal-chip[aria-pressed="true"] { color: var(--on-gold); }
+}

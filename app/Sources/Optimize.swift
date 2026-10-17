@@ -360,23 +360,23 @@ struct MaintTask: Codable {
 }
 
 enum Maintenance {
-    static let tasks: [MaintTask] = [
-        .init(id: "dns", titulo: "Limpar o cache de DNS",
-              descricao: "Esquece os endereços de sites guardados. Resolve site que não abre depois de mudar de rede ou de DNS.",
-              quando: "Quando um site abre em outro aparelho e não abre no Mac.", precisaSenha: true, demora: "instantâneo"),
-        .init(id: "abrircom", titulo: "Arrumar o menu \"Abrir com\"",
-              descricao: "Refaz a lista de apps que o macOS usa pra abrir cada tipo de arquivo.",
-              quando: "Quando aparecem apps repetidos ou que já foram apagados no \"Abrir com\".", precisaSenha: false, demora: "uns segundos"),
-        .init(id: "spotlight", titulo: "Refazer o índice do Spotlight",
-              descricao: "Apaga e refaz o índice de busca. O Mac fica mais ocupado por algumas horas enquanto refaz.",
-              quando: "Quando a busca não acha arquivos que você sabe que existem.", precisaSenha: true, demora: "algumas horas em segundo plano"),
-        .init(id: "dock", titulo: "Reiniciar o Dock",
-              descricao: "Fecha e abre o Dock de novo (sem fechar nenhum app).",
-              quando: "Quando o Dock, o Mission Control ou o Launchpad travam.", precisaSenha: false, demora: "instantâneo"),
-        .init(id: "finder", titulo: "Reiniciar o Finder",
-              descricao: "Fecha e abre o Finder de novo. Janelas do Finder abertas se fecham.",
-              quando: "Quando o Finder trava ou não mostra arquivos novos.", precisaSenha: false, demora: "instantâneo"),
-    ]
+    static var tasks: [MaintTask] { [
+        .init(id: "dns", titulo: L("Limpar o cache de DNS"),
+              descricao: L("Esquece os endereços de sites guardados. Resolve site que não abre depois de mudar de rede ou de DNS."),
+              quando: L("Quando um site abre em outro aparelho e não abre no Mac."), precisaSenha: true, demora: L("instantâneo")),
+        .init(id: "abrircom", titulo: L("Arrumar o menu \"Abrir com\""),
+              descricao: L("Refaz a lista de apps que o macOS usa pra abrir cada tipo de arquivo."),
+              quando: L("Quando aparecem apps repetidos ou que já foram apagados no \"Abrir com\"."), precisaSenha: false, demora: L("uns segundos")),
+        .init(id: "spotlight", titulo: L("Refazer o índice do Spotlight"),
+              descricao: L("Apaga e refaz o índice de busca. O Mac fica mais ocupado por algumas horas enquanto refaz."),
+              quando: L("Quando a busca não acha arquivos que você sabe que existem."), precisaSenha: true, demora: L("algumas horas em segundo plano")),
+        .init(id: "dock", titulo: L("Reiniciar o Dock"),
+              descricao: L("Fecha e abre o Dock de novo (sem fechar nenhum app)."),
+              quando: L("Quando o Dock, o Mission Control ou o Launchpad travam."), precisaSenha: false, demora: L("instantâneo")),
+        .init(id: "finder", titulo: L("Reiniciar o Finder"),
+              descricao: L("Fecha e abre o Finder de novo. Janelas do Finder abertas se fecham."),
+              quando: L("Quando o Finder trava ou não mostra arquivos novos."), precisaSenha: false, demora: L("instantâneo")),
+    ] }
 
     struct RunResult: Codable { var ok: Bool; var mensagem: String }
 

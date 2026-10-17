@@ -4,6 +4,14 @@
 :root {
   --kc-band: #eeeae2;          /* faixas de fundo (ex.: "na tomada") */
   --kc-wash: .12;              /* opacidade da área lavada */
+  --kc-txt-lum: .4;            /* segmento mais claro que isto leva texto escuro (barra empilhada) */
+  /* categorias 3–8 de K.charts.palette (1 e 2 são --s1 e --s2) */
+  --c3: #1baf7a;
+  --c4: #4a3aa7;
+  --c5: #e87ba4;
+  --c6: #eda100;
+  --c7: #008300;
+  --c8: #e34948;
 }
 
 /* ================= base comum ================= */
@@ -386,3 +394,25 @@
 
 /* mostrador sem leitura: o texto de espera apagado no lugar do número */
 .kg .kg-val.no-read { font-size: 22px; line-height: 1.5; letter-spacing: 0; }
+
+/* ================= modo escuro ("caderno à noite"; tokens em base.css) ================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kc-band: #34302a;
+    --kc-wash: .16;
+    --kc-txt-lum: .2;
+    --c3: #2fc48d;
+    --c4: #8e80f2;
+    --c5: #f08cb3;
+    --c6: #f2b01e;
+    --c7: #3fae3f;
+    --c8: #f06b6a;
+  }
+  /* o mascote continua a bateria clara do logo: corpo claro, rosto e contorno escuros por dentro;
+     sombra, cabo, estrelinhas e "z z" em creme pra aparecer no cartão escuro */
+  .km { --ink: var(--km-ink); --card: var(--km-body); --panel: var(--km-empty); }
+  .km-shadow rect { fill: var(--km-shade); }
+  .km-cord, .km-prong, .km-zzz path, .km-steam path { stroke: var(--km-line); }
+  .km-plug { fill: var(--km-line); }
+  .km-stars path { stroke: var(--km-line); }
+}

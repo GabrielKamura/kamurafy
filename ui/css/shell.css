@@ -93,3 +93,16 @@
 .soon-meanwhile { font-size: 14px !important; margin-top: 4px !important; }
 .btn-ic { display: inline-grid; }
 .btn-ic svg { width: 20px; height: 20px; }
+
+/* ===== modo escuro (tokens em base.css) ===== */
+@media (prefers-color-scheme: dark) {
+  .side-battery { border-color: var(--cream); }
+  .side-battery:hover { background: #24201a; }
+  .side-bat-wait { color: #a59b88; }
+  .side-bat-dot { border-color: var(--cream); }
+  .side-bat-dot.none { background: #7a7264; }
+  .side-bat-sub, .side-sound { color: #d6cbb5; }
+  .side-link { color: #e6dcc7; }
+  .side-sound.is-off { color: #a59b88; }
+  .soon-icon { color: var(--on-gold); }
+}

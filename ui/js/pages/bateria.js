@@ -63,22 +63,22 @@
 
   const TEMP_MIN = 20, TEMP_MAX = 50;
   const TEMP = [
-    { from: TEMP_MIN, to: 35, tone: 'good', label: 'Tranquila', icon: 'check', txt: 'Abaixo de 35 °C é o ideal: é assim que a bateria dura mais.' },
-    { from: 35, to: 40, tone: 'warn', label: 'Morna', icon: 'eye', txt: 'Normal com o Mac trabalhando. Se ficar assim o tempo todo, veja quem está gastando.' },
-    { from: 40, to: 45, tone: 'serious', label: 'Quente', icon: 'flame', txt: 'Calor acelera o desgaste. Deixe o Mac respirar e feche o que estiver pesado.' },
-    { from: 45, to: TEMP_MAX, tone: 'crit', label: 'Muito quente', icon: 'alert', txt: 'Quente demais pra bateria. Tire de cima de almofada ou cobertor e deixe esfriar.' },
+    { from: TEMP_MIN, to: 35, tone: 'good', label: 'Tranquila', icon: 'check', txt: 'Abaixo de 35 °C é o ideal.' },
+    { from: 35, to: 40, tone: 'warn', label: 'Morna', icon: 'eye', txt: 'Normal com o Mac trabalhando.' },
+    { from: 40, to: 45, tone: 'serious', label: 'Quente', icon: 'flame', txt: 'Calor acelera o desgaste. Feche o que estiver pesado.' },
+    { from: 45, to: TEMP_MAX, tone: 'crit', label: 'Muito quente', icon: 'alert', txt: 'Quente demais. Deixe esfriar, longe de almofada e cobertor.' },
   ];
   const tempZone = (t) => (isNum(t) ? TEMP.find((z) => t < z.to) || TEMP[TEMP.length - 1] : null);
 
   function cellVerdict(spread) {
     if (!isNum(spread)) return null;
-    if (spread <= 20) return { tone: 'good', icon: 'check', label: 'Equilibradas', txt: 'As células estão parelhas, como numa bateria saudável.' };
-    if (spread <= 50) return { tone: 'warn', icon: 'eye', label: 'Leve diferença', txt: 'Uma célula está um pouco atrás. Costuma diminuir depois de uma carga completa, quando o chip da bateria equilibra as células.' };
-    return { tone: 'serious', icon: 'alert', label: 'Desequilibradas', txt: 'Uma célula está bem diferente das outras, e isso faz a carga acabar antes da hora. Se continuar assim por dias, vale uma revisão.' };
+    if (spread <= 20) return { tone: 'good', icon: 'check', label: 'Equilibradas', txt: 'Parelhas, como numa bateria saudável.' };
+    if (spread <= 50) return { tone: 'warn', icon: 'eye', label: 'Leve diferença', txt: 'Uma célula um pouco atrás. Costuma se acertar depois de uma carga completa.' };
+    return { tone: 'serious', icon: 'alert', label: 'Desequilibradas', txt: 'Uma célula bem diferente faz a carga acabar antes. Se durar dias, vale uma revisão.' };
   }
 
   const APPLE = {
-    normal: { tone: 'good', icon: 'btShield', label: 'Normal', txt: 'O macOS não vê problema nenhum.' },
+    normal: { tone: 'good', icon: 'btShield', label: 'Normal', txt: 'O macOS não vê problema.' },
     revisao: { tone: 'crit', icon: 'alert', label: 'Revisão recomendada', txt: 'O próprio macOS sugere levar pra revisão.' },
     falha: { tone: 'crit', icon: 'alert', label: 'Falha registrada', txt: 'O chip da bateria registrou uma falha permanente.' },
   };
@@ -154,7 +154,7 @@
     return K.el('header', { class: 'page-head bt-head', 'data-drag': true },
       K.el('div', null,
         K.el('h1', null, 'Bateria'),
-        K.el('p', null, 'Como ela está, quanto aguenta e o que fazer pra durar mais.')),
+        K.el('p', null, 'Como ela está e como fazer durar mais.')),
       side);
   }
 
@@ -248,7 +248,7 @@
       K.el('div', { class: 'bt-hfoot' },
         appleBox,
         (osc = K.el('p', { class: 'bt-osc' }, icon('info'),
-          K.el('span', null, 'Esse número oscila 1 ou 2 pontos de uma carga pra outra, porque o chip da bateria recalibra a medida. Vale a tendência, não o número de um dia.')))));
+          K.el('span', null, 'Oscila 1 ou 2 pontos entre cargas: vale a tendência.')))));
     c.appendChild(stage);
     c.appendChild(right);
 
@@ -309,13 +309,13 @@
         if (isNum(h) || b.status === 'trocar') pillBox.appendChild(K.statusPill(st.tone, st.label, st.icon, true));
         txt.textContent = '';
         if (isNum(b.maxMah) && isNum(b.designMah)) {
-          txt.append('Sua bateria guarda ', K.el('span', { class: 'bt-strong' }, K.fmt.num(b.maxMah) + ' mAh'),
-            ' de ', K.el('span', { class: 'bt-strong' }, K.fmt.num(b.designMah) + ' mAh'),
-            ' da capacidade de fábrica. A Apple considera gasta abaixo de 80%.');
+          txt.append('Guarda ', K.el('span', { class: 'bt-strong' }, K.fmt.num(b.maxMah) + ' mAh'),
+            ' dos ', K.el('span', { class: 'bt-strong' }, K.fmt.num(b.designMah) + ' mAh'),
+            ' de fábrica.');
         } else if (isNum(h)) {
-          txt.append('Quanto ela ainda guarda da capacidade de fábrica. A Apple considera gasta abaixo de 80%.');
+          txt.append('Quanto ela ainda guarda da capacidade de fábrica.');
         } else {
-          txt.append('O Mac não informou a capacidade da bateria agora. Tente de novo daqui a pouco.');
+          txt.append('O Mac não informou a capacidade agora. Tente de novo daqui a pouco.');
         }
         meter(h);
         last.h = h; last.status = b.status;
@@ -368,8 +368,8 @@
         if (first && !snap()) K.charts.soon(go); else go();
         t.vis.hidden = !(isNum(c) && isNum(d));
         if (!isNum(c)) t.txt.textContent = 'O Mac não informou os ciclos.';
-        else if (isNum(d) && c >= d) t.txt.textContent = `Já passou dos ${K.fmt.num(d)} ciclos que a Apple projeta. Não desliga nada: só indica desgaste.`;
-        else t.txt.textContent = 'Um ciclo é gastar 100% da carga, somando recargas parciais (50% hoje + 50% amanhã = 1).';
+        else if (isNum(d) && c >= d) t.txt.textContent = `Passou dos ${K.fmt.num(d)} ciclos previstos: só indica desgaste.`;
+        else t.txt.textContent = 'Um ciclo é 100% de carga gasta, mesmo em partes.';
       },
     };
   }
@@ -399,7 +399,7 @@
           lastZone = z;
           pillBox.textContent = '';
           if (z) pillBox.appendChild(K.statusPill(z.tone, z.label, z.icon));
-          t.txt.textContent = z ? z.txt : 'O Mac não informou a temperatura da bateria.';
+          t.txt.textContent = z ? z.txt : 'O Mac não informou a temperatura.';
           t.ic.className = 'head-ic' + (z && z.tone !== 'good' ? ' ' + z.tone : '');
         }
       },
@@ -439,7 +439,7 @@
         /* na tomada sem carregar, o medidor diz quanto o Mac inteiro puxa do carregador */
         if (dir === 'direct') {
           flowTx.textContent = isNum(b.systemWatts)
-            ? `O Mac puxa ${K.fmt.watts(b.systemWatts)} direto do carregador e a bateria descansa.`
+            ? `O Mac puxa ${K.fmt.watts(b.systemWatts)} direto do carregador.`
             : 'O Mac usa o carregador direto e a bateria descansa.';
         }
         /* carregador e bateria em linhas separadas: 12,6 V é da bateria, não do carregador */
@@ -483,7 +483,7 @@
           K.readOr(n, null);
           unit.textContent = '';
           t.vis.hidden = true;
-          t.txt.textContent = 'Sem a saúde e os ciclos da bateria agora, não dá pra estimar.';
+          t.txt.textContent = 'Sem saúde e ciclos agora, não dá pra estimar.';
           return;
         }
         n.classList.remove('no-read');
@@ -492,7 +492,7 @@
           n.textContent = 'Já passou';
           unit.textContent = 'dos 80%';
           t.vis.hidden = true;
-          t.txt.textContent = 'A Apple já considera gasta. Ela continua funcionando, só dura menos por carga.';
+          t.txt.textContent = 'Continua funcionando, só dura menos por carga.';
           return;
         }
         if (pj.method === 'sem-dados' || !isNum(pj.cyclesTo80)) {
@@ -500,7 +500,7 @@
           n.textContent = 'Cedo demais';
           unit.textContent = '';
           t.vis.hidden = true;
-          t.txt.textContent = 'Ainda não dá pra estimar: a bateria quase não gastou. Volte daqui a alguns ciclos.';
+          t.txt.textContent = 'Quase não gastou. Volte daqui a alguns ciclos.';
           return;
         }
         countTo(n, pj.cyclesTo80, (v) => '~' + K.fmt.num(v, 0), first);
@@ -516,8 +516,8 @@
         if (isNum(pj.dateTo80)) {
           when.append(icon('btCalendar'), K.el('span', null, 'por volta de ' + K.fmt.monthYear(pj.dateTo80)));
         }
-        if (pj.method === 'historico') t.txt.textContent = 'Pela tendência dos seus dias de uso. É estimativa: calor e jeito de usar mudam o ritmo.';
-        else t.txt.textContent = `Pelo desgaste médio até hoje (${K.fmt.num(pj.wearPerCycle, 3)} ponto por ciclo). É estimativa: calor e uso mudam o ritmo.`;
+        if (pj.method === 'historico') t.txt.textContent = 'Estimativa pela tendência dos seus dias.';
+        else t.txt.textContent = 'Estimativa pelo desgaste médio até hoje.';
       },
     };
   }
@@ -550,7 +550,7 @@
       if (!p.live.paused) draw();
     });
     paint();
-    c.appendChild(head('btWave', 'Energia ao vivo', 'Watts entrando ou saindo da bateria, a cada 2 segundos.',
+    c.appendChild(head('btWave', 'Energia ao vivo', 'Watts entrando ou saindo, a cada 2 segundos.',
       K.el('div', { class: 'bt-live-side' }, K.el('span', { class: 'bt-now' }, nowL, nowV), btn)));
     const box = K.el('div', { class: 'bt-livechart' });
     c.appendChild(box);
@@ -603,10 +603,10 @@
         const k = b.isCharging || K.batTopping(b) ? 'c' : b.pluggedIn ? 'p' : b.pluggedIn == null ? 'x' : 'b';
         if (k !== lastNote) {
           lastNote = k;
-          note.textContent = k === 'c' ? 'Acima do zero é energia entrando. Perto de cheia, o macOS vai diminuindo a força pra poupar a bateria.'
-            : k === 'p' ? 'Na tomada e sem carregar, a linha fica perto do zero: o Mac usa o carregador direto e a bateria só descansa.'
-              : k === 'x' ? 'Acima do zero é energia entrando na bateria; abaixo, a bateria gastando.'
-                : 'Abaixo do zero é a bateria gastando. Os picos são o Mac trabalhando mais forte (abrir app, vídeo, compilar).';
+          note.textContent = k === 'c' ? 'Acima do zero, entrando. Perto de cheia, o macOS carrega mais devagar.'
+            : k === 'p' ? 'Perto do zero: o Mac usa o carregador direto.'
+              : k === 'x' ? 'Acima do zero, entrando; abaixo, gastando.'
+                : 'Abaixo do zero, gastando. Os picos são o Mac trabalhando mais forte.';
         }
       },
     };
@@ -677,7 +677,7 @@
           lastV = key;
           verdict.textContent = '';
           if (vd) verdict.appendChild(K.statusPill(vd.tone, vd.label, vd.icon));
-          txt.textContent = vd ? `${vd.txt} Até 20 mV entre a mais alta e a mais baixa é o normal.` : '';
+          txt.textContent = vd ? `${vd.txt} Até 20 mV é normal.` : '';
         }
       },
     };
@@ -725,8 +725,8 @@
   function chargePart(p) {
     const c = card('bt-chargecard', 440);
     const chips = K.el('div', { class: 'bt-chips' });
-    c.appendChild(head('chart', 'Carga nos últimos 7 dias', 'Quanto de carga ela teve e quando esteve na tomada.'));
-    const box = K.el('div', { class: 'bt-chargechart' }, K.el('div', { class: 'loading' }, 'Lendo o histórico do macOS… (leva uns segundos na primeira vez)'));
+    c.appendChild(head('chart', 'Carga nos últimos 7 dias', null));
+    const box = K.el('div', { class: 'bt-chargechart' }, K.el('div', { class: 'loading' }, 'Lendo o histórico do macOS…'));
     const note = K.el('p', { class: 'bt-note' });
     c.append(chips, box, note);
 
@@ -771,7 +771,7 @@
           table: {
             rows: () => ({ head: ['Dia', 'Menor', 'Maior', 'Na tomada (estimado)'], rows: dayRows(carga, bands, now), order: 'mais recentes primeiro' }),
           },
-          empty: 'O macOS ainda não tem histórico de carga pra mostrar. O Kamurafy começa a anotar assim que fica aberto.',
+          empty: 'Ainda sem histórico. Eu anoto enquanto fico aberto.',
           ariaLabel: 'Carga da bateria nos últimos 7 dias',
         }));
 
@@ -785,8 +785,8 @@
         }
         const onlyMac = carga.every((q) => q.fonte !== 'kamurafy');
         note.textContent = onlyMac
-          ? 'Antes do Kamurafy, os pontos vêm do registro do próprio macOS, que anota a carga quando o Mac dorme, acorda ou muda de tomada. Por isso eles aparecem de tempos em tempos. Com o Kamurafy aberto, ele anota a cada 5 minutos. Os números do topo são estimativas.'
-          : 'Os pontos mais antigos vêm do registro do próprio macOS (quando o Mac dorme, acorda ou muda de tomada); com o Kamurafy aberto, ele anota a cada 5 minutos. Os números do topo são estimativas.';
+          ? 'Pontos do registro do macOS, de tempos em tempos. Com o Kamurafy aberto, anoto a cada 5 minutos.'
+          : 'Os pontos antigos são do macOS. Com o Kamurafy aberto, anoto a cada 5 minutos.';
       },
     };
   }
@@ -819,7 +819,7 @@
           endLabel: `80% em ~${K.fmt.num(end)} ciclos`, format: (v) => '≈ ' + K.fmt.pct(v, 0) });
         xMax = end * 1.04;
       }
-      sub.textContent = 'Saúde × ciclos: de quando era nova até hoje, e o ritmo até os 80%.';
+      sub.textContent = 'Saúde por ciclos, de nova até hoje.';
       return {
         series, xType: 'num', xMin: 0, xMax,
         xFormat: (v) => K.fmt.num(v),
@@ -866,7 +866,7 @@
       node: c,
       fail() {
         box.textContent = '';
-        box.appendChild(K.el('div', { class: 'empty' }, 'Sem o histórico agora. Tente abrir a tela de novo daqui a pouco.'));
+        box.appendChild(K.el('div', { class: 'empty' }, 'Sem o histórico agora. Tente de novo daqui a pouco.'));
       },
       draw(h, b) {
         box.textContent = '';
@@ -880,23 +880,23 @@
         else o = { series: [], ariaLabel: 'Saúde da bateria ao longo do tempo' };
         keep(p, K.charts.line(box, Object.assign({
           yFormat, refs: REF, height: 210,
-          empty: 'Sem leitura de saúde ainda. O Kamurafy anota um ponto por dia enquanto está aberto.',
+          empty: 'Sem leitura de saúde ainda. Eu anoto um ponto por dia.',
         }, o)));
 
         if (cyclesMode) {
           notes.appendChild(K.el('div', { class: 'tip bt-tipnote' }, icon('clock'),
-            K.el('p', null, 'A reta é a média desde que ela era nova. A curva de verdade aparece com os pontos diários: o Kamurafy anota um por dia enquanto está aberto.')));
+            K.el('p', null, 'A reta é a média desde nova. A curva aparece com os pontos diários.')));
         }
         const m = pj.method;
         let how;
-        if (isNum(b.healthPct) && b.healthPct <= 80) how = 'Ela já passou dos 80%, então não tem mais previsão pra fazer: daqui pra frente o que importa é se a carga ainda dura o que você precisa no dia.';
-        else if (m === 'historico') how = `Como calculo a previsão: uma reta pelos seus ${K.fmt.num(pj.daysOfData)} dias de pontos, até onde ela cruza os 80%.`;
+        if (isNum(b.healthPct) && b.healthPct <= 80) how = 'Já passou dos 80%: agora importa se a carga aguenta o seu dia.';
+        else if (m === 'historico') how = `Previsão por uma reta nos seus ${K.fmt.num(pj.daysOfData)} dias de pontos. É estimativa, não promessa.`;
         else if (m === 'ciclos' && isNum(b.healthPct)) {
-          how = `Como calculo a previsão: até hoje ela perdeu ${K.fmt.num(100 - b.healthPct, 1)} pontos em ${K.fmt.num(b.cycles)} ciclos, uns ${K.fmt.num(pj.wearPerCycle, 3)} por ciclo. Mantido esse ritmo, faltam ~${K.fmt.num(pj.cyclesTo80)} ciclos até 80%.`;
-          how += isNum(pj.dateTo80) ? ' A data sai de quantos ciclos você faz por mês.' : ' A data aparece depois de 2 semanas, quando eu souber quantos ciclos você faz por mês.';
-        } else if (!isNum(b.healthPct)) how = 'Sem a saúde da bateria agora, não dá pra calcular o ritmo.';
-        else how = 'Ainda não dá pra prever: a bateria quase não gastou.';
-        notes.appendChild(K.el('p', { class: 'bt-note' }, how + ' Calor e jeito de usar mudam o ritmo, então é estimativa, não promessa.'));
+          how = `Perdeu ${K.fmt.num(100 - b.healthPct, 1)} pontos em ${K.fmt.num(b.cycles)} ciclos. Nesse ritmo, faltam ~${K.fmt.num(pj.cyclesTo80)} ciclos até 80%. É estimativa, não promessa.`;
+          if (!isNum(pj.dateTo80)) how += ' A data aparece depois de 2 semanas.';
+        } else if (!isNum(b.healthPct)) how = 'Sem a saúde agora, não dá pra calcular o ritmo.';
+        else how = 'Quase não gastou: ainda não dá pra prever.';
+        notes.appendChild(K.el('p', { class: 'bt-note' }, how));
       },
     };
   }
@@ -904,9 +904,9 @@
   /* ---------- quem mais gasta ---------- */
   function appsPart(p) {
     const c = card('bt-appscard', 560);
-    c.appendChild(head('apps', 'Quem mais gasta bateria', 'Agora, pelo impacto energético. Atualiza a cada 20 segundos.'));
+    c.appendChild(head('apps', 'Quem mais gasta bateria', 'Impacto energético agora, a cada 20 segundos.'));
     const box = K.el('div', { class: 'bt-appschart' }, K.el('div', { class: 'loading' }, 'Olhando os apps…'));
-    const note = K.el('p', { class: 'bt-note' }, 'Impacto energético é a mesma medida do Monitor de Atividade: não é watt, serve pra comparar um app com outro. Na bateria, fechar o que está no topo e você não está usando é o que mais ajuda.');
+    const note = K.el('p', { class: 'bt-note' }, 'A medida do Monitor de Atividade: não é watt, serve pra comparar.');
     c.append(box, note);
     let ch = null;
     return {
@@ -921,7 +921,7 @@
         const opts = {
           items, color: 'var(--s2)', valueName: 'de impacto', labelName: 'App', labelWidth: 240, table: true,
           format: (v) => K.fmt.num(v, v < 10 ? 1 : 0),
-          empty: 'Nenhum app gastando energia de verdade agora. Tudo calmo.',
+          empty: 'Tudo calmo: nenhum app gastando agora.',
         };
         if (!ch) { box.textContent = ''; ch = keep(p, K.charts.bars(box, opts)); } else ch.update(opts);
       },
@@ -931,7 +931,7 @@
   /* ---------- avisos ---------- */
   function alertsPart(p, settings) {
     const c = card('bt-alertscard', 620);
-    c.appendChild(head('bell', 'Avisos', 'Eu te chamo na hora certa, com uma notificação.'));
+    c.appendChild(head('bell', 'Avisos', 'Uma notificação na hora certa.'));
     const ok = !!settings;
     const s = Object.assign({ aviso80: true, limiteAviso: 80, avisoQuente: true }, settings || {});
     const err = K.el('p', { class: 'bt-err-t', hidden: true });
@@ -1015,11 +1015,11 @@
         notifBtns.appendChild(K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
           onclick: async () => { K.sound.plop(); try { await K.api('notify.test'); } catch (e) { /* ignora */ } paintNotif(true); } }, 'Testar aviso'));
       } else if (st.estado === 'negado') {
-        notifTx.textContent = 'Estão desligadas pro Kamurafy, então os avisos não chegam.';
+        notifTx.textContent = 'Desligadas: os avisos não chegam.';
         notifBtns.appendChild(K.el('button', { class: 'btn small gold', type: 'button',
           onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'notificacoes' }).catch(() => {}); } }, 'Abrir Ajustes'));
       } else if (st.estado === 'nao-pedido') {
-        notifTx.textContent = 'O macOS ainda vai perguntar se pode mostrar meus avisos. Responda "Permitir".';
+        notifTx.textContent = 'O macOS vai pedir permissão. Responda "Permitir".';
       } else {
         notifTx.textContent = 'Indisponíveis nesta versão.';
       }
@@ -1038,7 +1038,7 @@
         sw2),
       notif,
       err,
-      K.el('p', { class: 'bt-note' }, ok ? 'Os avisos funcionam enquanto o Kamurafy estiver aberto (mesmo com a janela fechada).' : 'Não consegui ler suas configurações agora. Abra a tela de novo daqui a pouco.'));
+      K.el('p', { class: 'bt-note' }, ok ? 'Os avisos chegam com o Kamurafy aberto, mesmo de janela fechada.' : 'Não consegui ler suas configurações agora. Abra a tela de novo daqui a pouco.'));
     paintNotif();
     return { node: c };
   }
@@ -1048,43 +1048,43 @@
     const out = [];
     const t = b.temperatureC;
     if (b.status === 'trocar') {
-      out.push({ ic: 'btWrench', tone: 'crit', t: 'Hora de uma revisão', d: 'O macOS recomenda revisão da bateria. Procure a Apple ou uma assistência autorizada. Se notar o Mac deformado ou o trackpad levantando, pare de usar e leve logo.' });
+      out.push({ ic: 'btWrench', tone: 'crit', t: 'Hora de uma revisão', d: 'Procure uma assistência autorizada. Se o Mac estufar ou o trackpad levantar, pare de usar e leve logo.' });
     } else if (b.status === 'gasta') {
-      out.push({ ic: 'btWrench', tone: 'serious', t: 'Ela já guarda menos', d: 'Abaixo de 80% a bateria dura menos por carga, mas continua segura. Se incomodar, a troca numa assistência autorizada resolve.' });
+      out.push({ ic: 'btWrench', tone: 'serious', t: 'Ela já guarda menos', d: 'Dura menos por carga, mas continua segura. Se incomodar, a troca resolve.' });
     }
     if (isNum(t) && t >= 40) {
-      out.push({ ic: 'flame', tone: 'serious', t: `Tá quente agora (${K.fmt.temp(t)})`, d: 'Calor é o que mais gasta bateria. Tire o Mac de cima de cama ou almofada, deixe as saídas de ar livres e feche o que estiver pesado.' });
+      out.push({ ic: 'flame', tone: 'serious', t: `Tá quente agora (${K.fmt.temp(t)})`, d: 'Deixe as saídas de ar livres e feche o que estiver pesado.' });
     }
     if (b.optimizedChargingEngaged) {
-      out.push({ ic: 'btShield', tone: 'good', t: 'Carregamento otimizado em ação', d: 'O macOS segurou a carga em 80% e completa perto da hora que você costuma tirar da tomada. Pode deixar assim.' });
+      out.push({ ic: 'btShield', tone: 'good', t: 'Carregamento otimizado em ação', d: 'O macOS segurou em 80% e completa perto da hora de você sair. Pode deixar.' });
     }
     const vive = b.pluggedIn || (isNum(p.plugShare) && p.plugShare >= 0.5);
     if (vive) {
-      const share = isNum(p.plugShare) && p.plugShare >= 0.5 ? ` Nos últimos dias, ela passou ~${K.fmt.num(p.plugShare * 100, 0)}% do tempo na tomada.` : '';
-      out.push({ ic: 'plug', t: 'Vive na tomada? 20–80% é o ideal', d: 'A bateria sofre menos entre 20% e 80%. Ficar parada em 100% o dia todo, ainda mais com calor, é o que mais desgasta.' + share });
+      const share = isNum(p.plugShare) && p.plugShare >= 0.5 ? ` Nos últimos dias: ~${K.fmt.num(p.plugShare * 100, 0)}% do tempo na tomada.` : '';
+      out.push({ ic: 'plug', t: 'Vive na tomada? 20–80% é o ideal', d: 'Ficar parada em 100% o dia todo é o que mais desgasta.' + share });
     } else {
-      out.push({ ic: 'battery', t: 'Entre 20% e 80% ela sofre menos', d: 'Não precisa ficar contando: é só evitar zerar com frequência e evitar deixar dias em 100% na tomada.' });
+      out.push({ ic: 'battery', t: 'Entre 20% e 80% ela sofre menos', d: 'Evite zerar sempre e passar dias em 100%.' });
     }
     if (!b.optimizedChargingEngaged) {
-      out.push({ ic: 'btShield', t: 'Deixe o Carregamento otimizado ligado', d: 'O macOS aprende sua rotina e segura a carga em 80% quando você vai ficar muito tempo na tomada. Confira em Ajustes do Sistema › Bateria, no ⓘ de Saúde da Bateria.' });
+      out.push({ ic: 'btShield', t: 'Deixe o Carregamento otimizado ligado', d: 'Segura a carga em 80% quando você fica muito na tomada (Ajustes do Sistema › Bateria).' });
     }
     if (b.lowPowerMode) {
       out.push({ ic: 'leaf', t: 'Modo pouca energia ligado', d: b.pluggedIn
-        ? 'Ele faz a carga render mais segurando um pouco o processador e o brilho. Na tomada, pode desligar se quiser o Mac mais rápido.'
-        : 'Boa: ele faz a carga render mais segurando um pouco o processador e o brilho.' });
+        ? 'Segura o processador e o brilho. Na tomada, pode desligar.'
+        : 'Boa: segura o processador e o brilho pra carga render.' });
     } else if (!b.pluggedIn && isNum(b.percent) && b.percent <= 30) {
-      out.push({ ic: 'leaf', t: 'Carga acabando?', d: 'O Modo pouca energia (Ajustes do Sistema › Bateria) segura um pouco o processador e o brilho pra carga render mais.' });
+      out.push({ ic: 'leaf', t: 'Carga acabando?', d: 'O Modo pouca energia (Ajustes do Sistema › Bateria) faz a carga render mais.' });
     }
     if (!(isNum(t) && t >= 40)) {
-      out.push({ ic: 'btSun', t: 'Fuja do calor', d: 'Sol, carro fechado e cobertor são os maiores inimigos da bateria, principalmente carregando.' });
+      out.push({ ic: 'btSun', t: 'Fuja do calor', d: 'Sol, carro fechado e cobertor são os maiores inimigos da bateria.' });
     }
-    out.push({ ic: 'btTarget', t: 'Limite automático de carga', d: 'Parar sozinho em 80% vem numa próxima versão do Kamurafy. Por enquanto, o aviso de carga faz esse papel.', soon: true });
+    out.push({ ic: 'btTarget', t: 'Limite automático de carga', d: 'Por enquanto, o aviso de carga faz esse papel.', soon: true });
     return out.slice(0, 5);
   }
 
   function tipsPart(p) {
     const c = card('bt-tipscard', 680);
-    c.appendChild(head('leaf', 'Cuidados', 'Dicas pro seu caso, pelo que a bateria está mostrando agora.'));
+    c.appendChild(head('leaf', 'Cuidados', 'Pro seu caso, pelo que a bateria mostra agora.'));
     const list = K.el('div', { class: 'bt-tips' });
     c.appendChild(list);
     let lastKey = null;
@@ -1122,10 +1122,9 @@
     c.append(
       K.el('h2', null, laptop ? 'Não achei a bateria' : 'Este Mac vive na tomada'),
       K.el('p', null, laptop
-        ? `Não consegui ler a bateria deste ${K.fmt.model(model) || 'MacBook'}. Se ela foi removida ou está com defeito, vale levar numa assistência autorizada.`
-        : `Não achei bateria ${model ? 'neste ' + K.fmt.model(model) : 'aqui'}. É um Mac de mesa, como iMac, Mac mini ou Mac Studio, então não tem saúde de bateria pra cuidar.`),
-      K.el('p', { class: 'muted' }, 'O resto do Kamurafy funciona normal: no Painel você acompanha processador, memória e disco.'),
-      K.el('button', { class: 'btn gold', type: 'button', onclick: () => { K.sound.plop(); location.hash = '#/painel'; } }, 'Ir pro Painel', K.el('span', { html: K.icon('arrow') })));
+        ? `Não consegui ler a bateria deste ${K.fmt.model(model) || 'MacBook'}. Se continuar assim, vale uma assistência autorizada.`
+        : 'Mac de mesa não tem bateria pra cuidar. O resto do Kamurafy funciona normal.'),
+      K.el('button', { class: 'btn gold', type: 'button', onclick: () => { K.sound.plop(); location.hash = '#/painel'; } }, 'Ver ao vivo', K.el('span', { html: K.icon('arrow') })));
     p.el.appendChild(c);
   }
 
@@ -1133,7 +1132,7 @@
     /* o mesmo cartão de erro de todas as telas (K.errorCard) */
     const c = K.errorCard({
       title: 'Não consegui ler a bateria agora',
-      text: `Às vezes o macOS demora pra responder logo depois de acordar. O motivo: ${String((e && e.message) || 'o macOS não respondeu').trim().replace(/[.!\s]+$/, '')}. Nada foi mexido.`,
+      text: `O motivo: ${String((e && e.message) || 'o macOS não respondeu').trim().replace(/[.!\s]+$/, '')}. Nada foi mexido.`,
       retry: () => {
         const el = p.el;
         K.pages.bateria.destroy();

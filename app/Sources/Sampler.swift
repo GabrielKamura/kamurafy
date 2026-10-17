@@ -68,8 +68,8 @@ final class Sampler {
            anterior < s.limiteAviso, b.percent >= s.limiteAviso, !avisou80 {
             avisou80 = true
             Notifier.shared.send(id: "carga",
-                                 title: "Chegou em \(b.percent)%!",
-                                 body: "Pode tirar da tomada. Parar por volta de \(s.limiteAviso)% ajuda a bateria a durar mais.",
+                                 title: L("Chegou em {0}%!", b.percent),
+                                 body: L("Pode tirar da tomada. Parar por volta de {0}% ajuda a bateria a durar mais.", s.limiteAviso),
                                  info: ["rota": "bateria"])
         }
 
@@ -79,8 +79,8 @@ final class Sampler {
         if s.avisoQuente, quenteSeguidas >= 2, !avisouQuente, let t = b.temperatureC {
             avisouQuente = true
             Notifier.shared.send(id: "quente",
-                                 title: "Bateria quente: \(String(format: "%.0f", t)) °C",
-                                 body: "Tira o Mac de cima de almofada ou cobertor e fecha o que estiver pesado.",
+                                 title: L("Bateria quente: {0} °C", String(format: "%.0f", t)),
+                                 body: L("Tira o Mac de cima de almofada ou cobertor e fecha o que estiver pesado."),
                                  info: ["rota": "bateria"])
         }
     }
@@ -103,7 +103,7 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         let c = UNUserNotificationCenter.current()
         c.delegate = self
         // aviso da vigia: "Não avisar mais desse" sem precisar abrir o app
-        let ignorar = UNNotificationAction(identifier: "ignorar", title: "Não avisar mais desse", options: [])
+        let ignorar = UNNotificationAction(identifier: "ignorar", title: L("Não avisar mais desse"), options: [])
         c.setNotificationCategories([UNNotificationCategory(identifier: "vigia", actions: [ignorar], intentIdentifiers: [], options: [])])
         c.requestAuthorization(options: [.alert, .sound]) { _, err in
             if let err { NSLog("Kamurafy: permissão de notificação: \(err.localizedDescription)") }
@@ -174,8 +174,8 @@ enum NotifyModule {
         r.register("notify.test") { _ in
             let st = await Notifier.shared.status()
             if st.permitido {
-                Notifier.shared.send(id: "teste", title: "Oi! Sou eu, o Kamurafy 👋",
-                                     body: "É assim que eu te aviso quando a carga chegar no limite ou a bateria esquentar.")
+                Notifier.shared.send(id: "teste", title: L("Oi! Sou eu, o Kamurafy 👋"),
+                                     body: L("É assim que eu te aviso quando a carga chegar no limite ou a bateria esquentar."))
             }
             return st
         }

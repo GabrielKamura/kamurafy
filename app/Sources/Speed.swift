@@ -316,8 +316,8 @@ final class Vigia {
         if pressao == "critica" { apertoSeguidas += 1 } else if pressao == "normal" { apertoSeguidas = 0 }
         if apertoSeguidas >= 3, avisouAperto.map({ Date().timeIntervalSince($0) > 3600 }) ?? true {
             avisouAperto = Date()
-            Notifier.shared.send(id: "memoria", title: "A memória do Mac está no limite",
-                                 body: "É isso que deixa tudo lento. Fechar abas e apps parados é o que mais ajuda: eu mostro quem está ocupando mais.",
+            Notifier.shared.send(id: "memoria", title: L("A memória do Mac está no limite"),
+                                 body: L("É isso que deixa tudo lento. Fechar abas e apps parados é o que mais ajuda: eu mostro quem está ocupando mais."),
                                  info: ["rota": "otimizar?aba=lento"])
         }
     }
@@ -339,9 +339,11 @@ final class Vigia {
         if nome.isEmpty { nome = Energy.exeName(path) }
         nome = CleanScan.sanitize(nome)
         if nome.isEmpty || Heavy.protectedNames.contains(nome) || ignorar.contains(nome.lowercased()) { return true }
-        let quem = owner != pid ? "Um processo dele usa" : "Ele usa"
-        Notifier.shared.send(id: "vigia", title: "\(nome) está no talo há \(Self.minutos) min",
-                             body: "\(quem) um núcleo inteiro do processador sem parar. Se não era pra estar trabalhando, dá pra fechar pelo Kamurafy.",
+        let body = owner != pid
+            ? L("Um processo dele usa um núcleo inteiro do processador sem parar. Se não era pra estar trabalhando, dá pra fechar pelo Kamurafy.")
+            : L("Ele usa um núcleo inteiro do processador sem parar. Se não era pra estar trabalhando, dá pra fechar pelo Kamurafy.")
+        Notifier.shared.send(id: "vigia", title: L("{0} está no talo há {1} min", nome, Self.minutos),
+                             body: body,
                              categoria: "vigia", info: ["rota": "otimizar?aba=lento", "nome": nome])
         return true
     }

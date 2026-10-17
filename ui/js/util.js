@@ -41,7 +41,7 @@ K.fmt = {
   /** 7895 → "7.895"; 89.8 → "89,8" (casas: quantas decimais) */
   num(v, casas = 0) {
     if (v == null || Number.isNaN(v)) return '—';
-    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    return Number(v).toLocaleString(K.locale || 'pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
   },
   /** 89.8 → "89,8%"; carga: K.fmt.pct(100, 0) → "100%" */
   pct(v, casas = 1) {
@@ -112,20 +112,20 @@ K.fmt = {
   },
   /** Unix (s) → "24 set" */
   day(t) {
-    return new Date(t * 1000).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }).replace('.', '');
+    return new Date(t * 1000).toLocaleDateString(K.locale || 'pt-BR', { day: 'numeric', month: 'short' }).replace('.', '');
   },
   /** Unix (s) → "set de 2027" */
   monthYear(t) {
-    return new Date(t * 1000).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', '');
+    return new Date(t * 1000).toLocaleDateString(K.locale || 'pt-BR', { month: 'short', year: 'numeric' }).replace('.', '');
   },
   /** Unix (s) → "23:41" */
   time(t) {
-    return new Date(t * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return new Date(t * 1000).toLocaleTimeString(K.locale || 'pt-BR', { hour: '2-digit', minute: '2-digit' });
   },
   /** Unix (s) → "qua, 23:41" */
   dayTime(t) {
     const d = new Date(t * 1000);
-    const wd = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+    const wd = d.toLocaleDateString(K.locale || 'pt-BR', { weekday: 'short' }).replace('.', '');
     return `${wd}, ${K.fmt.time(t)}`;
   },
   /** watts sem sinal (o sentido vai em palavras, com K.fmt.flow): −14.2 → "14 W" */
@@ -528,7 +528,7 @@ K.keepFocus = function (root, paint, fallback) {
 /* ===== textos dos avisos (Bateria e Ajustes dizem igual) ===== */
 K.avisosTxt = {
   carga: (lim) => `Me avisa quando chegar em ${lim}%`,
-  cargaSub: 'Com o carregador ligado, aviso quando a carga passar do limite, uma vez por carga, pra você tirar da tomada se quiser. Parar antes do 100% ajuda a bateria a durar mais.',
+  cargaSub: 'Uma vez por carga, com o carregador ligado. Parar antes dos 100% ajuda a bateria a durar mais.',
   quente: 'Me avisa se a bateria esquentar',
-  quenteSub: 'Se ela passar de 45 °C em duas leituras seguidas, eu te chamo. Só aviso de novo depois que ela esfriar.',
+  quenteSub: 'Acima de 45 °C em duas leituras seguidas. Só aviso de novo depois que ela esfriar.',
 };

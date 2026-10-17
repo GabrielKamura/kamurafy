@@ -261,8 +261,8 @@
 .bt-flow-a i:nth-child(2) { animation-delay: .2s; }
 .bt-flow-a i:nth-child(3) { animation-delay: .4s; }
 @keyframes bt-flow { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
-.bt-flow[data-dir="in"] .bt-flow-n:last-child { background: #dbe9fa; }
-.bt-flow[data-dir="out"] .bt-flow-n:first-child { background: #fde3d7; }
+.bt-flow[data-dir="in"] .bt-flow-n:last-child { background: var(--s1-soft); }
+.bt-flow[data-dir="out"] .bt-flow-n:first-child { background: var(--s2-soft); }
 .bt-flow[data-dir="direct"] .bt-flow-n:first-child { background: var(--gold-soft); }
 .bt-flow[data-dir="idle"] .bt-flow-a i, .bt-flow[data-dir="none"] .bt-flow-a i { animation: none; }
 .snap .bt-flow-a i { opacity: .8; }
@@ -505,3 +505,15 @@
 /* status das notificações do macOS (cartão Avisos) */
 .bt-notif-status .setting-text span { display: block; }
 .bt-notif-btns { flex: none; gap: 8px; }
+
+/* ===== modo escuro (tokens em base.css). O palco dourado é ilha de dia; no estado "na bateria"
+   o fundo é o ouro suave escuro e as bolinhas viram creme ===== */
+@media (prefers-color-scheme: dark) {
+  .bt-stage { border-right-color: var(--cream); }
+  .bt-stage[data-state="battery"], .bt-stage[data-state="unknown"] {
+    background-image: radial-gradient(circle, rgba(243, 234, 214, .09) 1.3px, transparent 1.7px);
+  }
+  .bt-state-ic { background: var(--slab); border: 2px solid var(--cream); }
+  .bt-notif-app { background: var(--slab); box-shadow: inset 0 0 0 2px #4a443a; }
+  .bt-navbtn.on, .bt-pause[aria-pressed="true"], .bt-lim[aria-checked="true"], .bt-soon { color: var(--on-gold); }
+}

@@ -74,6 +74,7 @@ enum Commands {
         UninstallModule.register(r)
         MenuBarModule.register(r)
         SpeedModule.register(r)
+        LocaleModule.register(r)
     }
 }
 

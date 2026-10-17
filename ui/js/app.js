@@ -12,13 +12,13 @@
   /* soon: ainda não existe (selo "em breve"; some na versão pública) · hidden: fora do menu ·
      dev: só na build de desenvolvimento · foot: botão no rodapé da barra lateral, não no menu */
   const ROUTES = [
-    { id: 'inicio', label: 'Varredura', icon: 'scan' },
+    /* uma promessa por item: começar, deixar rápido, cuidar da bateria, abrir espaço, tirar app, acompanhar */
+    { id: 'inicio', label: 'Início', icon: 'scan' },
+    { id: 'otimizar', label: 'Velocidade', icon: 'rocket' },
     { id: 'bateria', label: 'Bateria', icon: 'battery', star: true },
-    { id: 'painel', label: 'Painel', icon: 'gauge' },
-    { section: 'Limpeza e cuidado' },
-    { id: 'faxina', label: 'Faxina', icon: 'broom' },
-    { id: 'otimizar', label: 'Otimizar', icon: 'rocket' },
+    { id: 'faxina', label: 'Espaço', icon: 'broom' },
     { id: 'desinstalar', label: 'Desinstalar', icon: 'box' },
+    { id: 'painel', label: 'Ao vivo', icon: 'gauge' },
     { id: 'ajustes', label: 'Ajustes', icon: 'gear', hidden: true, foot: true },
     { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true, dev: true },  // só pra testes
   ];

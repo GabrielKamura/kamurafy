@@ -12,6 +12,8 @@ struct AppSettings: Codable {
     var boasVindas: Bool = false // já viu a tela de boas-vindas
     var vigia: Bool = true       // avisar de app no talo e de memória no limite
     var vigiaIgnorar: [String] = [] // nomes que a vigia não avisa mais
+    var tema: String = "auto"    // auto · claro · escuro
+    var idioma: String = "auto"  // auto · pt-BR · en · es
 
     static let defaults = AppSettings(aviso80: true, limiteAviso: 80, avisoQuente: true, som: true,
                                       iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false)
@@ -36,6 +38,8 @@ struct AppSettings: Codable {
         boasVindas = try c.decodeIfPresent(Bool.self, forKey: .boasVindas) ?? false
         vigia = try c.decodeIfPresent(Bool.self, forKey: .vigia) ?? true
         vigiaIgnorar = try c.decodeIfPresent([String].self, forKey: .vigiaIgnorar) ?? []
+        tema = try c.decodeIfPresent(String.self, forKey: .tema) ?? "auto"
+        idioma = try c.decodeIfPresent(String.self, forKey: .idioma) ?? "auto"
     }
 }
 
@@ -67,6 +71,8 @@ enum Settings {
         if let v = args["vigiaIgnorar"] as? [String] {
             s.vigiaIgnorar = Array(v.map { CleanScan.sanitize(String($0.prefix(80))) }.filter { !$0.isEmpty }.prefix(50))
         }
+        if let v = args.string("tema"), ["auto", "claro", "escuro"].contains(v) { s.tema = v }
+        if let v = args.string("idioma"), v == "auto" || Lang.supported.contains(v) { s.idioma = v }
         current = s
         return s
     }
@@ -78,8 +84,12 @@ enum SettingsModule {
         r.register("settings.get") { _ in Settings.current }
         r.register("settings.set") { args in
             let before = Settings.current.limiteAviso
+            let temaAntes = Settings.current.tema
+            let idiomaAntes = Lang.current
             let s = Settings.apply(args)
             if s.limiteAviso != before { Sampler.shared.rearm() }
+            if s.tema != temaAntes { Theme.apply() }
+            if Lang.current != idiomaAntes, RunMode.current == .app { AppDelegate.shared?.reloadLanguage() }
             if RunMode.current == .app {
                 if s.iconeNaBarra { MenuBar.shared.install(); if let b = Sampler.shared.last { MenuBar.shared.update(b) } }
                 else { MenuBar.shared.remove() }

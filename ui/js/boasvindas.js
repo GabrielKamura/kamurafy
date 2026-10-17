@@ -56,7 +56,7 @@
     box.append(
       K.el('div', { class: 'kw-setting' },
         K.el('div', { class: 'kw-setting-t' }, K.el('b', null, K.avisosTxt.carga(lim)),
-          K.el('span', null, 'Com o carregador ligado, uma vez por carga. Dá pra mudar o limite depois.')),
+          K.el('span', null, 'Uma vez por carga, com o carregador ligado.')),
         toggle),
       notif, msg);
     (async () => {
@@ -64,17 +64,17 @@
       try { st = await K.api('notify.status'); } catch (e) { st = null; }
       if (!cur) return;
       notif.textContent = '';
-      if (!st) { notif.appendChild(line('none', 'info', 'Não consegui ver se posso mostrar avisos. Dá pra conferir depois, em Ajustes.')); return; }
+      if (!st) { notif.appendChild(line('none', 'info', 'Não consegui ver se posso mostrar avisos. Confira depois, em Ajustes.')); return; }
       if (st.permitido) {
         notif.append(line('good', 'check', st.estado === 'provisorio' ? 'Notificações liberadas, no modo discreto.' : 'Notificações liberadas: os avisos vão chegar.'),
           K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
             onclick: async () => { K.sound.plop(); try { await K.api('notify.test'); } catch (e) { /* sem teste */ } } }, 'Mandar um de teste'));
       } else if (st.estado === 'negado') {
-        notif.append(line('warn', 'alert', 'As notificações estão desligadas pro Kamurafy, então o aviso não chega.'),
+        notif.append(line('warn', 'alert', 'Notificações desligadas: o aviso não chega.'),
           K.el('button', { class: 'btn small gold', type: 'button',
             onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'notificacoes' }).catch(() => {}); } }, 'Abrir Ajustes'));
       } else if (st.estado === 'nao-pedido') {
-        notif.appendChild(line('none', 'bell', 'O macOS vai perguntar se eu posso mostrar avisos. Responda “Permitir”.'));
+        notif.appendChild(line('none', 'bell', 'O macOS vai pedir permissão. Responda “Permitir”.'));
       } else {
         notif.appendChild(line('none', 'info', 'Os avisos não estão disponíveis nesta versão.'));
       }
@@ -93,14 +93,14 @@
         const r = await K.api('menubar.loginItem', { ligar: on });
         paint(r);
         if (r && r.abrirNoLogin === 'precisa-aprovar') {
-          msg.appendChild(line('warn', 'info', 'O macOS guardou o pedido, mas falta você aprovar em Ajustes do Sistema › Geral › Itens de Início.'));
+          msg.appendChild(line('warn', 'info', 'Falta aprovar em Ajustes do Sistema › Geral › Itens de Início.'));
         }
       } catch (e) {
         b.setAttribute('aria-checked', String(!on));
         const m = String((e && e.message) || '');
         msg.appendChild(/só no app aberto/i.test(m)
-          ? line('none', 'info', 'Modo de teste: aqui eu só mostro. No Kamurafy aberto do jeito normal, isso funciona.')
-          : line('crit', 'alert', 'Não deu pra mudar agora. Dá pra fazer depois, em Ajustes.'));
+          ? line('none', 'info', 'Modo de teste: aqui eu só mostro.')
+          : line('crit', 'alert', 'Não deu pra mudar agora. Tente depois, em Ajustes.'));
       }
       b.disabled = false;
     });
@@ -109,7 +109,7 @@
       toggle.setAttribute('aria-checked', String(s === 'ligado' || s === 'precisa-aprovar'));
       toggle.disabled = !s || s === 'indisponivel';
       if (s === 'indisponivel') {
-        msg.replaceChildren(line('none', 'info', 'Esta cópia do Kamurafy não pode se registrar. Mova ela pra pasta Aplicativos e abra de novo.'));
+        msg.replaceChildren(line('none', 'info', 'Esta cópia não pode se registrar. Mova o Kamurafy pra pasta Aplicativos e abra de novo.'));
       }
     }
     box.append(
@@ -121,7 +121,7 @@
         K.el('span', { class: 'kw-bar-arrow' }, 'eu fico aqui')),
       K.el('div', { class: 'kw-setting' },
         K.el('div', { class: 'kw-setting-t' }, K.el('b', null, 'Abrir o Kamurafy junto com o Mac'),
-          K.el('span', null, 'Os avisos só funcionam comigo aberto. Assim eles continuam chegando depois de reiniciar.')),
+          K.el('span', null, 'Os avisos só chegam comigo aberto.')),
         toggle),
       msg);
     toggle.disabled = true;
@@ -133,15 +133,14 @@
     const msg = K.el('div', { class: 'kw-msg' });
     box.append(
       K.el('ul', { class: 'kw-list' },
-        K.el('li', { html: K.icon('check') }, K.el('span', null, 'Sem ela, tudo funciona. A Faxina e o Desinstalar pulam as pastas que o macOS protege e avisam “sem acesso”.')),
-        K.el('li', { html: K.icon('eye') }, K.el('span', null, 'Com ela, os dois enxergam essas pastas também. A regra não muda: eu só olho, e nada sai sem você marcar e confirmar.')),
-        K.el('li', { html: K.icon('lock') }, K.el('span', null, 'Dá pra ligar ou tirar a qualquer hora, nos Ajustes do Sistema.'))),
+        K.el('li', { html: K.icon('eye') }, K.el('span', null, 'Com ou sem ela, nada sai sem você confirmar.')),
+        K.el('li', { html: K.icon('lock') }, K.el('span', null, 'Dá pra tirar a qualquer hora, nos Ajustes do Sistema.'))),
       K.el('div', { class: 'kw-row' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('lock'),
           onclick: () => {
             K.sound.plop();
             K.api('open.settings', { painel: 'privacidade-disco' })
-              .then(() => { msg.replaceChildren(line('good', 'check', 'Abri os Ajustes do Sistema. Lá, ligue o Kamurafy na lista (ou clique em + e escolha ele na pasta Aplicativos).')); })
+              .then(() => { msg.replaceChildren(line('good', 'check', 'Abri os Ajustes. Ligue o Kamurafy na lista, ou clique em + e escolha ele.')); })
               .catch(() => { msg.replaceChildren(line('crit', 'alert', 'Não consegui abrir agora. Fica em Ajustes do Sistema › Privacidade e Segurança › Acesso Total ao Disco.')); });
           } }, 'Abrir Acesso Total ao Disco'),
         K.el('span', { class: 'kw-hint' }, 'ou depois, em Ajustes')),
@@ -150,13 +149,13 @@
 
   const STEPS = [
     { icon: 'bell', kicker: 'Oi! Eu sou o Kamurafy', title: 'Eu cuido da bateria do seu Mac',
-      text: 'Acompanho a saúde, os ciclos e a temperatura, e explico cada número. Com o carregador ligado, te aviso quando a carga chegar no limite: parar antes do 100% ajuda a bateria a durar mais.',
+      text: 'Parar a carga antes do 100% ajuda a bateria a durar mais. Eu te aviso na hora.',
       face: 'happy', paint: stepBattery },
     { icon: 'kwBar', kicker: 'Sempre à mão', title: 'Eu fico na barra de menus',
-      text: 'Lá em cima, do lado do relógio, tem o meu ícone de bateria. Um clique mostra a carga, quem está gastando e uns atalhos, sem abrir esta janela.',
+      text: 'Um clique no meu ícone, do lado do relógio, mostra a carga e quem está gastando.',
       face: 'joy', paint: stepMenubar },
     { icon: 'kwDisk', kicker: 'Sem pressa', title: 'Acesso Total ao Disco é opcional',
-      text: 'É uma permissão do macOS que deixa eu olhar pastas protegidas. Você não precisa dela pra usar o Kamurafy.',
+      text: 'Deixa eu olhar as pastas que o macOS protege. Sem ela, tudo funciona.',
       face: 'happy', paint: stepDisk },
   ];
 

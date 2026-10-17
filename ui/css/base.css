@@ -36,11 +36,20 @@
   --st-serious-soft: #fde4d9;
   --st-crit: #d03b3b;
   --st-crit-soft: #fadcdc;
+  --st-warn-ink: #b77800;    /* ícone de atenção sobre o fundo suave (o ouro puro some no claro) */
+  --st-serious-ink: #c2521f; /* ícone "sério" sobre o fundo suave */
 
   /* séries dos gráficos (validadas pra daltonismo sobre #fff) */
   --s1: #2a78d6;             /* azul: carga, saúde */
   --s2: #eb6834;             /* laranja: energia, watts */
   --s1-wash: #b5d0f1;        /* azul lavado (s1 a 35% sobre branco): coisa que o macOS devolve sozinho */
+  --s1-soft: #dbe9fa;        /* fundo suave azul (ícone de cartão, etiqueta "dados") */
+  --s2-soft: #fde3d7;        /* fundo suave laranja */
+
+  /* superfícies que mudam no modo escuro (no claro são estes valores de sempre) */
+  --on-gold: #000;           /* texto e ícone em cima do ouro: no escuro continua escuro */
+  --row-hover: #fbf8f0;      /* linha de lista com o mouse em cima */
+  --row-sel: #fffaea;        /* linha de lista marcada */
 
   /* traço cartunesco */
   --bw: 3px;                 /* borda padrão */
@@ -299,3 +308,125 @@ h3 { font-size: 19px; line-height: 1.15; }
 /* e sem transição: com o relógio parado ela ficaria presa no primeiro quadro (caixa desmarcada
    ainda dourada, item do menu lateral ainda aceso) */
 .snap *, .snap *::before, .snap *::after { transition: none !important; }
+
+/* =====================================================================
+   Modo escuro: "caderno à noite". Segue o macOS (ou o tema dos Ajustes: o Swift troca a
+   aparência e o WKWebView acompanha). Papel escuro quente, cartão um tom acima, tinta creme
+   no texto, nos contornos e na sombra dura (como o item aceso do menu lateral, que já era
+   ouro com contorno e sombra brancos). O ouro continua o destaque, com texto escuro em cima.
+   Nada aqui vale no claro.
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --cream: #f3ead6;          /* a tinta da noite (guardada à parte: as ilhas de dia trocam --ink) */
+    --ink: var(--cream);
+    --ink-2: #d6cbb5;          /* 9,7:1 no cartão */
+    --ink-3: #a89e8a;          /* 5,9:1 no cartão, 5,2:1 no painel */
+    --paper: #1c1915;          /* fundo da janela (o Swift pinta o mesmo atrás) */
+    --card: #27231d;
+    --panel: #322d25;
+    --line: #423c32;
+    --slab: #12100d;           /* o que era bloco de tinta preta no claro (menu, barra de ação) */
+    --on-slab: var(--cream);
+    --on-gold: #1a1610;
+
+    --gold-soft: #3d3418;
+    --red: #ef4444;
+
+    --st-good: #45c254;
+    --st-good-soft: #1f3b26;
+    --st-warn: #fab219;
+    --st-warn-soft: #413416;
+    --st-serious: #f08a5c;
+    --st-serious-soft: #4a2c1d;
+    --st-crit: #ec625a;
+    --st-crit-soft: #4a2522;
+    --st-warn-ink: #f6b73c;
+    --st-serious-ink: #f3956a;
+
+    --s1: #5a9af0;
+    --s2: #f07c48;
+    --s1-wash: #3d5f86;
+    --s1-soft: #1f3048;
+    --s2-soft: #3d2519;
+
+    --row-hover: #2d2922;
+    --row-sel: #3a3119;
+
+    /* mascote: continua a bateria clara do logo (lê bem no cartão escuro), com sombra e cabo creme */
+    --km-ink: #1a1610;
+    --km-body: #f7efdd;
+    --km-empty: #b9b0a0;
+    --km-shade: var(--cream);
+    --km-line: var(--cream);
+  }
+
+  /* ilhas de dia: o ouro grande (resumo de varredura, cabeça da gaveta, painel do mascote) guarda
+     o visual claro por dentro (texto, figurinhas, botões e mascote como no claro). A borda e a
+     sombra de fora de cada uma ficam creme, no CSS da página. */
+  .card.gold, .un-d-head, .kw-art, .aj-about-stage,
+  .bt-stage:not([data-state="battery"]):not([data-state="unknown"]) {
+    --ink: #000;
+    --ink-2: #374151;
+    --ink-3: #6b7280;
+    --paper: #fffdf8;
+    --card: #fff;
+    --panel: #f5f3ee;
+    --line: #e7e4dc;
+    --slab: #000;
+    --on-slab: #fff;
+    --on-gold: #000;
+    --gold-soft: #fff1b8;
+    --red: #dc2626;
+    --st-good: #0ca30c;
+    --st-good-soft: #dcf5dc;
+    --st-warn-soft: #fff0cc;
+    --st-serious: #ec835a;
+    --st-serious-soft: #fde4d9;
+    --st-crit: #d03b3b;
+    --st-crit-soft: #fadcdc;
+    --st-warn-ink: #b77800;
+    --st-serious-ink: #c2521f;
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s1-wash: #b5d0f1;
+    --s1-soft: #dbe9fa;
+    --s2-soft: #fde3d7;
+    --row-hover: #fbf8f0;
+    --row-sel: #fffaea;
+    --shadow: 6px 6px 0 #000;
+    --shadow-sm: 4px 4px 0 #000;
+    --shadow-xs: 2px 2px 0 #000;
+    --km-ink: #000;
+    --km-body: #fff;
+    --km-empty: #f5f3ee;
+    --km-shade: #000;
+    --km-line: #000;
+    --kc-band: #eeeae2;
+    --kc-wash: .12;
+    --kc-txt-lum: .4;
+    --c3: #1baf7a;
+    --c4: #4a3aa7;
+    --c5: #e87ba4;
+    --c6: #eda100;
+    --c7: #008300;
+    --c8: #e34948;
+    color: var(--ink);
+  }
+  .card.gold { border-color: var(--cream); box-shadow: 6px 6px 0 var(--cream); }
+
+  /* rabiscos do fundo: tinta clara bem fraquinha */
+  .main::before { filter: invert(1); opacity: .035; }
+  .view::-webkit-scrollbar-thumb { background: #6b6252; }
+
+  /* menu lateral: bloco mais escuro que o papel, com um fio de tinta separando */
+  .sidebar { background: var(--slab); color: var(--ink); box-shadow: inset -2px 0 0 #2e2a23; }
+  .nav-label, .nav-label .soon { color: #a59b88; }
+  .nav-label .soon { border-color: #4a443a; }
+  .nav-item { color: var(--ink); }
+  .nav-item:hover { background: #24201a; }
+  .nav-item.active { color: var(--on-gold); border-color: var(--cream); box-shadow: 4px 4px 0 var(--cream); }
+  .nav-item.is-soon { color: #a59b88; }
+  .nav-item.is-soon.active, .nav-item.active .star { color: var(--on-gold); }
+}

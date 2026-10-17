@@ -5,18 +5,18 @@
 (function () {
   const WHAT = {
     faxina: {
-      title: 'Faxina com você no controle',
-      text: 'Vou achar caches velhos, downloads esquecidos e restos de apps. Mostro tudo antes, você marca, e só vai pra Lixeira o que você escolher.',
-      bits: ['Mostra antes de mexer', 'Só vai pra Lixeira', 'Nada de sistema'],
+      title: 'Espaço com você no controle',
+      text: 'Você marca, e só vai pra Lixeira o que escolher.',
+      bits: ['Mostra antes', 'Vai pra Lixeira', 'Nada do sistema'],
     },
     otimizar: {
-      title: 'Otimizar sem mágica',
-      text: 'Vou mostrar o que abre sozinho quando o Mac liga e o que fica rodando escondido. Você decide o que desligar, e nada muda sem você confirmar.',
-      bits: ['Itens de início', 'Apps em segundo plano', 'Você confirma tudo'],
+      title: 'Velocidade sem mágica',
+      text: 'Nada muda sem você confirmar.',
+      bits: ['Itens de início', 'Segundo plano', 'Você confirma'],
     },
     desinstalar: {
       title: 'Desinstalar de verdade',
-      text: 'Vou tirar o app junto com as sobras que ele espalha pelo Mac. Tudo vai pra Lixeira, então dá pra voltar atrás se mudar de ideia.',
+      text: 'O app e as sobras vão pra Lixeira. Dá pra desfazer.',
       bits: ['App + sobras', 'Vai pra Lixeira', 'Dá pra desfazer'],
     },
   };
@@ -40,7 +40,6 @@
           K.el('h2', null, w.title),
           K.el('p', null, w.text),
           w.bits.length ? K.el('ul', { class: 'soon-bits' }, w.bits.map((b) => K.el('li', { html: K.icon('check') }, b))) : null,
-          K.el('p', { class: 'soft soon-meanwhile' }, 'Enquanto isso, a bateria já está toda aqui.'),
           K.el('button', { class: 'btn gold', type: 'button', onclick: () => { K.sound.plop(); location.hash = '#/bateria'; } },
             'Ver a bateria', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })))));
       mascot = K.mascot(mBox, { size: 170, state: { pct: 70, tone: 'good', face: 'happy', label: 'Mascote do Kamurafy, animado com o que vem aí' } });

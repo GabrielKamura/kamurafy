@@ -348,7 +348,7 @@
 .fx-note p b { font-weight: 400; }
 .fx-note .btn { flex: none; }
 .fx-note.warn { background: var(--st-warn-soft); }
-.fx-note.warn > svg { color: #b77800; }
+.fx-note.warn > svg { color: var(--st-warn-ink); }
 
 /* ===================== cartões por categoria ===================== */
 .fx-cats, .fx-groups { display: flex; flex-direction: column; gap: 18px; }
@@ -404,8 +404,8 @@
   transition: background .15s;
 }
 .fx-item:last-child { border-bottom: 0; }
-.fx-item:hover { background: #fbf8f0; }
-.fx-item.is-sel { background: #fffaea; }
+.fx-item:hover { background: var(--row-hover); }
+.fx-item.is-sel { background: var(--row-sel); }
 .fx-item.is-off { cursor: default; }
 .fx-item.is-off .fx-item-name, .fx-item.is-off .fx-item-size { color: var(--ink-3); }
 .fx-item.is-off .fx-item-ic { opacity: .55; }
@@ -470,7 +470,7 @@
 .fx-tag[hidden] { display: none; }
 .fx-tag svg { width: 13px; height: 13px; flex: none; }
 .fx-tag.warn { background: var(--st-warn-soft); }
-.fx-tag.warn svg { color: #b77800; }
+.fx-tag.warn svg { color: var(--st-warn-ink); }
 .fx-tag.good { background: var(--st-good-soft); }
 .fx-tag.good svg { color: var(--st-good); }
 .fx-tag.none { background: var(--panel); color: var(--ink-2); }
@@ -652,7 +652,7 @@
 .fx-fails li { display: grid; grid-template-columns: auto minmax(0, auto) minmax(0, 1fr); align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1.5px solid rgba(0, 0, 0, .08); font-size: 15px; }
 .fx-fails li:last-child { border-bottom: 0; }
 .fx-fail-ic { display: inline-grid; align-self: center; }
-.fx-fail-ic svg { width: 17px; height: 17px; color: #b77800; }
+.fx-fail-ic svg { width: 17px; height: 17px; color: var(--st-warn-ink); }
 .fx-fail-name { overflow-wrap: anywhere; }
 .fx-fail-why { color: var(--ink-2); font-size: 14px; }
 .fx-clean-err b { font-weight: 400; }
@@ -816,3 +816,26 @@
 .snap .page-faxina [class*="fx-"]::after,
 .snap .kmodal [class*="fx-"] { animation: none !important; transition: none !important; }
 .snap .page-faxina .kcheck .kc-tick { transition: none !important; }
+
+/* ===== modo escuro (tokens em base.css; o resumo dourado .fx-sum é ilha de dia) ===== */
+@media (prefers-color-scheme: dark) {
+  .fx-go { color: var(--on-gold); }
+  .fx-go-sub { color: #4d4128; }
+  .fx-step[data-state="on"] .fx-bub, .fx-tag.keep, .fx-intro-badge, .fx-lix-can, .fx-chip.on { color: var(--on-gold); }
+  .fx-when { color: var(--ink); }
+  .fx-chip.on .fx-chip-n { background: #fffaf0; color: var(--on-gold); }
+  .fx-fails li { border-bottom-color: rgba(243, 234, 214, .1); }
+  .fx-lix-danger { background: #2f1d1b; }
+
+  /* barra de ação: bloco escuro com contorno creme e a sombra de ouro de sempre */
+  .fx-barwrap { background: linear-gradient(rgba(28, 25, 21, 0), var(--paper) 16px); }
+  .fx-bar { background: var(--slab); color: var(--on-slab); border-color: var(--cream); }
+  .fx-bar-ic { border-color: var(--cream); color: var(--on-gold); }
+  .fx-bar-sub { color: #d6cbb5; }
+  .fx-bar-clear { color: var(--cream); border-color: var(--cream); }
+  .fx-bar-clear:hover { background: #24201a; box-shadow: 3px 3px 0 var(--cream); }
+  .fx-bar-go { color: var(--on-gold); border-color: var(--cream); box-shadow: 4px 4px 0 var(--cream); }
+  .fx-bar-go:hover { box-shadow: 6px 6px 0 var(--cream); }
+  .fx-bar-go:active { box-shadow: 1px 1px 0 var(--cream); }
+  .fx-bar-go:disabled { background: #2e2a23; color: #a59b88; border-color: #6b6252; box-shadow: none; }
+}

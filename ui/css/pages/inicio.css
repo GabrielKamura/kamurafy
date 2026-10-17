@@ -333,9 +333,9 @@
 .kz-bub.t-good { background: var(--st-good-soft) !important; }
 .kz-bub.t-good svg { color: var(--st-good); }
 .kz-bub.t-warn { background: var(--st-warn-soft) !important; }
-.kz-bub.t-warn svg { color: #b77800; }
+.kz-bub.t-warn svg { color: var(--st-warn-ink); }
 .kz-bub.t-serious { background: var(--st-serious-soft) !important; }
-.kz-bub.t-serious svg { color: #c2521f; }
+.kz-bub.t-serious svg { color: var(--st-serious-ink); }
 .kz-bub.t-crit { background: var(--st-crit-soft) !important; }
 .kz-bub.t-crit svg { color: var(--st-crit); }
 .kz-bub.t-none { background: var(--panel) !important; }
@@ -440,7 +440,7 @@
 .kz-fly-step[data-state="done"] .kz-fly-bub { background: var(--st-good-soft); }
 .kz-fly-step[data-state="done"] .kz-fly-bub svg { color: var(--st-good); }
 .kz-fly-step[data-state="err"] .kz-fly-bub { background: var(--st-warn-soft); }
-.kz-fly-step[data-state="err"] .kz-fly-bub svg { color: #b77800; }
+.kz-fly-step[data-state="err"] .kz-fly-bub svg { color: var(--st-warn-ink); }
 .kz-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* a confirmação do "Deixar voando" (o modal mora no body, fora da página) */
@@ -684,9 +684,9 @@
 .kz-sf-bub svg { width: 22px; height: 22px; }
 .kz-sf-bub img { width: 30px; height: 30px; display: block; }
 .kz-sf-bub.t-warn { background: var(--st-warn-soft); }
-.kz-sf-bub.t-warn svg { color: #b77800; }
+.kz-sf-bub.t-warn svg { color: var(--st-warn-ink); }
 .kz-sf-bub.t-serious { background: var(--st-serious-soft); }
-.kz-sf-bub.t-serious svg { color: #c2521f; }
+.kz-sf-bub.t-serious svg { color: var(--st-serious-ink); }
 .kz-sf-bub.t-crit { background: var(--st-crit-soft); }
 .kz-sf-bub.t-crit svg { color: var(--st-crit); }
 .kz-sf-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
@@ -733,3 +733,12 @@
 .snap .page-inicio [class*="kz-"],
 .snap .page-inicio [class*="kz-"]::before,
 .snap .page-inicio [class*="kz-"]::after { animation: none !important; transition: none !important; }
+
+/* ===== modo escuro (tokens em base.css; o resumo dourado .kz-sum é ilha de dia) ===== */
+@media (prefers-color-scheme: dark) {
+  .kz-go { color: var(--on-gold); }
+  .kz-go-sub { color: #4d4128; }
+  .kz-step[data-state="on"] .kz-bub, .kz-bub.t-tip, .page-inicio .status.tip { color: var(--on-gold); }
+  .kz-bub.t-tip svg, .page-inicio .status.tip svg { color: var(--on-gold); }
+  .kz-when, .kz-redo { color: var(--ink); }
+}

@@ -90,7 +90,7 @@
     K.sound.plop();
     K.api('open.settings', { painel }).catch((e) => {
       K.sound.oops();
-      showErr(errNode, 'Não consegui abrir os Ajustes do Sistema agora (' + msgOf(e) + '). Dá pra abrir pelo menu da Apple › Ajustes do Sistema.');
+      showErr(errNode, `Não consegui abrir os Ajustes do Sistema (${msgOf(e)}). Abra pelo menu Apple › Ajustes do Sistema.`);
     });
   }
 
@@ -126,7 +126,7 @@
       Object.assign(S, before);
       paintAll();
       K.sound.oops();
-      showErr(errNode, `Não consegui salvar agora (${msgOf(e)}). Voltei como estava: tente de novo daqui a pouco.`);
+      showErr(errNode, `Não consegui salvar agora (${msgOf(e)}). Voltei como estava.`);
     }
   }
 
@@ -134,7 +134,7 @@
 
   /* ---------- sons ---------- */
   function soundCard(delay) {
-    const c = card('sons', 'soundOn', 'Sons', 'Uns barulhinhos de desenho animado, bem baixinhos.', null, delay);
+    const c = card('sons', 'soundOn', 'Sons', 'Barulhinhos de desenho animado, bem baixinhos.', null, delay);
     const err = errLine();
     V.swSom = makeSwitch('Sons da interface', async (on) => {
       if (!loaded) return;
@@ -168,8 +168,8 @@
     V.hear.disabled = !on || !loaded;
     V.hear.title = on ? 'Toca o som de quando a varredura termina' : 'Ligue o som pra ouvir';
     V.somTx.textContent = on
-      ? 'Um plop nos cliques e um tadá quando a varredura termina. Nada toca ao passar o mouse.'
-      : 'Desligados. O Kamurafy fica em silêncio (os avisos do macOS têm o som deles, à parte).';
+      ? 'Um plop nos cliques e um tadá no fim da varredura.'
+      : 'Desligados. Os avisos do macOS têm som próprio.';
   }
 
   /* ---------- barra de menus ---------- */
@@ -210,7 +210,7 @@
     c.append(
       V.mbPrev,
       setting(K.el('b', null, 'Mostrar a bateria na barra de menus'),
-        K.el('span', null, 'Do lado do relógio. Um clique nele abre um resumo rápido da bateria.'), V.swIcone),
+        K.el('span', null, 'Um clique abre um resumo da bateria.'), V.swIcone),
       (V.rowPct = setting(K.el('b', null, 'Mostrar a porcentagem'), V.pctTx, V.swPct)),
       (V.rowSo = setting(K.el('b', null, 'Ficar só na barra de menus'), V.soTx, V.swSo)),
       err);
@@ -224,10 +224,10 @@
     V.swSo.paint(!!S.soNaBarra, !loaded || !icon);
     V.rowPct.classList.toggle('is-off', !icon);
     V.rowSo.classList.toggle('is-off', !icon);
-    V.pctTx.textContent = icon ? 'O número da carga ao lado do desenho. Desligado, fica só o desenho.' : 'Liga junto com o ícone na barra.';
+    V.pctTx.textContent = icon ? 'O número da carga ao lado do desenho.' : 'Liga junto com o ícone na barra.';
     V.soTx.textContent = icon
-      ? 'Ao fechar a janela, o Kamurafy sai do Dock e continua lá no alto, medindo a bateria e mandando os avisos. Pra abrir de novo, é só clicar no ícone.'
-      : 'Precisa do ícone na barra ligado: sem ele, não teria por onde abrir de novo.';
+      ? 'Ao fechar a janela, sai do Dock e continua lá no alto.'
+      : 'Precisa do ícone na barra ligado.';
 
     /* prévia */
     const b = V.bat;
@@ -255,7 +255,7 @@
     V.loginBox = K.el('div', { class: 'aj-login-box' });
     c.append(
       setting(K.el('b', null, 'Abrir quando eu entrar no Mac', V.loginPill),
-        K.el('span', null, 'Ele começa quietinho (na barra de menus, se estiver ligada) e acompanha a bateria o dia todo. É leve: só acorda quando a carga muda e uma vez por minuto.'),
+        K.el('span', null, 'Começa quietinho e acompanha a bateria o dia todo. É leve.'),
         V.swLogin),
       V.loginBox,
       V.loginErr);
@@ -284,7 +284,7 @@
       const m = msgOf(e);
       const why = m.replace(/^O macOS não deixou:\s*/i, '').replace(/\.$/, '');
       showErr(V.loginErr, /^Só no app aberto/.test(m)
-        ? 'Isso só dá pra mudar com o Kamurafy aberto de verdade (não no modo de teste).'
+        ? 'Modo de teste: isso só muda no Kamurafy aberto de verdade.'
         : `O macOS não deixou mudar agora (${why}). Dá pra fazer na mão em Ajustes do Sistema › Geral › Itens de Início.`);
     }
   }
@@ -310,11 +310,11 @@
       V.loginPill.appendChild(K.statusPill('good', 'Ligado', 'check'));
     } else if (st === 'precisa-aprovar') {
       V.loginPill.appendChild(K.statusPill('warn', 'Falta aprovar', 'eye'));
-      box('warn', 'info', 'O macOS guardou o pedido, mas ele só vale depois que você ligar o Kamurafy em Ajustes do Sistema › Geral › Itens de Início. Volte aqui depois: eu confiro sozinho.',
+      box('warn', 'info', 'Falta ligar o Kamurafy em Ajustes do Sistema › Geral › Itens de Início. Eu confiro sozinho quando você voltar.',
         paneBtn('Abrir Itens de Início'));
     } else if (st === 'indisponivel') {
       V.loginPill.appendChild(K.statusPill('none', 'Indisponível', 'info'));
-      box('none', 'info', 'O macOS não deixou esta cópia do Kamurafy se registrar. Costuma acontecer quando ele não está na pasta Aplicativos: mova pra lá, abra de novo e tente outra vez.', null);
+      box('none', 'info', 'O macOS não deixou esta cópia se registrar. Mova o Kamurafy pra pasta Aplicativos e abra de novo.', null);
     } else if (!st) {
       V.loginPill.appendChild(K.statusPill('none', 'Sem leitura', 'info'));
       box('none', 'info', 'Não consegui ver agora se ele abre junto com o Mac.',
@@ -324,7 +324,7 @@
 
   /* ---------- avisos da bateria ---------- */
   function alertsCard(delay) {
-    const c = card('avisos', 'bell', 'Avisos', 'Eu te chamo na hora certa, com uma notificação do macOS.', null, delay);
+    const c = card('avisos', 'bell', 'Avisos', 'Uma notificação na hora certa.', null, delay);
     const err = errLine();
     V.t80 = K.el('b');
     V.sw80 = makeSwitch('Aviso de carga', (on) => save({ aviso80: on }, err));
@@ -383,8 +383,8 @@
 
     const desk = V.bat && V.bat.present === false && !K.isLaptop(V.info);
     V.alertNote.textContent = desk
-      ? 'Este Mac não tem bateria: os avisos de carga e de calor ficam guardados sem ter o que avisar.'
-      : 'Os avisos funcionam enquanto o Kamurafy estiver aberto, mesmo com a janela fechada.';
+      ? 'Este Mac não tem bateria: os avisos de carga e calor não têm o que avisar.'
+      : 'Os avisos chegam com o Kamurafy aberto, mesmo de janela fechada.';
   }
 
   function paintNotif(justTested) {
@@ -402,21 +402,21 @@
     }
     if (st.estado === 'permitido') {
       V.notifPill.appendChild(K.statusPill('good', 'Liberadas', 'check'));
-      V.notifTx.textContent = justTested ? 'Mandei um aviso de teste agora. Chegou aí no canto da tela?' : 'Os avisos chegam como banner, mesmo com o Kamurafy na frente.';
+      V.notifTx.textContent = justTested ? 'Mandei um teste. Chegou aí?' : 'Os avisos chegam como banner.';
       V.notifBtns.appendChild(testBtn());
     } else if (st.estado === 'provisorio') {
       V.notifPill.appendChild(K.statusPill('warn', 'Em silêncio', 'eye'));
       V.notifTx.textContent = justTested
         ? 'Mandei um teste: ele foi direto pra Central de Notificações, sem banner.'
-        : 'Chegam só na Central de Notificações, sem aparecer na tela. Pra ver na hora, escolha "Banners" nos Ajustes.';
+        : 'Chegam só na Central de Notificações. Pra ver na hora, escolha "Banners" nos Ajustes.';
       V.notifBtns.append(testBtn(), paneBtn('Abrir Ajustes', true));
     } else if (st.estado === 'negado') {
       V.notifPill.appendChild(K.statusPill('serious', 'Desligadas', 'alert'));
-      V.notifTx.textContent = 'Estão desligadas pro Kamurafy, então nenhum aviso chega. Dá pra ligar em Ajustes do Sistema › Notificações › Kamurafy.';
+      V.notifTx.textContent = 'Desligadas: nenhum aviso chega. Ligue em Ajustes do Sistema › Notificações › Kamurafy.';
       V.notifBtns.appendChild(paneBtn('Abrir Ajustes', true));
     } else if (st.estado === 'nao-pedido') {
       V.notifPill.appendChild(K.statusPill('none', 'Ainda não pedi', 'info'));
-      V.notifTx.textContent = 'O macOS pergunta na primeira vez que o Kamurafy abre se pode mostrar meus avisos. Quando aparecer, responda "Permitir".';
+      V.notifTx.textContent = 'O macOS vai pedir permissão. Responda "Permitir".';
     } else {
       V.notifPill.appendChild(K.statusPill('none', 'Indisponíveis', 'info'));
       V.notifTx.textContent = 'Esta cópia do Kamurafy não consegue mandar notificações.';
@@ -445,18 +445,18 @@
     const left = K.el('div', { class: 'aj-priv-main' },
       K.el('p', { class: 'aj-priv-lead' }, 'Nada sai do seu Mac.'),
       K.el('ul', { class: 'aj-facts' },
-        fact('ajNoCloud', 'Não manda nada pra internet.', ' Os únicos links (como o da Apple sobre troca de bateria) abrem no seu navegador, e só quando você clica.'),
-        fact('ajNoUser', 'Sem conta e sem login.', ' Não tem cadastro nem assinatura.'),
-        fact('ajNoEye', 'Sem anúncio e sem rastreamento.', ' Ninguém fica sabendo o que você faz aqui, nem eu.')),
+        fact('ajNoCloud', 'Não manda nada pra internet.', ' Links só abrem no navegador quando você clica.'),
+        fact('ajNoUser', 'Sem conta, login nem assinatura.', ''),
+        fact('ajNoEye', 'Sem anúncio e sem rastreamento.', ' Ninguém sabe o que você faz aqui, nem eu.')),
       K.el('div', { class: 'aj-where' },
         K.el('span', { class: 'aj-where-l' }, 'Onde ficam os dados'),
         K.el('div', { class: 'aj-path' },
           K.el('span', { class: 'aj-path-ic', html: K.icon('ajFolder') }),
           K.el('code', { class: 'aj-path-t selectable' }, DATA_DIR)),
         K.el('ul', { class: 'aj-where-list' },
-          K.el('li', null, 'o histórico da carga e da saúde da bateria (é o que desenha os gráficos);'),
-          K.el('li', null, 'a lista do que a Faxina e o Desinstalar mandaram pra Lixeira (é o que deixa desfazer).')),
-        K.el('p', { class: 'aj-note' }, 'Estes ajustes ficam nas preferências do próprio macOS. Se apagar a pasta, o histórico some de vez e o Kamurafy começa a anotar do zero.')));
+          K.el('li', null, 'o histórico da bateria, pros gráficos;'),
+          K.el('li', null, 'o que o Kamurafy mandou pra Lixeira, pra dar pra desfazer.')),
+        K.el('p', { class: 'aj-note' }, 'Os ajustes ficam nas preferências do macOS. Apagar a pasta zera o histórico.')));
 
     const right = K.el('div', { class: 'aj-fda' },
       K.el('div', { class: 'aj-fda-head' },
@@ -466,9 +466,9 @@
           K.el('div', { class: 'aj-fda-tags' },
             K.el('span', { class: 'sticker aj-fda-tag' }, 'opcional'),
             V.fdaPill = K.el('span', { class: 'aj-fda-pill', 'aria-live': 'polite' })))),
-      K.el('p', null, 'Sem ele, o macOS pergunta pasta por pasta (Downloads, Mesa, Documentos) e esconde algumas pastas protegidas. A Faxina e o Desinstalar pulam o que não conseguem ler e avisam "sem acesso".'),
-      K.el('p', null, 'Com ele, os dois enxergam essas pastas também. Continua valendo a regra: eu só olho, e nada sai sem você marcar e confirmar.'),
-      K.el('p', { class: 'aj-fda-how' }, 'Lá, ligue o Kamurafy na lista (ou clique em + e escolha ele na pasta Aplicativos). Dá pra tirar a qualquer hora, no mesmo lugar.'),
+      K.el('p', null, 'Sem ele, Espaço e Desinstalar pulam as pastas protegidas e avisam "sem acesso".'),
+      K.el('p', null, 'Com ou sem ele, nada sai sem você confirmar.'),
+      K.el('p', { class: 'aj-fda-how' }, 'Lá, ligue o Kamurafy na lista. Dá pra tirar a qualquer hora.'),
       K.el('button', { class: 'btn gold aj-fda-btn', type: 'button', html: K.icon('lock'), onclick: () => openPane('privacidade-disco', err) },
         'Abrir Acesso Total ao Disco'),
       err);
@@ -499,7 +499,7 @@
         K.el('div', { class: 'row wrap aj-about-tags' },
           K.el('span', { class: 'sticker aj-ver num' }, verTxt),
           v && v.publico === false ? K.el('span', { class: 'aj-devtag' }, 'versão de desenvolvimento') : null),
-        K.el('p', { class: 'aj-about-lead' }, 'Cuida do seu Mac e, principalmente, da sua bateria. Grátis, de código aberto e sem assinatura.'),
+        K.el('p', { class: 'aj-about-lead' }, 'Cuida do seu Mac e da sua bateria. Grátis e de código aberto.'),
         weightLine(V.weight),
         K.el('p', { class: 'aj-about-by', html: K.icon('heart') }, K.el('span', null, 'Feito por Gabriel Kamura.'))),
       K.el('div', { class: 'aj-about-side' },
@@ -508,7 +508,7 @@
           credit('Kamurafy', 'Gabriel Kamura', 'GPL-3.0', LINKS.gpl),
           credit('Fonte Fredoka', 'The Fredoka Project Authors', 'OFL 1.1', LINKS.fredoka),
           credit('Rough.js', 'Preet Shihn', 'MIT', LINKS.rough)),
-        K.el('p', { class: 'aj-note' }, 'GPL-3.0: dá pra usar, estudar, mudar e distribuir, desde que o que você distribuir também tenha o código aberto. Mac e macOS são marcas da Apple; o Kamurafy não tem ligação com ela.'))));
+        K.el('p', { class: 'aj-note' }, 'GPL-3.0: use, estude, mude e distribua, mantendo o código aberto. Mac e macOS são marcas da Apple; o Kamurafy não tem ligação com ela.'))));
     const b = V.bat;
     const pct = b && b.present !== false && typeof b.percent === 'number' ? b.percent : 78;
     try { mascots.push(K.mascot(mBox, { size: 130, state: { pct, tone: 'good', face: 'joy', label: 'Mascote do Kamurafy, feliz' } })); } catch (e) { /* sem mascote */ }
@@ -568,7 +568,7 @@
     const on = !!t.legivel;
     V.fdaPill.appendChild(K.statusPill(on ? 'good' : 'none', on ? 'Ligado' : 'Desligado', on ? 'check' : 'lock'));
     V.fdaPill.title = on ? 'Ligado: consegui ler a Lixeira, que o macOS só mostra com esse acesso.'
-      : 'Desligado: o macOS não deixou eu ler a Lixeira, que só aparece com esse acesso. Tudo bem, é opcional.';
+      : 'Desligado. Tudo bem, é opcional.';
   }
 
   function listen(target, ev, fn) {
@@ -609,7 +609,7 @@
     host.appendChild(K.el('header', { class: 'page-head aj-head', 'data-drag': true },
       K.el('div', null,
         K.el('h1', null, 'Ajustes'),
-        K.el('p', null, 'Do seu jeito. Tudo salva na hora, sem botão de salvar.')),
+        K.el('p', null, 'Tudo salva na hora.')),
       K.el('div', { class: 'aj-head-side', 'aria-live': 'polite' }, V.saved)));
 
     if (!loaded) {

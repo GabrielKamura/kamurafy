@@ -18,7 +18,9 @@
 
   /* Ordem categórica validada pra daltonismo (a ordem é o que garante a separação).
      1–2 são as séries da casa; use nessa ordem, nunca em ciclo. */
-  C.palette = ['var(--s1)', 'var(--s2)', '#1baf7a', '#4a3aa7', '#e87ba4', '#eda100', '#008300', '#e34948'];
+  C.palette = ['var(--s1)', 'var(--s2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)', 'var(--c7)', 'var(--c8)'];
+  /* (as 6 últimas moram em charts.css: no claro são #1baf7a #4a3aa7 #e87ba4 #eda100 #008300 #e34948;
+     no modo escuro, a mesma ordem um pouco mais clara pra ler no cartão escuro) */
 
   /* ================= utilidades ================= */
 
@@ -63,13 +65,22 @@
   };
   const SOFT_VAR = { good: '--st-good-soft', warn: '--st-warn-soft', serious: '--st-serious-soft', crit: '--st-crit-soft', gold: '--gold-soft' };
 
+  /* cor lida do próprio gráfico enquanto ele desenha (no modo escuro, o ouro grande guarda o
+     visual claro por dentro e a tinta lá é preta); fora do desenho, lê da raiz */
+  let colorCtx = null;
+  /* gráficos vivos: tema trocado com o app aberto redesenha (o rough.js guarda a cor já resolvida) */
+  const live = new Set();
+  try {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { for (const h of Array.from(live)) h.rerender(); });
+  } catch (e) { /* WebKit antigo: só pega o tema novo ao trocar de tela */ }
+
   /** 'var(--s1)', '--s1', 'good', '#abc' → cor de verdade (o rough.js precisa do valor). */
   function col(c, fallback) {
     let v = c || fallback || '--ink';
     if (TONE_VAR[v]) v = TONE_VAR[v];
     const m = /^var\(\s*(--[\w-]+)\s*(?:,[^)]*)?\)$/.exec(v);
     const name = m ? m[1] : (v.indexOf('--') === 0 ? v : null);
-    if (name) return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000';
+    if (name) return getComputedStyle(colorCtx || document.documentElement).getPropertyValue(name).trim() || '#000';
     return v;
   }
   C.color = col;
@@ -259,10 +270,16 @@
       empty(msg, mini) {
         el.appendChild(K.el('div', { class: 'empty kc-empty' + (mini ? ' kc-mini' : '') }, msg));
       },
-      rerender() { if (!h.dead && h.render) { h.render(); if (el.childNodes.length) h.first = false; } },
+      rerender() {
+        if (h.dead || !h.render) return;
+        colorCtx = el.isConnected ? el : null;
+        try { h.render(); } finally { colorCtx = null; }
+        if (el.childNodes.length) h.first = false;
+      },
       destroy() {
         if (h.dead) return;
         h.dead = true;
+        live.delete(h);
         ro.disconnect();
         if (h.onDestroy) h.onDestroy();
         h.untip();
@@ -282,6 +299,7 @@
       if (w > 0 && w !== h.width) { h.width = w; h.rerender(); }
     });
     ro.observe(el);
+    live.add(h);
     h.width = Math.floor(el.clientWidth);
     if (document.fonts && document.fonts.status !== 'loaded') {
       document.fonts.ready.then(() => { fontFam = null; h.rerender(); });
@@ -1215,7 +1233,8 @@
         const seg = K.el('div', { class: 'ks-seg', tabindex: 0, style: { left: r1(left) + 'px', width: Math.max(2, r1(gw)) + 'px', background: s.c } });
         if (opts.inside !== false && textW(s.name, 13) + 16 < gw && H >= 24) {
           const lbl = K.el('span', { class: 'ks-in' }, s.name);
-          lbl.style.color = lum(s.c) > 0.4 ? col('--ink') : '#fff';
+          /* tinta escura em segmento claro; o limite vem do tema (no escuro as cores são mais claras) */
+          lbl.style.color = lum(s.c) > (parseFloat(col('--kc-txt-lum')) || 0.4) ? col('--on-gold') : '#fff';
           seg.appendChild(lbl);
         }
         bar.appendChild(seg);
