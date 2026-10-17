@@ -157,7 +157,12 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
             content.userInfo = info
             let req = UNNotificationRequest(identifier: "kamurafy.\(id).\(Int(Date().timeIntervalSince1970))",
                                             content: content, trigger: nil)
-            c.add(req) { err in if let err { NSLog("Kamurafy: aviso \(id): \(err.localizedDescription)") } }
+            c.add(req) { err in
+                if let err { NSLog("Kamurafy: aviso \(id): \(err.localizedDescription)"); return }
+                #if KAMURAFY_DEV
+                NSLog("Kamurafy: aviso \(id) enviado: \(title)")
+                #endif
+            }
         }
     }
 }

@@ -250,7 +250,18 @@ enum VigiaLeitura {
 @MainActor
 final class Vigia {
     static let shared = Vigia()
-    static let minutos = 10
+
+    /// Leituras seguidas no talo antes de avisar (uma por minuto). Na build de teste,
+    /// KAMURAFY_VIGIA_MINUTOS e KAMURAFY_VIGIA_SEG encurtam a espera.
+    static var minutos: Int { devEnv("KAMURAFY_VIGIA_MINUTOS") ?? 10 }
+    private static var intervalo: TimeInterval { TimeInterval(devEnv("KAMURAFY_VIGIA_SEG") ?? 60) }
+
+    private static func devEnv(_ k: String) -> Int? {
+        #if KAMURAFY_DEV
+        if let v = ProcessInfo.processInfo.environment[k].flatMap(Int.init), v > 0 { return v }
+        #endif
+        return nil
+    }
 
     private struct Track { var start: UInt64; var minutos: Int; var avisou: Bool }
     private var timer: Timer?
@@ -261,10 +272,10 @@ final class Vigia {
 
     func start() {
         guard timer == nil else { return }
-        let t = Timer(timeInterval: 60, repeats: true) { _ in
+        let t = Timer(timeInterval: Self.intervalo, repeats: true) { _ in
             Task { @MainActor in Vigia.shared.tick() }
         }
-        t.tolerance = 15
+        t.tolerance = Self.intervalo / 4
         RunLoop.main.add(t, forMode: .common)
         timer = t
     }
