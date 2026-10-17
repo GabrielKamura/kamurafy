@@ -136,15 +136,15 @@ func desenharGrande(_ c: CGContext, px: Int) {
     c.setLineCap(.round)
     c.setLineJoin(.round)
 
-    // quadrado de 824 recuado pela metade da sombra: o conjunto (quadrado + sombra) fica
-    // centrado na tela
-    let caixa = CGRect(x: 100 - e.sombra / 2, y: 100 - e.sombra / 2, width: 824, height: 824)
-    let quadrado = cantosContinuos(caixa, 185.4)
-
-    c.saveGState()
-    c.translateBy(x: e.sombra, y: e.sombra)
-    preencher(c, quadrado, TINTA)
-    c.restoreGState()
+    // macOS 26 (Tahoe) põe numa caixa cinza o ícone que foge do molde: o desenho inteiro fica
+    // dentro do quadrado de 824 com cantos contínuos. A tinta preta enche o molde e a cara dourada
+    // fica dentro dele, encostada no alto à esquerda: a borda grossa embaixo e à direita é a
+    // sombra dura do cartum, sem sair do formato.
+    let molde = cantosContinuos(CGRect(x: 100, y: 100, width: 824, height: 824), 185.4)
+    let lado = 824 - 2 * e.contorno - e.sombra
+    let quadrado = cantosContinuos(CGRect(x: 100 + e.contorno, y: 100 + e.contorno, width: lado, height: lado),
+                                   185.4 - e.contorno)
+    preencher(c, molde, TINTA)
     preencher(c, quadrado, OURO)
 
     if e.cheio {
@@ -197,8 +197,11 @@ func desenharGrande(_ c: CGContext, px: Int) {
         c.strokePath()
     }
 
-    // contorno grosso do quadrado por cima de tudo
-    contornar(c, quadrado, e.contorno)
+    // por cima de tudo, a borda de tinta de novo (o que passou da cara dourada fica coberto)
+    c.saveGState()
+    c.addPath(molde); c.addPath(quadrado); c.clip(using: .evenOdd)
+    preencher(c, molde, TINTA)
+    c.restoreGState()
 }
 
 func desenharBateria(_ c: CGContext, _ e: Estilo) {
