@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-VERSAO="${VERSAO:-0.1.0}"
+VERSAO="${VERSAO:-0.2.0}"
 BUILD_NUM="${BUILD_NUM:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
 BUILD_DIR="${BUILD_DIR:-build}"
 ARCHS="${ARCHS:-x86_64 arm64}"

@@ -5,8 +5,12 @@
      resultado  → resumo ("Tudo certo por aqui!" / "Achei N pontos de atenção") e cartões.
    K.scan() começa a varredura (usado nos testes com tools/foto.sh); K.scanReset() volta pro botão.
    Regras de status honestas: só vira "atenção" o que de fato pede alguma ação.
-   A Varredura só LÊ: o passo "Sujeira" usa cleanup.scan (caches, programação e registros; nunca
-   Downloads, que faria o macOS pedir permissão) e manda a pessoa pra Faxina, que é quem limpa. */
+   A varredura só LÊ: o passo "Sujeira" usa cleanup.scan (caches, programação e registros; nunca
+   Downloads, que faria o macOS pedir permissão) e o passo "Velocidade" usa speed.diagnose.
+   O único lugar que mexe em algo é o botão "Deixar voando" do resumo: mostra antes (K.confirm com
+   caixinhas), e só faz o que a pessoa deixou marcado: caches que a Faxina já traria marcados vão
+   pra Lixeira (cleanup.clean), apps no talo recebem o pedido de fechar (optimize.quit, como o
+   Cmd+Q) e o aviso dos 80% é ligado (settings.set). */
 'use strict';
 
 (function () {
@@ -14,6 +18,7 @@
     laptop: '<rect x="4.5" y="4.5" width="15" height="10.5" rx="1.8"/><path d="M2.5 18h19l-.9 1.3a1.6 1.6 0 0 1-1.3.7H4.7a1.6 1.6 0 0 1-1.3-.7Z"/>',
     desktop: '<rect x="3" y="4" width="18" height="12" rx="2.2"/><path d="M9.5 20.5h5M12 16v4.5"/>',
     party: '<path d="M4 20.5 8.2 8.8l7 7Z"/><path d="M13.5 7.5c.6-1.6 1.9-2.3 3.6-2.1M16.5 11.5c1.4-.9 2.9-.9 4.2.2M11 4.5v-1M20 8.5h1M18.8 3.8l.7-.7"/>',
+    kzUndo: '<path d="M9 14.5 4.5 10 9 5.5"/><path d="M4.5 10h10a5 5 0 0 1 0 10H11"/>',
   });
 
   const STEP_MIN = 750;          // cada passo fica pelo menos isso na tela (dá tempo de ver)
@@ -25,17 +30,23 @@
   const DIRT_CAT_MS = 9000;      // cada categoria que passa disso fica de fora (as outras seguem)
   const STARTUP_MIN = 3;         // itens de início: até 2 é o normal; a partir daqui vira atalho pro Otimizar
   const STARTUP_MS = 8000;       // a leitura dos itens de início roda por fora: demorou, fica sem o atalho
+  const FLY_MIN = 50e6;          // "Deixar voando" só leva os caches quando somam isso ou mais (base 10)
+  const FLY_STEP_MIN = 600;      // cada passo do "Deixar voando" fica pelo menos isso na tela
+  const FLY_CHECK_MS = 1500;     // espera antes de conferir se os apps fecharam mesmo
 
   const STEPS = [
     { id: 'bateria', name: 'Bateria', icon: 'battery', desc: 'saúde, ciclos e carga', doing: 'Olhando a bateria…', route: 'bateria', run: stepBattery },
     { id: 'energia', name: 'Energia', icon: 'bolt', desc: 'quem mais gasta agora', doing: 'Vendo quem gasta energia…', route: 'bateria', run: stepEnergy },
     { id: 'memoria', name: 'Memória', icon: 'memory', desc: 'folgada ou apertada', doing: 'Medindo a memória…', route: 'painel', run: stepMemory },
     { id: 'cpu', name: 'Processador', icon: 'cpu', desc: 'uso e temperatura', doing: 'Sentindo o processador…', route: 'painel', run: stepCpu },
+    { id: 'velocidade', name: 'Velocidade', icon: 'gauge', desc: 'o que deixa lento agora', doing: 'Vendo o que pesa…', route: 'otimizar?aba=lento', run: stepSpeed },
     { id: 'disco', name: 'Disco', icon: 'disk', desc: 'quanto espaço sobra', doing: 'Medindo o disco…', route: 'painel', run: stepDisk },
     { id: 'sujeira', name: 'Sujeira', icon: 'broom', desc: 'caches e registros sobrando', doing: 'Procurando sujeira…', route: 'faxina', run: stepDirt,
       max: DIRT_CAT_MS * 3 + 2000 },
   ];
   const DIRT_STEP = STEPS.find((s) => s.id === 'sujeira');
+  const SPEED_STEP = STEPS.find((s) => s.id === 'velocidade');
+  const COUNT_PT = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
 
   let host = null;
   let mode = 'idle';             // idle | scanning | result
@@ -54,6 +65,19 @@
   const isAttention = (r) => r && !r.error && !r.none && RANK[r.tone] > 0;
   const nowS = () => Date.now() / 1000;
   const go = (route) => { K.sound.plop(); location.hash = '#/' + route; };
+  const byIdOf = (results) => { const o = {}; for (const r of results || []) o[r.id] = r; return o; };
+  /* nome que vem de fora (app, processo): caractere que muda a direção do texto vira �, e no meio
+     de uma frase o nome vai isolado (FSI…PDI), como na Faxina. Sempre por textContent. */
+  const safeName = (s) => String(s == null ? '' : s).replace(/[؜‎‏‪-‮⁦-⁩]/g, '�').trim();
+  const inl = (s) => '⁨' + safeName(s) + '⁩';
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  /** motivo que o Swift mandou → pedaço de frase (sem UUID, sem ponto final, minúscula) */
+  function whyTxt(m) {
+    let s = String(m || '').replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim().replace(/[.!]+$/, '');
+    if (/não está mais na lista/i.test(s)) s = 'a lista mudou: escaneie de novo';
+    if (!s) return 'motivo desconhecido';
+    return s.charAt(0).toLowerCase() + s.slice(1);
+  }
 
   /** memória em base 2, como o Monitor de Atividade ("16 GB", não "17,2 GB"): a mesma função do
       Painel, do Otimizar e do balão */
@@ -74,6 +98,7 @@
   /* ================= sujeira: olhada rápida pra Varredura e pro Painel =================
      K.dirt.check({fresh, maxAgeMs, onCat}) → {at, sel, bytes, cats, errs, incompleto}
        sel   = bytes que a Faxina já traz marcados (o seguro); bytes = tudo que achou
+       ids / idsBytes = os IDs desses itens marcados (pro "Deixar voando") e quanto somam
        cats  = [{id, titulo, bytes, sel, incompleto, top: {nome, bytes} | null}] (só as que responderam)
        errs  = [{id, nome, msg}] (categorias que não deu pra ver)
      Só lê (cleanup.scan), uma categoria por vez. Sem nenhuma categoria lida, rejeita.
@@ -86,7 +111,7 @@
 
     async function run(onCat) {
       const my = gen;
-      const out = { at: 0, sel: 0, bytes: 0, cats: [], errs: [], incompleto: false };
+      const out = { at: 0, sel: 0, bytes: 0, cats: [], errs: [], incompleto: false, ids: [], idsBytes: 0, paths: {} };
       for (const id of CATS) {
         if (onCat) { try { onCat(id, NAMES[id]); } catch (e) { /* só aviso de progresso */ } }
         try {
@@ -99,6 +124,8 @@
           let top = null;
           for (const it of list || []) {
             if (pick(it) && num(it.bytes) && (!top || it.bytes > top.bytes)) top = it;
+            /* só IDs que o Swift devolveu, e só do que a Faxina traria marcado */
+            if (pick(it) && typeof it.id === 'string' && it.id) { out.ids.push(it.id); out.idsBytes += num(it.bytes) || 0; out.paths[it.id] = String(it.caminho || ''); }
           }
           out.cats.push({
             id, titulo: c.titulo || NAMES[id], bytes: c.bytes, sel, incompleto: !!c.incompleto,
@@ -174,6 +201,9 @@
     const d = await K.dirt.check({ fresh: true, onCat: (id, nome) => ctx.progress && ctx.progress(`Olhando ${nome}…`) });
     ctx.dirtGen = K.dirt.gen;
     return anDirt(d, ctx.disk);
+  }
+  async function stepSpeed() {
+    return anSpeed(await K.api('speed.diagnose'));
   }
 
   /* ---------- itens de início (Otimizar): leitura à parte, nunca segura a varredura ---------- */
@@ -383,6 +413,70 @@
     };
   }
 
+  /* ---------- velocidade (speed.diagnose): o veredito manda no tom ---------- */
+  const SPEED = {
+    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: 'Só coisa leve rodando agora. O Mac está livre pra correr.' },
+    deboa: { tone: 'good', label: 'De boa', icon: 'check', say: 'Uma coisinha ou outra pesando, mas nada que trave.' },
+    pesado: { tone: 'warn', label: 'Tá pesado', icon: 'eye', say: 'Tem coisa pesando agora. Dá pra aliviar sem reiniciar o Mac.' },
+    travando: { tone: 'serious', label: 'Tá travando', icon: 'alert', say: 'Muita coisa pesando ao mesmo tempo. Comece pelo primeiro da lista: é o que mais ajuda.' },
+  };
+  const FUNDO = {
+    spotlight: { icon: 'scan', text: 'Spotlight indexando' },
+    timemachine: { icon: 'clock', text: 'Time Machine copiando' },
+    fotos: { icon: 'screen', text: 'Fotos analisando' },
+    icloud: { icon: 'cloud', text: 'iCloud sincronizando' },
+    atualizacao: { icon: 'cycle', text: 'macOS atualizando' },
+  };
+  /** ícone de app que veio do Swift: só data:image (nada de endereço de fora) */
+  const appIcon = (s) => (typeof s === 'string' && /^data:image\/(png|jpeg|gif|tiff|webp|svg\+xml);base64,/i.test(s) ? s : null);
+
+  /** um achado em poucas palavras: {icon, img?, text, sub, tone}. Nome vem de fora: textContent. */
+  function speedLine(f, rep) {
+    const tone = ['warn', 'serious', 'crit'].includes(f.tom) ? f.tom : 'warn';
+    const nm = safeName(f.nome) || 'Um app';
+    const out = (o) => Object.assign({ tone, sub: '' }, o);
+    switch (f.tipo) {
+      case 'processo':
+      case 'navegador':
+        if (f.detalhe === 'memoria') {
+          return out({ icon: 'memory', img: appIcon(f.icon), text: `${nm} enchendo a memória`, sub: num(f.memBytes) ? `${gib(f.memBytes)} de memória` : 'ocupando bastante memória' });
+        }
+        return out({ icon: 'cpu', img: appIcon(f.icon), text: `${nm} no talo`, sub: num(f.cpu) != null ? `${K.fmt.pct(f.cpu, 0)} de CPU no último minuto` : 'puxando o processador' });
+      case 'memoria':
+        if (f.detalhe === 'critica') return out({ icon: 'memory', text: 'Memória no limite', sub: 'o Mac usa o disco no lugar dela' });
+        if (f.detalhe === 'swap') return out({ icon: 'memory', text: 'Memória usando o disco', sub: num(f.valor) ? `${gib(f.valor)} guardados no disco` : 'o Mac guarda parte no disco' });
+        return out({ icon: 'memory', text: 'Memória apertada', sub: 'o Mac já começou a comprimir' });
+      case 'fundo': {
+        const x = FUNDO[f.detalhe] || { icon: 'cycle', text: 'macOS trabalhando' };
+        return out({ icon: x.icon, text: x.text, sub: 'passa sozinho' });
+      }
+      case 'calor': {
+        const lim = num(rep && rep.limiteCPU);
+        const sub = lim != null && lim < 100 ? `processador segurado em ${K.fmt.pct(lim, 0)}`
+          : f.detalhe === 'critico' ? 'o Mac está muito quente' : f.detalhe === 'quente' ? 'o Mac está quente' : 'o macOS segura pra esfriar';
+        return out({ icon: 'thermo', text: 'Calor freando', sub });
+      }
+      case 'economia': return out({ icon: 'leaf', text: 'Pouca Energia ligado', sub: 'deixa o Mac mais lento de propósito' });
+      case 'disco': return out({ icon: 'disk', text: 'Disco quase cheio', sub: num(f.valor) ? `${K.fmt.bytes(f.valor)} livres` : 'pouco espaço sobrando' });
+      case 'reiniciar': return out({ icon: 'cycle', text: num(f.valor) ? `Ligado há ${K.fmt.num(f.valor, 0)} dias` : 'Muito tempo sem reiniciar', sub: 'reiniciar alivia' });
+      case 'inicio': return out({ icon: 'rocket', text: `${num(f.processos) || 'Vários'} itens abrem com o Mac`, sub: 'dá pra desligar no Otimizar' });
+      default: return out({ icon: 'gauge', text: 'Algo pesando', sub: '' });
+    }
+  }
+
+  function anSpeed(rep) {
+    const v = rep && SPEED[rep.veredito];
+    if (!v) throw new Error('o Mac não disse o que pesa');
+    const finds = (Array.isArray(rep.achados) ? rep.achados : []).filter((f) => f && typeof f === 'object');
+    const lines = finds.slice(0, 2).map((f) => speedLine(f, rep));
+    return {
+      id: 'velocidade', rep, tone: v.tone, pill: { label: v.label, icon: v.icon }, lines,
+      say: finds.length ? v.say : 'Nada pesando agora. O Mac está livre pra correr.',
+      snippet: v.label + (lines.length ? ' · ' + lines[0].text : ''),
+      note: 'Média do último minuto: pico de um segundo não conta.',
+    };
+  }
+
   const DIRT_COLOR = { caches: K.charts.palette[0], dev: K.charts.palette[1], logs: K.charts.palette[2] };
   const DIRT_SHORT = { caches: 'Caches de apps', dev: 'Caches de programação', logs: 'Registros' };
   /** "3,2 GB" com espaço que não quebra (a unidade nunca fica sozinha na linha) */
@@ -391,7 +485,8 @@
   /** Sujeira nunca vira "atenção": até 1 GB é tranquilo; acima é sugestão (tom "tip", dourado).
       Cache volta com o tempo e não é o que deixa o Mac lento, então o texto não promete milagre. */
   function anDirt(d, disk) {
-    const r = { id: 'sujeira', sel: d.sel, found: d.bytes, cats: d.cats, errs: d.errs, partial: d.errs.length > 0 || d.incompleto };
+    const r = { id: 'sujeira', sel: d.sel, found: d.bytes, cats: d.cats, errs: d.errs, partial: d.errs.length > 0 || d.incompleto,
+      ids: (d.ids || []).slice(), idsBytes: num(d.idsBytes) || 0, paths: d.paths || {} };
     const big = d.cats.slice().sort((a, b) => b.sel - a.sel)[0];
     let top = null;
     for (const c of d.cats) if (c.top && c.top.nome && (!top || c.top.bytes > top.bytes)) top = c.top;
@@ -521,7 +616,7 @@
 
     ui.hello = K.el('span', { class: 'sticker kz-hello' }, greeting());
     ui.h1 = K.el('h1', null, K.el('span', null, 'Bora dar uma geral'), ' ', K.el('span', null, 'no seu Mac?'));
-    ui.p = K.el('p', null, 'Confiro seis coisas em uns segundos. Só olho, não apago nada.');
+    ui.p = K.el('p', null, `Confiro ${COUNT_PT[STEPS.length] || STEPS.length} coisas em uns segundos. Só olho, não apago nada.`);
     host.appendChild(K.el('header', { class: 'page-head kz-head', 'data-drag': true },
       K.el('div', { class: 'kz-head-text' }, ui.hello, ui.h1, ui.p)));
 
@@ -740,25 +835,27 @@
     host.dataset.mode = 'result';
     ui = {};
     const results = last.results;
-    const byId = {};
-    for (const r of results) byId[r.id] = r;
+    const byId = byIdOf(results);
     const sm = summaryOf(results);
 
-    const when = fresh ? `Feita agora, em ${K.fmt.num(last.took, 0)} s` : `Feita às ${K.fmt.time(last.at)}`;
+    /* o resumo é pintado por paintSum (resultado normal, "deixando voando…" ou a comemoração) */
+    ui.sumWhenTxt = fresh ? `Feita agora, em ${K.fmt.num(last.took, 0)} s` : `Feita às ${K.fmt.time(last.at)}`;
     const art = K.el('div', { class: 'kz-sum-art' });
-    const again = K.el('button', { class: 'btn ink kz-again', type: 'button', html: K.icon('cycle'), onclick: () => runScan() },
-      sm.kind === 'fail' || sm.kind === 'partial' ? 'Tentar de novo' : 'Escanear de novo');
-    const sum = K.el('section', { class: `card gold kz-sum pop-in${sm.kind === 'fail' ? ' is-fail' : ''}`, 'data-drag': true },
-      ...(sm.kind === 'ok' || sm.kind === 'att' ? sparkles(4) : []),
+    ui.sumWhen = K.el('span', { class: 'sticker kz-when' }, ui.sumWhenTxt);
+    ui.sumTitle = K.el('h1', { tabindex: '-1' }, sm.title);
+    ui.sumSub = K.el('p', { 'aria-live': 'polite' }, sm.sub);
+    ui.sumAct = K.el('div', { class: 'kz-sum-act' });
+    ui.sum = K.el('section', { class: 'card gold kz-sum pop-in', 'data-drag': true },
+      ...sparkles(4),
       art,
-      K.el('div', { class: 'kz-sum-text' },
-        K.el('span', { class: 'sticker kz-when' }, when),
-        (ui.sumTitle = K.el('h1', { tabindex: '-1' }, sm.title)),
-        (ui.sumSub = K.el('p', null, sm.sub)),
-        K.el('div', { class: 'kz-sum-act' }, again)));
-    host.appendChild(sum);
+      K.el('div', { class: 'kz-sum-text' }, ui.sumWhen, ui.sumTitle, ui.sumSub, ui.sumAct));
+    host.appendChild(ui.sum);
     const bat = byId.bateria;
-    mascots.push(K.mascot(art, { size: 132, state: batteryState(bat && bat.b, { face: sm.face, full: false }) }));
+    const mState = batteryState(bat && bat.b, { face: sm.face, full: false });
+    ui.sumCharging = !!mState.charging;
+    ui.sumMascot = K.mascot(art, { size: 132, state: mState });
+    mascots.push(ui.sumMascot);
+    paintSum();
 
     /* "o que dá pra fazer" fica num lugar fixo (a sujeira pode ser relida depois da Faxina) */
     ui.actsSlot = K.el('div', { class: 'kz-acts-slot' });
@@ -774,6 +871,8 @@
       const step = STEPS.find((x) => x.id === id);
       cards.push({ r: byId[id] || errResult(step), make: (r, st) => plainCard(step, r, st) });
     }
+    /* velocidade e sujeira ocupam a largura toda (a grade de 3 não fica com buraco) */
+    cards.push({ r: byId.velocidade || errResult(SPEED_STEP), make: (r, st) => (ui.speedCard = speedCard(r, st)) });
     cards.push({ r: byId.sujeira || errResult(DIRT_STEP), make: (r, st) => (ui.dirtCard = dirtCard(r, st)) });
     const order = cards.map((c, i) => ({ c, i, a: isAttention(c.r) ? RANK[c.r.tone] : 0 }))
       .sort((x, y) => y.a - x.a || x.i - y.i);
@@ -782,7 +881,7 @@
     const delay = () => ({ animationDelay: 140 + n++ * 90 + 'ms' });
     for (const o of order) {
       const node = o.c.make(o.c.r, delay());
-      if (o.a > 0) { node.classList.add('is-att'); node.appendChild(K.el('span', { class: 'sticker kz-look', 'aria-hidden': 'true' }, 'olhe aqui')); }
+      if (o.a > 0) markAtt(node);
       grid.appendChild(node);
     }
     host.appendChild(grid);
@@ -790,6 +889,320 @@
     const strip = macStrip();
     if (strip) host.appendChild(strip);
     if (fresh) setTimeout(() => { if (host && mode === 'result') host.closest('.view').scrollTop = 0; }, 0);
+  }
+
+  function markAtt(node) {
+    node.classList.add('is-att');
+    node.appendChild(K.el('span', { class: 'sticker kz-look', 'aria-hidden': 'true' }, 'olhe aqui'));
+  }
+
+  /* ---------- o resumo: resultado · "deixando voando…" · comemoração ---------- */
+  function paintSum() {
+    if (!ui.sum || !last) return;
+    const F = last.fly;
+    const working = !!F && F.phase === 'working';
+    const flew = !!F && F.phase === 'done';
+    const sm = summaryOf(last.results);
+    const hadFocus = ui.sum.contains(document.activeElement);
+    ui.sum.classList.toggle('is-working', working);
+    ui.sum.classList.toggle('is-flew', flew);
+    ui.sum.classList.toggle('is-fail', !F && sm.kind === 'fail');
+    ui.sum.classList.toggle('no-sparks', working || (flew ? !F.ok : !(sm.kind === 'ok' || sm.kind === 'att')));
+    ui.sumAct.textContent = '';
+    const again = K.el('button', { class: 'btn ink kz-again', type: 'button', html: K.icon('cycle'), onclick: () => runScan() },
+      !F && (sm.kind === 'fail' || sm.kind === 'partial') ? 'Tentar de novo' : 'Escanear de novo');
+    let face;
+    if (working) {
+      ui.sumWhen.textContent = 'Fazendo agora';
+      ui.sumTitle.textContent = 'Deixando o Mac voando…';
+      /* a lista já mostra o passo da vez: o subtítulo não repete (o leitor de tela ouve pelo status) */
+      ui.sumSub.textContent = F.checking ? 'Conferindo como ficou…' : 'Um de cada vez. Já já termino.';
+      ui.sumAct.appendChild(flyList(F));
+      ui.sumAct.appendChild(K.el('span', { class: 'kz-sr', role: 'status' }, F.now || ''));
+      face = 'happy';
+    } else if (flew) {
+      ui.sumWhen.textContent = `Feito às ${K.fmt.time(F.at)}`;
+      ui.sumTitle.textContent = F.title;
+      ui.sumSub.textContent = F.text;
+      ui.sumAct.appendChild(again);
+      if (F.moved) {
+        ui.sumAct.appendChild(K.el('button', { class: 'kz-link', type: 'button', html: K.icon('kzUndo'), onclick: () => go('faxina?aba=lixeira') },
+          'Desfazer na Faxina'));
+      }
+      face = F.ok ? 'joy' : 'worried';
+    } else {
+      ui.sumWhen.textContent = ui.sumWhenTxt;
+      ui.sumTitle.textContent = sm.title;
+      ui.sumSub.textContent = sm.sub;
+      const plan = sm.kind !== 'fail' ? flyPlan(byIdOf(last.results)) : null;
+      if (plan && plan.any) {
+        /* o principal é o "Deixar voando"; o escanear de novo vira secundário (branco) */
+        again.className = 'btn kz-again';
+        ui.sumAct.appendChild(K.el('button', { class: 'btn gold kz-fly', type: 'button', html: K.icon('rocket'), onclick: () => askFly() }, 'Deixar voando'));
+      }
+      ui.sumAct.appendChild(again);
+      face = sm.face;
+    }
+    if (ui.sumMascot) ui.sumMascot.set({ face, charging: working || ui.sumCharging });
+    /* o botão clicado sumiu: o foco vai pro título, sem pular a tela */
+    if (hadFocus && !ui.sum.contains(document.activeElement)) ui.sumTitle.focus({ preventScroll: true });
+  }
+
+  /* ================= "Deixar voando" ================= */
+
+  /** O que dá pra fazer agora com um clique. Só com o que a varredura leu:
+        caches  = os itens que a Faxina já traria marcados (K.cleanSuggested: nada de app aberto,
+                  Downloads, grandes ou duplicados), se somarem FLY_MIN ou mais;
+        apps    = achados do speed.diagnose com acao 'encerrar' por CPU (no talo);
+        aviso   = aviso dos 80% desligado, só em Mac com bateria. */
+  function flyPlan(byId) {
+    const plan = { caches: null, apps: [], aviso: null, any: false };
+    const dirt = byId.sujeira;
+    if (dirt && !dirt.error && dirt.ids && dirt.ids.length && dirt.idsBytes >= FLY_MIN) {
+      plan.caches = { ids: dirt.ids.slice(), bytes: dirt.idsBytes, paths: dirt.paths || {} };
+    }
+    const sp = byId.velocidade;
+    if (sp && !sp.error && sp.rep && Array.isArray(sp.rep.achados)) {
+      const seen = new Set();
+      for (const f of sp.rep.achados) {
+        if (!f || f.acao !== 'encerrar' || f.detalhe !== 'cpu' || typeof f.alvo !== 'string' || !f.alvo || seen.has(f.alvo)) continue;
+        seen.add(f.alvo);
+        plan.apps.push({ alvo: f.alvo, nome: safeName(f.nome) || 'app sem nome', cpu: num(f.cpu), icon: appIcon(f.icon) });
+      }
+    }
+    const bat = byId.bateria;
+    const b = bat && !bat.error && !bat.none && !bat.missing ? bat.b : null;
+    const s = K.settings.value;
+    if (b && b.present !== false && s && s.aviso80 === false) plan.aviso = { limite: num(s.limiteAviso) || 80 };
+    plan.any = !!(plan.caches || plan.apps.length || plan.aviso);
+    return plan;
+  }
+
+  /** Mostra antes (caixinhas) e só faz o que ficou marcado. Apps vêm desmarcados: fechar pode
+      perder coisa sem salvar. */
+  async function askFly() {
+    if (!last || mode !== 'result' || (last.fly && last.fly.phase === 'working')) return;
+    const L = last;
+    const plan = flyPlan(byIdOf(L.results));
+    if (!plan.any) return;
+    K.sound.plop();
+    const rows = [];
+    let okBtn = null;
+    const sync = () => { if (okBtn) okBtn.disabled = !rows.some((r) => r.on); };
+    function row(o) {
+      const r = { key: o.key, app: o.app || null, on: !!o.on };
+      const chk = K.checkbox({ state: r.on, label: o.label, onchange: () => { r.on = !r.on; chk.set(r.on); K.sound.tick(); sync(); } });
+      const ic = K.el('span', { class: 'kz-fly-ic' + (o.img ? ' has-img' : ''), 'aria-hidden': 'true' });
+      if (o.img) ic.appendChild(K.el('img', { src: o.img, alt: '' })); else ic.innerHTML = K.icon(o.icon);
+      const li = K.el('li', { class: 'kz-fly-row' }, chk, ic,
+        K.el('span', { class: 'kz-fly-text' }, K.el('b', null, o.title), K.el('span', null, o.sub)),
+        o.value ? K.el('b', { class: 'kz-fly-val num' }, o.value) : null);
+      li.addEventListener('click', (e) => { if (!e.target.closest('.kcheck')) chk.click(); });
+      rows.push(r);
+      return li;
+    }
+    const list = K.el('ul', { class: 'kz-fly-list' });
+    if (plan.caches) {
+      const n = plan.caches.ids.length;
+      list.appendChild(row({ key: 'caches', on: true, icon: 'broom', label: 'Mandar os caches pra Lixeira',
+        title: 'Caches pra Lixeira', sub: `${K.fmt.num(n)} ${n === 1 ? 'item' : 'itens'} que os apps recriam sozinhos`, value: gbNb(plan.caches.bytes) }));
+    }
+    for (const a of plan.apps) {
+      list.appendChild(row({ key: 'app', app: a, on: false, icon: 'cpu', img: a.icon, label: `Fechar ${a.nome}`,
+        title: `Fechar ${a.nome}`, sub: `No talo${a.cpu != null ? `: ${K.fmt.pct(a.cpu, 0)} de CPU` : ' agora'} · pode pedir pra salvar` }));
+    }
+    if (plan.aviso) {
+      list.appendChild(row({ key: 'aviso', on: true, icon: 'bell', label: `Ligar o aviso dos ${plan.aviso.limite}%`,
+        title: `Ligar o aviso dos ${plan.aviso.limite}%`, sub: 'Te chamo quando a carga chegar lá' }));
+    }
+    const asking = K.confirm({
+      title: 'Deixar o Mac voando?',
+      text: 'Marque o que eu faço agora. O resto fica como está.',
+      body: list,
+      note: plan.caches ? { icon: 'kzUndo', tone: 'good', text: 'Os caches vão pra Lixeira: dá pra desfazer na Faxina.' } : null,
+      ok: 'Fazer agora', cancel: 'Agora não', icon: 'rocket', mascot: 'happy',
+    });
+    /* o modal já está na tela (monta na hora): o botão só libera com algo marcado */
+    const dlg = list.closest('.kmodal');
+    okBtn = dlg ? dlg.querySelector('.kmodal-ok') : null;
+    sync();
+    const ok = await asking;
+    if (!ok || last !== L || (L.fly && L.fly.phase === 'working')) return;
+    const pick = {
+      caches: plan.caches && rows.some((r) => r.key === 'caches' && r.on) ? plan.caches : null,
+      apps: rows.filter((r) => r.key === 'app' && r.on).map((r) => r.app),
+      aviso: plan.aviso && rows.some((r) => r.key === 'aviso' && r.on) ? plan.aviso : null,
+    };
+    if (!pick.caches && !pick.apps.length && !pick.aviso) return;
+    runFly(L, pick);
+  }
+
+  /** Faz um passo de cada vez; falha em um não para os outros. O resumo mostra o andamento. */
+  async function runFly(L, pick) {
+    const F = { phase: 'working', tasks: [], now: '', at: 0 };
+    if (pick.caches) {
+      const g = gbNb(pick.caches.bytes);
+      F.tasks.push({ key: 'caches', icon: 'broom', text: `Mandar ${g} de caches pra Lixeira`, doing: `Mandando ${g} de caches pra Lixeira…`, state: 'wait' });
+    }
+    for (const a of pick.apps) {
+      F.tasks.push({ key: 'app', app: a, icon: 'cpu', img: a.icon, text: `Fechar ${a.nome}`, doing: `Pedindo pra ${inl(a.nome)} fechar…`, state: 'wait' });
+    }
+    if (pick.aviso) {
+      F.tasks.push({ key: 'aviso', icon: 'bell', text: `Ligar o aviso dos ${pick.aviso.limite}%`, doing: `Ligando o aviso dos ${pick.aviso.limite}%…`, state: 'wait' });
+    }
+    L.fly = F;
+    const here = () => last === L && L.fly === F && mode === 'result' && !!host && !!ui.sum;
+    const paint = () => { if (here()) paintSum(); };
+    paint();
+
+    const out = { moved: 0, movedN: 0, cacheFails: [], cacheErr: null, cleaned: false, closed: [], asked: [], appFails: [], aviso: false, avisoErr: null };
+    for (const t of F.tasks) {
+      t.state = 'on';
+      F.now = t.doing;
+      paint();
+      const t0 = performance.now();
+      try {
+        if (t.key === 'caches') {
+          /* só IDs que o Swift devolveu na varredura; ele confere tudo de novo e manda pra Lixeira */
+          const res = await K.api('cleanup.clean', { ids: pick.caches.ids });
+          out.cleaned = true;
+          const moved = (res && Array.isArray(res.movidos)) ? res.movidos : [];
+          out.movedN = moved.length;
+          out.moved = num(res && res.bytes) != null ? res.bytes : moved.reduce((a, m) => a + (num(m && m.bytes) || 0), 0);
+          out.cacheFails = (res && Array.isArray(res.falhas)) ? res.falhas : [];
+          t.state = moved.length ? 'done' : 'err';
+          try { window.dispatchEvent(new CustomEvent('kamurafy:limpou', { detail: { origem: 'varredura', ids: moved.map((m) => m && m.id).filter(Boolean), caminhos: moved.map((m) => m && pick.caches.paths && pick.caches.paths[m.id]).filter(Boolean) } })); } catch (e) { /* ninguém ouvindo */ }
+        } else if (t.key === 'app') {
+          const res = await K.api('optimize.quit', { id: t.app.alvo });
+          if (res && res.ok) {
+            (/já tinha fechado/i.test(res.mensagem || '') ? out.closed : out.asked).push(t.app);
+            t.state = 'done';
+          } else {
+            out.appFails.push({ app: t.app, why: whyTxt(res && res.mensagem) || 'o app não quis fechar' });
+            t.state = 'err';
+          }
+        } else if (t.key === 'aviso') {
+          await K.settings.set({ aviso80: true });
+          out.aviso = true;
+          t.state = 'done';
+        }
+      } catch (e) {
+        const why = whyTxt(e && e.message);
+        t.state = 'err';
+        if (t.key === 'caches') out.cacheErr = why;
+        else if (t.key === 'app') out.appFails.push({ app: t.app, why });
+        else out.avisoErr = why;
+      }
+      const rest = FLY_STEP_MIN - (performance.now() - t0);
+      if (rest > 0) await K.sleep(rest);
+      if (here()) { if (t.state === 'err') K.sound.oops(); else K.sound.tick(); }
+      paint();
+    }
+
+    /* pedir pra fechar não é fechar: confere se saíram mesmo (e relê a velocidade) */
+    let rep2 = null;
+    if (out.asked.length || out.closed.length) {
+      F.now = 'Conferindo como ficou…';
+      F.checking = true;
+      paint();
+      await K.sleep(FLY_CHECK_MS);
+      try { rep2 = await withTimeout(K.api('speed.diagnose'), STEP_MAX); } catch (e) { rep2 = null; }
+      if (rep2 && Array.isArray(rep2.achados)) {
+        const still = new Set(rep2.achados.filter((f) => f && (f.tipo === 'processo' || f.tipo === 'navegador')).map((f) => safeName(f.nome)));
+        out.closed.push(...out.asked.filter((a) => !still.has(a.nome)));
+        out.asked = out.asked.filter((a) => still.has(a.nome));
+      }
+    }
+    if (rep2 && last === L) {
+      try {
+        const r = anSpeed(rep2);
+        const i = L.results.findIndex((x) => x.id === 'velocidade');
+        if (i >= 0) L.results[i] = r; else L.results.push(r);
+      } catch (e) { /* fica a leitura de antes */ }
+    }
+
+    Object.assign(F, flyText(out, pick), { phase: 'done', at: nowS(), moved: out.movedN > 0 });
+    if (here()) {
+      if (F.ok) K.sound.tada(); else K.sound.oops();
+      paintSum();
+      if (rep2) replaceSpeed();
+      fillActs(byIdOf(L.results));
+    }
+    /* a sujeira mudou: o número guardado (Varredura, Painel) ficou velho */
+    if (out.cleaned) {
+      K.dirt.forget();
+      if (here()) refreshDirt('depois de mandar os caches pra Lixeira');
+    }
+  }
+
+  /** "Pronto! Mandei 2,1 GB de caches pra Lixeira, fechei 1 app e liguei o aviso dos 80%." Só o que aconteceu. */
+  function flyText(out, pick) {
+    const done = [];
+    if (out.movedN) done.push(`mandei ${gbNb(out.moved)} de caches pra Lixeira`);
+    if (out.closed.length) done.push(out.closed.length === 1 ? 'fechei 1 app' : `fechei ${out.closed.length} apps`);
+    if (out.asked.length) done.push(out.asked.length === 1 ? `pedi pra ${inl(out.asked[0].nome)} fechar` : `pedi pra ${out.asked.length} apps fecharem`);
+    if (out.aviso) done.push(`liguei o aviso dos ${pick.aviso.limite}%`);
+    const fails = [];
+    if (out.cacheErr) fails.push(`mandar os caches pra Lixeira (${out.cacheErr})`);
+    else if (out.cleaned && !out.movedN) fails.push(`mandar os caches pra Lixeira (${out.cacheFails.length ? whyTxt(out.cacheFails[0].motivo) : 'nada saiu do lugar'})`);
+    else if (out.cacheFails.length) {
+      const n = out.cacheFails.length;
+      fails.push(`mandar ${n === 1 ? '1 item' : `${K.fmt.num(n)} itens`} de cache (${whyTxt(out.cacheFails[0].motivo)})`);
+    }
+    for (const f of out.appFails) fails.push(`fechar ${inl(f.app.nome)} (${f.why})`);
+    if (out.avisoErr) fails.push(`ligar o aviso (${out.avisoErr})`);
+    const ok = done.length > 0;
+    let text = ok ? cap(listPt(done)) + '.' : 'Nada foi mexido.';
+    if (fails.length) text += ` Não consegui ${listPt(fails)}.`;
+    if (out.asked.length) text += out.asked.length === 1 ? ' Se ele perguntar se quer salvar, responda na janela dele.' : ' Se algum perguntar se quer salvar, responda na janela dele.';
+    return { ok, title: ok ? 'Pronto!' : 'Não consegui fazer nada agora', text };
+  }
+
+  /** andamento dentro do resumo: um passo por linha (espera · fazendo · feito · não deu) */
+  function flyList(F) {
+    return K.el('ol', { class: 'kz-fly-steps' }, F.tasks.map((t) => {
+      const icon = t.state === 'done' ? 'check' : t.state === 'err' ? 'alert' : t.icon;
+      const bub = K.el('span', { class: 'kz-fly-bub', 'aria-hidden': 'true' });
+      if (t.img && (t.state === 'wait' || t.state === 'on')) bub.appendChild(K.el('img', { src: t.img, alt: '' }));
+      else bub.innerHTML = K.icon(icon);
+      const st = { wait: 'na fila', on: 'fazendo', done: 'feito', err: 'não deu' }[t.state] || '';
+      return K.el('li', { class: 'kz-fly-step', dataset: { state: t.state } }, bub,
+        K.el('span', null, t.text), K.el('span', { class: 'kz-sr' }, ` (${st})`));
+    }));
+  }
+
+  /* ---------- cartão da velocidade (largura toda) ---------- */
+  function speedCard(r, style) {
+    const step = SPEED_STEP;
+    const c = K.el('article', { class: 'card kz-res kz-speed pop-in', style });
+    c.appendChild(cardHead(step, r));
+    c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
+    if (!r.error && r.lines && r.lines.length) {
+      c.appendChild(K.el('div', { class: 'kz-res-kicker' }, r.lines.length === 1 ? 'O que mais pesa agora' : 'O que mais pesa agora, em ordem'));
+      c.appendChild(K.el('ul', { class: 'kz-sf-row' }, r.lines.map((l) => {
+        const bub = K.el('span', { class: `kz-sf-bub t-${l.tone}`, 'aria-hidden': 'true' });
+        if (l.img) bub.appendChild(K.el('img', { src: l.img, alt: '' })); else bub.innerHTML = K.icon(l.icon);
+        return K.el('li', { class: 'kz-sf' }, bub,
+          K.el('span', { class: 'kz-sf-text' }, K.el('b', null, l.text), l.sub ? K.el('span', null, l.sub) : null));
+      })));
+    }
+    c.appendChild(K.el('div', { class: 'kz-res-foot' },
+      r.note && !r.error ? K.el('p', { class: 'kz-note kz-speed-note' }, r.note) : null,
+      K.el('button', { class: 'btn small' + (isAttention(r) ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
+        'Ver o que pesa', K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
+    return c;
+  }
+
+  /** troca o cartão da velocidade no lugar (depois de fechar apps), sem refazer a tela */
+  function replaceSpeed() {
+    const old = ui.speedCard;
+    const r = last && last.results.find((x) => x.id === 'velocidade');
+    if (!old || !old.parentNode || !r) return;
+    const node = speedCard(r, null);
+    node.classList.remove('pop-in');
+    if (isAttention(r)) markAtt(node);
+    old.replaceWith(node);
+    ui.speedCard = node;
   }
 
   /* ---------- "o que dá pra fazer agora": até 3 ações seguras, de um clique ---------- */
@@ -883,6 +1296,8 @@
             item.querySelector('.kz-act-text span').textContent = 'Ligado! Te chamo quando a carga chegar lá.';
             item.querySelector('.kz-act-text b').appendChild(K.statusPill('good', 'Ligado', 'check'));
             btn.remove();
+            /* o "Deixar voando" do resumo não oferece mais o aviso (e some, se era só isso) */
+            if (!(last && last.fly)) paintSum();
           } catch (e) {
             K.sound.oops();
             btn.disabled = false;
@@ -1064,9 +1479,10 @@
     for (const fn of todo) { try { fn(); } catch (e) { console.error('varredura/gráfico: ' + (e.stack || e.message)); } }
   }
 
-  /** Voltou da Faxina com um resultado guardado: relê só a sujeira (lá dá pra ter limpado) e
-      troca o cartão, as ações e o resumo no lugar, sem refazer a tela. Continua só lendo. */
-  async function refreshDirt() {
+  /** Voltou da Faxina com um resultado guardado (ou o "Deixar voando" mandou caches pra Lixeira):
+      relê só a sujeira e troca o cartão, as ações e o resumo no lugar, sem refazer a tela.
+      `depois` completa a nota ("Conferi de novo às 14:32, depois da Faxina"). Só lê. */
+  async function refreshDirt(depois) {
     const my = token;
     const old = ui.dirtCard;
     if (old) old.appendChild(K.el('span', { class: 'sticker kz-look kz-redo', role: 'status' }, 'conferindo de novo…'));
@@ -1082,7 +1498,7 @@
     }
     if (mode !== 'result' || !host) return;
     /* o resumo diz "Feita às…": o cartão avisa que este número é mais novo */
-    const again = `Conferi de novo às ${K.fmt.time(nowS())}, depois da Faxina.`;
+    const again = `Conferi de novo às ${K.fmt.time(nowS())}, ${depois || 'depois da Faxina'}.`;
     res.note = res.note ? `${again} ${res.note}` : again;
     const i = last.results.findIndex((r) => r.id === 'sujeira');
     if (i >= 0) last.results[i] = res; else last.results.push(res);
@@ -1097,10 +1513,9 @@
       ui.dirtCard = node;
       runAfterMount();
     }
-    const sm = summaryOf(last.results);
-    if (ui.sumTitle) ui.sumTitle.textContent = sm.title;
-    if (ui.sumSub) ui.sumSub.textContent = sm.sub;
-    if (sm.kind !== 'fail') fillActs(byId());
+    /* o resumo se repinta (no meio do "Deixar voando" ou na comemoração, ele continua como está) */
+    paintSum();
+    if (summaryOf(last.results).kind !== 'fail') fillActs(byId());
   }
 
   /* ================= página ================= */

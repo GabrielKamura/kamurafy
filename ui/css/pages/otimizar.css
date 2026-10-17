@@ -14,6 +14,9 @@
 .ot-head-side { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 10px 12px; flex: none; max-width: 46%; }
 
 /* ===================== abas em pílula: .ktabs/.ktab (components.css) ===================== */
+/* quatro abas: um pouco mais justas que o padrão, pra caberem numa fileira na janela de 1180 */
+.ot-tabs { gap: 8px; }
+.ot-tab { padding: 7px 13px 7px 10px; gap: 6px; font-size: 15.5px; }
 
 .ot-panel { padding-top: 26px; flex: 1; display: flex; flex-direction: column; gap: 22px; }
 .ot-panel > * { flex: none; }
@@ -498,6 +501,96 @@
 .ot-task.is-wide .ot-task-foot { flex-direction: column; align-items: flex-end; justify-content: center; align-self: center; max-width: 240px; }
 .ot-task.is-wide .ot-res { text-align: right; }
 
+/* ===================== Por que tá lento? (ot-lt-) ===================== */
+.ot-lt-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px 26px;
+  align-items: center;
+  padding: 18px 22px 20px 20px;
+}
+.ot-lt-art { position: relative; width: 140px; display: grid; justify-items: center; padding: 6px 0 8px; }
+.ot-lt-mascot { width: 116px; transform: rotate(-5deg); }
+.ot-lt-badge { right: 2px; bottom: -2px; }
+.ot-lt-main { min-width: 0; }
+.ot-lt-verdict { font-size: 54px; line-height: .95; letter-spacing: -.5px; }
+.ot-lt-line { margin: 10px 0 0; font-size: 19px; line-height: 1.25; }
+.ot-lt-facts { display: flex; flex-wrap: wrap; gap: 5px 18px; margin: 12px 0 0; font-size: 14px; line-height: 1.3; color: var(--ink-2); }
+.ot-lt-facts[hidden] { display: none; }
+.ot-lt-fact { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.ot-lt-fact svg { width: 16px; height: 16px; flex: none; color: var(--ink); }
+.ot-lt-fact b { font-weight: 400; color: var(--ink); }
+.ot-lt-act { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-top: 16px; }
+.ot-lt-at { font-size: 13.5px; color: var(--ink-2); }
+.ot-lt-gauge {
+  width: 236px;
+  padding: 14px 14px 12px;
+  background: var(--card);
+  border: var(--bw) solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow-xs);
+}
+
+.ot-lt-body { display: flex; flex-direction: column; }
+.ot-lt-body:empty { display: none; }
+.ot-lt-closed { margin: 0; }
+.ot-lt-card { padding: 18px 20px 8px; }
+.ot-lt-head { margin-bottom: 12px; }
+.ot-lt-list { list-style: none; margin: 0; padding: 0; border-top: 2px dashed var(--line); }
+.ot-lt-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 6px 13px 4px;
+  border-bottom: 1.5px solid var(--line);
+}
+.ot-lt-row:last-child { border-bottom: 0; }
+.ot-lt-row.is-closing { background: #fffaea; }
+.ot-lt-ic.warn { background: var(--st-warn-soft); }
+.ot-lt-ic.serious { background: var(--st-serious-soft); }
+.ot-lt-ic.crit { background: var(--st-crit-soft); }
+/* nome vem de fora: a direção do texto dele nunca vaza pro resto da linha */
+.ot-lt-t { font-size: 17.5px; line-height: 1.22; overflow-wrap: anywhere; }
+.ot-lt-d { font-size: 14.5px; line-height: 1.38; color: var(--ink-2); max-width: 46em; }
+.ot-lt-actcell[hidden] { display: none; }
+.ot-lt-actcell .btn svg { width: 17px; height: 17px; }
+.ot-lt-actcell .btn.is-busy svg { animation: spin 1s linear infinite; }
+.ot-lt-tag { font-size: 13px; padding: 2px 10px 3px 6px; }
+.ot-lt-tag svg { width: 14px; height: 14px; }
+
+.ot-lt-empty { gap: 16px; }
+.ot-lt-empty-ic {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: var(--bw) solid var(--ink);
+  border-radius: 15px;
+  background: var(--st-good-soft);
+  transform: rotate(-6deg);
+}
+.ot-lt-empty-ic svg { width: 28px; height: 28px; }
+.ot-lt-empty p { margin: 0; font-size: 16px; color: var(--ink); }
+
+.ot-lt-vigia { padding: 16px 20px; }
+.ot-lt-vg-row { display: flex; align-items: center; gap: 14px; }
+.ot-lt-vg-text { flex: 1; min-width: 0; }
+.ot-lt-vg-text h2 { font-size: 20px; line-height: 1.15; }
+.ot-lt-vg-text p { margin: 3px 0 0; font-size: 14.5px; line-height: 1.38; color: var(--ink-2); }
+.ot-lt-sw[aria-busy="true"] { cursor: progress; }
+.ot-lt-err { margin: 12px 0 0; padding: 8px 12px; border: 2px solid var(--st-crit); border-radius: 10px; background: var(--st-crit-soft); font-size: 14px; line-height: 1.4; }
+.ot-lt-err[hidden] { display: none; }
+.ot-lt-ign { margin-top: 14px; padding-top: 12px; border-top: 2px dashed var(--line); }
+.ot-lt-ign[hidden] { display: none; }
+.ot-lt-ign-l { display: block; font-size: 12.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+.ot-lt-ign-list { list-style: none; margin: 0; padding: 0; }
+.ot-lt-ign-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1.5px solid var(--line); }
+.ot-lt-ign-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.ot-lt-ign-n { font-size: 16px; min-width: 0; overflow-wrap: anywhere; unicode-bidi: isolate; }
+.ot-lt-ign-list .btn svg { width: 15px; height: 15px; }
+
 /* resumo dentro do modal de confirmação */
 .kmodal .ot-cf { list-style: none; margin: 0; padding: 4px 12px; display: flex; flex-direction: column; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--panel); }
 .kmodal .ot-cf li { display: flex; gap: 8px; align-items: flex-start; padding: 7px 0; border-bottom: 1.5px solid var(--line); font-size: 14.5px; line-height: 1.35; }
@@ -540,6 +633,15 @@
   }
   .ot-task-foot, .ot-task.is-wide .ot-task-foot { flex-direction: column-reverse; align-items: flex-end; justify-content: flex-start; align-self: start; max-width: 200px; gap: 6px; }
   .ot-task .ot-res { text-align: right; }
+  .ot-lt-hero { gap: 8px 18px; padding-right: 18px; }
+  .ot-lt-art { width: 112px; }
+  .ot-lt-mascot { width: 96px; }
+  .ot-lt-badge { width: 38px; height: 38px; }
+  .ot-lt-badge svg { width: 22px; height: 22px; }
+  .ot-lt-verdict { font-size: 44px; }
+  .ot-lt-line { font-size: 17px; }
+  .ot-lt-gauge { width: 196px; padding: 10px 10px 8px; }
+  .ot-lt-t { font-size: 16.5px; }
 }
 @media (max-height: 760px) {
   .ot-panel { padding-top: 20px; gap: 18px; }

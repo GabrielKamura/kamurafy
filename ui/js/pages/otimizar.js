@@ -1,5 +1,10 @@
 /* Kamurafy — Otimizar (#/otimizar): sem mágica, a pessoa decide cada passo.
-   Três abas (pílulas no topo, grudam ao rolar):
+   Quatro abas (pílulas no topo, grudam ao rolar). Sem ?aba= na rota, abre na primeira:
+     Por que tá lento? → speed.diagnose ao abrir a aba (se a leitura tiver mais de 30 s) e no botão
+                       "Conferir de novo"; nunca relê sozinho. Veredito + nota no mostrador + a lista
+                       de achados com a ação de cada um (fechar usa o mesmo fluxo de "Pesando agora",
+                       com optimize.quit {id: alvo}, e confere de novo depois). No pé, a vigia
+                       (settings.vigia / vigiaIgnorar). Os avisos da vigia abrem otimizar?aba=lento.
      Abrem com o Mac → optimize.startup: o que abre sozinho quando a pessoa entra no Mac, em
                        grupos (ajudantes de apps, agentes da pasta do usuário, do sistema todo),
                        com interruptor (optimize.startupToggle, reversível). Os do sistema pedem
@@ -34,9 +39,12 @@
     otFlask: '<path d="M9.5 3.5h5M10.5 3.5v5.2L5 18.3a1.5 1.5 0 0 0 1.3 2.2h11.4a1.5 1.5 0 0 0 1.3-2.2l-5.5-9.6V3.5"/><path d="M7.3 14.5h9.4"/>',
     otMac: '<rect x="4.5" y="4.5" width="15" height="10.5" rx="2"/><path d="M2.5 15h19l-1.2 3.2a1.5 1.5 0 0 1-1.4 1H5.1a1.5 1.5 0 0 1-1.4-1Z"/>',
     otEye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/>',
+    otPhoto: '<rect x="3.5" y="6.5" width="17" height="12.5" rx="2.5"/><circle cx="12" cy="12.7" r="3.2"/><path d="m8.6 6.5 1.3-2.2h4.2l1.3 2.2"/>',
+    otDownload: '<path d="M12 4v10.5"/><path d="m7.5 10.3 4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/>',
   });
 
   const TABS = [
+    { id: 'lento', label: 'Por que tá lento?', icon: 'gauge' },
     { id: 'login', label: 'Abrem com o Mac', icon: 'otPower' },
     { id: 'pesando', label: 'Pesando agora', icon: 'otWeight' },
     { id: 'manutencao', label: 'Manutenção', icon: 'otWrench' },
@@ -88,7 +96,7 @@
   /* ================= estado (sobrevive à troca de tela) ================= */
 
   const S = {
-    tab: 'login',
+    tab: 'lento',
     test: false,                 // o Swift recusou algo por ser modo de teste: figurinha no topo
     bat: null,                   // battery.now, só pro mascote
     st: { status: 'idle', items: [], err: null, at: 0, run: 0, msgs: new Map(), busy: new Set(), refreshing: false },
@@ -96,6 +104,11 @@
       phase: new Map(),          // pid → {phase, t, nome, mem, f?, force?}
       closed: null },            // último que fechou: {nome, mem, forced, t}
     tk: { status: 'idle', items: [], err: null, run: 0, res: new Map(), busy: null },
+    lt: { status: 'idle', rep: null, err: null, at: 0, run: 0, busy: false, p: null, acting: false,
+      phase: new Map(),          // 'app:<nome>' → {phase, t, nome, mem, f?, force?} (mesmas fases de "Pesando agora")
+      msgs: new Map(),           // id do achado → recado (ex.: os Ajustes não abriram)
+      closed: null },            // último que fechou: {nome, mem, forced, t}
+    vg: { status: 'idle', vigia: true, ignorar: [], busy: false, err: null, run: 0 },
   };
 
   let host = null;
@@ -244,7 +257,7 @@
       K.el('div', { class: 'ot-head-text' },
         K.el('h1', null, 'Otimizar'),
         K.el('p', { title: 'Desligar, fechar e as arrumações só mudam o que roda: nenhum arquivo seu é apagado.' },
-          'O que abre sozinho, quem está pesando agora e umas arrumações do próprio macOS. Você decide cada passo, e nada aqui apaga arquivo seu.')),
+          'Por que o Mac tá lento, o que abre sozinho, quem pesa agora e umas arrumações do macOS. Você decide cada passo, e nada aqui apaga arquivo seu.')),
       K.el('div', { class: 'ot-head-side' }, V.testTag)));
 
     const nav = K.el('nav', { class: 'ktabs ot-tabs', role: 'tablist', 'aria-label': 'Partes do Otimizar' });
@@ -266,6 +279,12 @@
   function paintTest() { if (V && V.testTag) V.testTag.hidden = !S.test; }
 
   function badgeFor(id) {
+    if (id === 'lento' && S.lt.status === 'ok' && S.lt.rep) {
+      const n = S.lt.rep.achados.length;
+      if (!n) return null;
+      const heavy = S.lt.rep.veredito === 'pesado' || S.lt.rep.veredito === 'travando';
+      return { text: K.fmt.num(n), tone: heavy ? 'warn' : null, icon: heavy ? 'alert' : null, title: `${plural(n, 'coisa pesando', 'coisas pesando')} agora` };
+    }
     if (id === 'login' && S.st.status === 'ok' && counted(S.st.items).length) {
       const on = counted(S.st.items).filter((x) => x.ligado).length;
       return { text: plural(on, 'ligado', 'ligados'), title: `${plural(on, 'item abre', 'itens abrem')} sozinho${on === 1 ? '' : 's'} com o Mac` };
@@ -298,7 +317,9 @@
     }
   }
 
-  function statusOfTab(id) { return id === 'login' ? S.st.status : id === 'pesando' ? S.hv.status : S.tk.status; }
+  function statusOfTab(id) {
+    return id === 'lento' ? S.lt.status : id === 'login' ? S.st.status : id === 'pesando' ? S.hv.status : S.tk.status;
+  }
 
   function setTab(id) {
     if (!TABS.some((t) => t.id === id)) return;
@@ -307,6 +328,10 @@
     paintTab();
     const v = document.getElementById('view');
     if (v) v.scrollTop = 0;
+    if (id === 'lento') {
+      if (ltStale()) diagnose();
+      if (S.vg.status !== 'ok') loadVigia();
+    }
     if (id === 'pesando' && (!S.hv.at || (!S.hv.paused && Date.now() - S.hv.at > 3000))) kickHeavy(true);
     if (id === 'login' && S.st.status === 'idle') loadStartup();
     if (id === 'manutencao' && S.tk.status === 'idle') loadTasks();
@@ -315,6 +340,10 @@
   function clearPanel() {
     for (const m of V.mascots) { try { m.destroy(); } catch (e) { /* já foi */ } }
     V.mascots = [];
+    for (const c of V.charts) { try { c.destroy(); } catch (e) { /* já foi */ } }
+    V.charts = [];
+    V.lt = null;
+    V.vg = null;
     V.stRows = new Map();
     V.tasks = new Map();
     V.hv = null;
@@ -332,7 +361,8 @@
       const key = S.tab + ':' + statusOfTab(S.tab);
       V.pop = !V.popped.has(key);
       V.popped.add(key);
-      if (S.tab === 'login') paintLogin();
+      if (S.tab === 'lento') paintLento();
+      else if (S.tab === 'login') paintLogin();
       else if (S.tab === 'pesando') paintHeavy();
       else paintTasks();
     });
@@ -1365,6 +1395,587 @@
     return true;
   }
 
+  /* ================= Por que tá lento? ================= */
+
+  const LT_FRESH = 30000;        // abrir a aba lê de novo se a última leitura tiver mais que isso
+  const LT_RECHECK = 2000;       // depois de pedir pra fechar, quando conferir de novo
+  const VIGIA_T = 'Me avisar quando um app ficar no talo ou a memória chegar no limite';
+  const VEREDITO = {
+    voando: { t: 'Voando!', face: 'joy' },
+    deboa: { t: 'De boa', face: 'happy' },
+    pesado: { t: 'Tá pesado', face: 'worried' },
+    travando: { t: 'Tá travando', face: 'worried' },
+  };
+  /* as mesmas faixas do veredito no Swift: ≥ 85 voando · ≥ 65 de boa · ≥ 40 pesado */
+  const NOTA_ZONES = [
+    { to: 40, tone: 'crit', label: 'Tá travando' },
+    { to: 65, tone: 'serious', label: 'Tá pesado' },
+    { to: 85, tone: 'good', label: 'De boa' },
+    { to: 100, tone: 'good', label: 'Voando' },
+  ];
+  const FUNDO = {
+    spotlight: { icon: 'scan', t: 'O Spotlight está indexando', d: 'Acontece depois de atualizar o macOS ou copiar muitos arquivos.' },
+    timemachine: { icon: 'clock', t: 'O Time Machine está fazendo backup', d: 'Termina sozinho.' },
+    fotos: { icon: 'otPhoto', t: 'O Fotos está analisando a biblioteca', d: 'Na tomada ele termina mais rápido.' },
+    icloud: { icon: 'cloud', t: 'O iCloud está sincronizando', d: 'Termina quando acabar de subir e baixar.' },
+    atualizacao: { icon: 'otDownload', t: 'O macOS está preparando uma atualização', d: 'Termina sozinho.' },
+  };
+  const HEAT_TIP = 'Tira de cima de almofada ou cobertor.';
+
+  const ltStale = () => !S.lt.at || Date.now() - S.lt.at > LT_FRESH;
+  const appKey = (f) => 'app:' + String(f.nome || f.alvo || f.id || '');
+  const quittable = (f) => (f.tipo === 'processo' || f.tipo === 'navegador') && f.acao === 'encerrar' && !!f.alvo;
+  const ltName = (f) => K.procName(f.nome) || 'Um processo';
+  /* com ícone de app (ou navegador) é app: "o próprio app pergunta antes de fechar" */
+  const ltIsApp = (f) => f.tipo === 'navegador' || (typeof f.icon === 'string' && f.icon.indexOf('data:image/') === 0);
+
+  function verdictOf(rep) {
+    if (VEREDITO[rep.veredito]) return VEREDITO[rep.veredito];
+    const n = rep.nota;
+    return n >= 85 ? VEREDITO.voando : n >= 65 ? VEREDITO.deboa : n >= 40 ? VEREDITO.pesado : VEREDITO.travando;
+  }
+
+  /** o que o Swift manda, com o que falta preenchido (campo ausente = sem leitura) */
+  function normRep(r) {
+    const rep = Object.assign({}, r || {});
+    rep.achados = (Array.isArray(rep.achados) ? rep.achados : []).filter((f) => f && typeof f.tipo === 'string');
+    if (!isNum(rep.nota)) rep.nota = Math.max(0, 100 - rep.achados.reduce((s, f) => s + (isNum(f.peso) ? f.peso : 0), 0));
+    rep.nota = Math.max(0, Math.min(100, rep.nota));
+    return rep;
+  }
+
+  /** 120 → "1,2 núcleo"; perto de 100 → "um núcleo inteiro"; 250 → "2,5 núcleos" */
+  function ltCores(cpu) {
+    if (!isNum(cpu)) return 'um núcleo inteiro';
+    if (cpu >= 90 && cpu < 110) return 'um núcleo inteiro';
+    const n = Math.round(cpu / 10) / 10;
+    return `${K.fmt.num(n, n % 1 ? 1 : 0)} ${n >= 2 ? 'núcleos' : 'núcleo'}`;
+  }
+
+  /** título, linha, ícone e ação de um achado. Nome vem de fora: tudo aqui vira textContent. */
+  function describe(f, rep) {
+    const nome = inl(ltName(f));
+    const mem = isNum(f.memBytes) ? K.fmt.mem(f.memBytes) : null;
+    const swap = isNum(f.valor) && f.valor > 0 ? f.valor : isNum(rep.swapBytes) && rep.swapBytes > 0 ? rep.swapBytes : null;
+    const quit = quittable(f) ? { kind: 'quit' } : (f.tipo === 'processo' || f.tipo === 'navegador') ? { kind: 'na' } : null;
+    const img = typeof f.icon === 'string' && f.icon.indexOf('data:image/') === 0 ? f.icon : null;
+    switch (f.tipo) {
+      case 'memoria':
+        if (f.detalhe === 'critica') {
+          return { icon: 'memory', t: 'A memória está no limite',
+            d: `O Mac está usando o disco como memória${swap ? ` (${K.fmt.mem(swap)} no disco)` : ''}. Fechar abas e apps parados é o que mais ajuda.` };
+        }
+        if (f.detalhe === 'swap') {
+          return { icon: 'memory', t: 'A memória já apertou hoje',
+            d: `${swap ? K.fmt.mem(swap) + ' foram' : 'Uma parte foi'} parar no disco. Reiniciar zera isso.` };
+        }
+        return { icon: 'memory', t: 'A memória está apertada', d: 'Fechar abas e apps parados alivia na hora.' };
+      case 'processo':
+        if (f.detalhe === 'memoria') {
+          const frac = isNum(f.valor) ? f.valor : isNum(f.memBytes) && isNum(rep.memTotalBytes) && rep.memTotalBytes > 0 ? f.memBytes / rep.memTotalBytes : null;
+          return { icon: 'cpu', img, t: `${nome} ocupa ${mem || 'muita memória'}`,
+            d: frac != null ? `É ${K.fmt.pct(frac * 100, 0)} da memória do Mac.` : 'Fechar devolve essa memória pro Mac.', act: quit };
+        }
+        return { icon: 'cpu', img, t: `${nome} está no talo`, d: `Usa ${ltCores(f.cpu)} do processador há mais de um minuto.`, act: quit };
+      case 'navegador': {
+        const procs = isNum(f.processos) && f.processos > 1 ? `${K.fmt.num(f.processos)} processos` : null;
+        /* no talo, o que pesa é o processador; com a memória apertada, o tamanho */
+        const what = f.detalhe === 'cpu' && isNum(f.cpu)
+          ? `Usa ${ltCores(f.cpu)} do processador${procs ? ` em ${procs}` : ''}`
+          : [procs, mem].filter(Boolean).join(' e ');
+        return { icon: 'otGlobe', img, t: `${nome} está pesando`,
+          d: `${what ? what + ': cada' : 'Cada'} aba conta. Fechar as que você não usa alivia.`, act: quit };
+      }
+      case 'fundo': {
+        const x = FUNDO[f.detalhe] || { icon: 'otMac', t: 'O macOS está trabalhando por baixo', d: 'Termina sozinho.' };
+        return { icon: x.icon, t: x.t, d: x.d, act: { kind: 'tag', tone: 'none', icon: 'clock', text: 'passa sozinho', title: 'É trabalho do próprio macOS: termina sozinho, sem você fazer nada.' } };
+      }
+      case 'calor': {
+        const lim = isNum(f.valor) ? f.valor : isNum(rep.limiteCPU) ? rep.limiteCPU : null;
+        if (lim != null && lim < 100) {
+          return { icon: 'thermo', t: 'O calor está freando o processador', d: `Ele está rodando a ${K.fmt.num(lim, 0)}% da velocidade. ${HEAT_TIP}` };
+        }
+        return { icon: 'thermo', t: 'O Mac está quente', d: HEAT_TIP };
+      }
+      case 'economia':
+        return { icon: 'leaf', t: 'Modo de Pouca Energia ligado', d: 'O macOS deixa o Mac mais lento de propósito pra bateria durar.',
+          act: f.acao === 'ajustes-bateria' ? { kind: 'btn', label: 'Abrir Ajustes', icon: 'otSliders', run: openBatterySettings } : null };
+      case 'disco': {
+        const livre = isNum(f.valor) ? f.valor : isNum(rep.discoLivreBytes) ? rep.discoLivreBytes : null;
+        return { icon: 'disk', t: 'O disco está quase cheio',
+          d: `${livre != null ? `Sobram ${K.fmt.bytes(livre)}.` : 'Sobra pouco espaço.'} O macOS precisa de espaço pra trabalhar.`,
+          act: f.acao === 'faxina' ? { kind: 'btn', label: 'Liberar espaço', icon: 'broom', run: () => { K.sound.plop(); location.hash = '#/faxina'; } } : null };
+      }
+      case 'reiniciar': {
+        const dias = isNum(f.valor) ? Math.floor(f.valor) : isNum(rep.uptimeSec) ? Math.floor(rep.uptimeSec / 86400) : null;
+        return { icon: 'cycle', t: dias != null ? `Ligado há ${plural(dias, 'dia', 'dias')}` : 'Faz tempo que o Mac não reinicia',
+          d: 'Reiniciar de vez em quando zera a memória acumulada. Menu Apple › Reiniciar, quando der.',
+          act: { kind: 'tag', tone: 'none', icon: 'otBulb', text: 'dica', title: 'Uma dica: o Kamurafy não reinicia o Mac por você.' } };
+      }
+      case 'inicio': {
+        const n = isNum(f.processos) ? f.processos : null;
+        return { icon: 'otPower', t: n != null ? `${plural(n, 'app abre', 'apps abrem')} com o Mac` : 'Muita coisa abre com o Mac',
+          d: 'Deixam o Mac mais lento pra ligar.',
+          act: { kind: 'btn', label: 'Ver quais', icon: 'arrow', run: () => { K.sound.plop(); setTab('login'); } } };
+      }
+      default:
+        return f.nome ? { icon: 'alert', t: `${nome} está pesando`, d: '', act: quit } : null;
+    }
+  }
+
+  async function diagnose() {
+    const lt = S.lt;
+    if (lt.busy && lt.p) return lt.p;
+    const run = ++lt.run;
+    lt.busy = true;
+    if (!lt.rep) { lt.status = 'loading'; if (mounted() && S.tab === 'lento') paintTab(); }
+    else paintLtBusy();
+    const p = (async () => {
+      try {
+        const r = await withTimeout(K.api('speed.diagnose'), 15000);
+        if (run !== lt.run) return;
+        lt.rep = normRep(r);
+        lt.status = 'ok';
+        lt.err = null;
+        lt.at = Date.now();
+        settleLt();
+      } catch (e) {
+        if (run !== lt.run) return;
+        lt.err = errMsg(e);
+        lt.status = lt.rep ? 'ok' : 'error';
+      }
+      lt.busy = false;
+      lt.p = null;
+      if (!mounted()) return;
+      paintTabs();
+      if (S.tab !== 'lento') return;
+      if (V.lt && lt.status === 'ok') fillLento();
+      else paintTab();
+    })();
+    lt.p = p;
+    return p;
+  }
+
+  /** depois de cada leitura: quem fechou sai da lista; quem não fechou a tempo ganha "Forçar" */
+  function settleLt() {
+    const lt = S.lt;
+    const t = Date.now();
+    const present = new Set(lt.rep.achados.filter((f) => f.tipo === 'processo' || f.tipo === 'navegador').map(appKey));
+    for (const [k, ph] of Array.from(lt.phase)) {
+      if (ph.phase === 'asking' || ph.phase === 'forcing') continue;
+      if (!present.has(k)) {
+        if (ph.phase !== 'err') lt.closed = { nome: ph.nome, mem: ph.mem, forced: ph.phase === 'forced' || ph.phase === 'forcefail', t };
+        lt.phase.delete(k);
+        continue;
+      }
+      if (ph.phase === 'asked' && t - ph.t >= STUCK_MS) ph.phase = 'stuck';
+      if (ph.phase === 'forced' && t - ph.t >= STUCK_MS) ph.phase = 'forcefail';
+      if (ph.phase === 'err' && t - ph.t > 60000) lt.phase.delete(k);
+    }
+  }
+
+  function paintLento() {
+    const lt = S.lt;
+    if (lt.status === 'idle' || (lt.status === 'loading' && !lt.rep)) {
+      V.panel.appendChild(loadingCard('Vendo o que está pesando agora…', 3));
+    } else if (lt.status === 'error' && !lt.rep) {
+      V.panel.appendChild(errorCard('Não consegui ver o que está pesando', lt.err, () => { diagnose(); }, 'Leva uns 2 segundos.'));
+    } else {
+      const R = { rows: new Map() };
+      V.lt = R;
+      V.panel.appendChild(ltHero(R));
+      R.note = K.el('div', { class: 'tip ot-note warn', hidden: true, html: K.icon('alert') }, K.el('p'));
+      R.closed = K.el('div', { class: 'tip ot-closed ot-lt-closed', role: 'status', 'aria-live': 'polite', hidden: true });
+      R.body = K.el('div', { class: 'ot-lt-body' });
+      V.panel.append(R.note, R.closed, R.body);
+      R.mascot = addMascot(R.mascotBox, 116, { face: verdictOf(lt.rep).face });
+      try {
+        R.gauge = K.charts.gauge(R.gaugeBox, { value: lt.rep.nota, min: 0, max: 100, zones: NOTA_ZONES, size: 210, pill: false,
+          format: (v) => K.fmt.num(v, 0), endFormat: (v) => K.fmt.num(v, 0), label: 'de 100', tipTitle: 'Nota do Mac agora' });
+        V.charts.push(R.gauge);
+      } catch (e) { console.warn('otimizar/mostrador: ' + errMsg(e)); }
+      fillLento(true);
+    }
+    V.panel.appendChild(vigiaCard());
+  }
+
+  function ltHero(R) {
+    R.mascotBox = K.el('div', { class: 'ot-lt-mascot' });
+    R.verdict = K.el('h2', { class: 'ot-lt-verdict' });
+    R.line = K.el('p', { class: 'ot-lt-line' });
+    R.facts = K.el('p', { class: 'ot-lt-facts' });
+    R.againT = K.el('span', null, 'Conferir de novo');
+    R.again = K.el('button', { class: 'btn small ot-again', type: 'button', html: K.icon('cycle'), dataset: { fk: 'ot-lt-again' },
+      onclick: () => { if (S.lt.busy) return; K.sound.tick(); diagnose(); } }, R.againT);
+    R.at = K.el('span', { class: 'ot-lt-at' });
+    R.gaugeBox = K.el('div', { class: 'ot-lt-gauge-in' });
+    return K.el('section', { class: cls('card gold ot-lt-hero'), 'aria-label': 'Por que o Mac está lento agora' },
+      K.el('div', { class: 'ot-lt-art' }, R.mascotBox, K.el('span', { class: 'ot-sum-badge ot-lt-badge', html: K.icon('gauge') })),
+      K.el('div', { class: 'ot-lt-main' }, K.el('div', { role: 'status', 'aria-live': 'polite' }, R.verdict, R.line), R.facts,
+        K.el('div', { class: 'ot-lt-act' }, R.again, R.at)),
+      K.el('div', { class: 'ot-lt-gauge' }, R.gaugeBox));
+  }
+
+  function paintLtBusy() {
+    const R = V && V.lt;
+    if (!R || !R.again) return;
+    const busy = S.lt.busy;
+    R.again.setAttribute('aria-disabled', String(busy));
+    R.again.classList.toggle('is-busy', busy);
+    setText(R.againT, busy ? 'Conferindo…' : 'Conferir de novo');
+  }
+
+  function factsOf(rep) {
+    const out = [];
+    if (isNum(rep.cpu)) out.push(['cpu', 'Processador', K.fmt.pct(rep.cpu, rep.cpu > 0 && rep.cpu < 10 ? 1 : 0)]);
+    if (isNum(rep.memUsadaBytes)) {
+      out.push(['memory', 'Memória', K.fmt.mem(rep.memUsadaBytes) + (isNum(rep.memTotalBytes) && rep.memTotalBytes > 0 ? ' de ' + K.fmt.mem(rep.memTotalBytes, 0) : '')]);
+    }
+    if (isNum(rep.discoLivreBytes)) out.push(['disk', 'Disco', K.fmt.bytes(rep.discoLivreBytes) + ' livres']);
+    if (isNum(rep.uptimeSec)) out.push(['clock', 'Ligado há', K.fmt.duration(rep.uptimeSec)]);
+    return out;
+  }
+
+  /** escreve a leitura na tela montada (na primeira vez e a cada "Conferir de novo") */
+  function fillLento(first) {
+    const R = V && V.lt;
+    if (!R) return;
+    const pop = V.pop;
+    if (!first) V.pop = false;   // leitura nova não faz os cartões pularem de novo
+    const lt = S.lt;
+    const rep = lt.rep;
+    const vd = verdictOf(rep);
+    const n = rep.achados.length;
+    setText(R.verdict, vd.t);
+    /* voando com algo na lista: é pouca coisa, não "pesando" */
+    setText(R.line, !n ? 'Nada pesando agora.'
+      : rep.veredito === 'voando' ? `Só ${n === 1 ? 'um detalhe' : `${K.fmt.num(n)} detalhes`} pra olhar.`
+      : `${plural(n, 'coisa pesando', 'coisas pesando')} agora`);
+    R.facts.textContent = '';
+    for (const [ic, lab, val] of factsOf(rep)) R.facts.appendChild(K.el('span', { class: 'ot-lt-fact', html: K.icon(ic) }, K.el('span', null, lab + ' ', K.el('b', null, val))));
+    R.facts.hidden = !R.facts.childNodes.length;
+    setText(R.at, isNum(rep.readAt) ? `lido às ${K.fmt.time(rep.readAt)}` : '');
+    if (R.mascot && R.face !== vd.face) { R.face = vd.face; R.mascot.set({ face: vd.face }); }
+    if (R.gauge) R.gauge.update({ value: rep.nota });
+    R.note.hidden = !lt.err;
+    if (lt.err) setText(R.note.querySelector('p'), `Não consegui conferir de novo agora (${noDot(lt.err)}). Mostro a última leitura.`);
+    paintLtClosed();
+    const had = R.body.contains(document.activeElement);
+    K.keepFocus(R.body, () => {
+      R.body.textContent = '';
+      R.rows = new Map();
+      const rows = rep.achados.map((f) => ltRow(f, rep)).filter(Boolean);
+      if (rows.length) R.body.appendChild(ltListCard(rows));
+      else R.body.appendChild(ltEmpty());
+    });
+    /* o botão que tinha o foco sumiu (o app fechou): o foco vai pro "Conferir de novo" */
+    if (had && !R.body.contains(document.activeElement)) { try { R.again.focus({ preventScroll: true }); } catch (e) { /* sem foco */ } }
+    V.pop = pop;
+    paintLtBusy();
+  }
+
+  function ltListCard(rows) {
+    const ul = K.el('ul', { class: 'ot-lt-list', 'aria-label': 'O que está pesando' });
+    for (const r of rows) ul.appendChild(r.li);
+    return K.el('section', { class: cls('card ot-lt-card'), style: delay(80) },
+      K.el('div', { class: 'card-head ot-lt-head' },
+        K.el('div', { class: 'ot-hv-title' },
+          K.el('span', { class: 'head-ic', html: K.icon('otWeight') }),
+          K.el('div', null,
+            K.el('h2', null, 'O que está pesando'),
+            K.el('div', { class: 'card-sub' }, 'Do que mais pesa pro que menos pesa.')))),
+      ul);
+  }
+
+  function ltEmpty() {
+    return K.el('section', { class: cls('ot-empty ot-lt-empty'), style: delay(80) },
+      K.el('span', { class: 'ot-lt-empty-ic', 'aria-hidden': 'true', html: K.icon('otEye') }),
+      K.el('div', { class: 'ot-empty-text' },
+        K.el('p', null, 'Se ficar lento, volta aqui na hora: eu vejo o que pesa naquele momento.')));
+  }
+
+  function ltRow(f, rep) {
+    const d = describe(f, rep);
+    if (!d) return null;
+    const tone = ['warn', 'serious', 'crit'].includes(f.tom) ? f.tom : 'warn';
+    const r = { f, d };
+    r.act = K.el('span', { class: 'ot-act ot-lt-actcell' });
+    r.msg = K.el('span', { class: 'ot-msg', hidden: true, role: 'status' });
+    const ic = d.img ? appIcon(d.img) : K.el('span', { class: 'ot-ic ot-lt-ic ' + tone, 'aria-hidden': 'true', html: K.icon(d.icon) });
+    r.li = K.el('li', { class: 'ot-lt-row' }, ic,
+      K.el('span', { class: 'ot-text' },
+        K.el('span', { class: 'ot-lt-t' }, d.t),
+        d.d ? K.el('span', { class: 'ot-lt-d' }, d.d) : null,
+        r.msg),
+      r.act);
+    V.lt.rows.set(f.id || appKey(f), r);
+    paintLtRow(r);
+    return r;
+  }
+
+  function ltActKey(r) {
+    const a = r.d.act;
+    if (!a) return 'none';
+    if (a.kind !== 'quit') return a.kind;
+    const ph = S.lt.phase.get(appKey(r.f));
+    return 'quit:' + (ph ? ph.phase + (ph.force ? '!' : '') : 'none') + (S.lt.acting ? ':busy' : '');
+  }
+
+  function ltActNode(r) {
+    const f = r.f;
+    const a = r.d.act;
+    if (!a) return null;
+    if (a.kind === 'tag') return tag(a.tone + ' ot-lt-tag', a.icon, a.text, a.title);
+    if (a.kind === 'na') return K.el('span', { class: 'ot-na', html: K.icon('lock'), title: 'O Kamurafy não fecha processos do macOS: eles seguram o sistema de pé.' }, 'é do macOS');
+    if (a.kind === 'btn') {
+      return K.el('button', { class: 'btn small', type: 'button', html: K.icon(a.icon), onclick: (e) => { a.run(e, f); } }, a.label);
+    }
+    const nome = vis(ltName(f));
+    const ph = S.lt.phase.get(appKey(f));
+    const p = ph && ph.phase;
+    const busy = S.lt.acting;
+    if (p === 'asking') return K.el('button', { class: 'btn small ot-quit is-busy', type: 'button', disabled: true, html: K.icon('otQuit') }, 'Fechando…');
+    if (p === 'forcing') return K.el('button', { class: 'btn small danger ot-force is-busy', type: 'button', disabled: true, html: K.icon('alert') }, 'Forçando…');
+    if (p === 'asked' || p === 'forced') return K.el('button', { class: 'btn small ot-wait', type: 'button', disabled: true, html: K.icon('clock') }, 'Esperando…');
+    if (p === 'stuck' || p === 'refused' || p === 'forcefail' || (p === 'err' && ph.force)) {
+      return K.el('button', { class: 'btn small danger ot-force', type: 'button', html: K.icon('alert'), disabled: busy,
+        'aria-label': `Forçar ${nome} a fechar`, onclick: () => { ltForce(f); } }, 'Forçar');
+    }
+    return K.el('button', { class: 'btn small ot-quit', type: 'button', html: K.icon('otQuit'), disabled: busy,
+      'aria-label': `Fechar ${nome}`, onclick: () => { ltQuit(f); } }, 'Fechar');
+  }
+
+  function paintLtRow(r) {
+    const ak = ltActKey(r);
+    if (r.actKey !== ak) {
+      r.actKey = ak;
+      r.act.textContent = '';
+      const node = ltActNode(r);
+      if (node) r.act.appendChild(node);
+      r.act.hidden = !node;
+    }
+    const ph = quittable(r.f) ? S.lt.phase.get(appKey(r.f)) : null;
+    paintMsg(r.msg, ph ? phaseMsg(ph) : S.lt.msgs.get(r.f.id) || null);
+    r.li.classList.toggle('is-closing', !!ph && ['asking', 'asked', 'forcing', 'forced'].includes(ph.phase));
+  }
+
+  function repaintLtRows() {
+    if (!mounted() || S.tab !== 'lento' || !V.lt) return;
+    for (const r of V.lt.rows.values()) paintLtRow(r);
+    paintLtClosed();
+    paintTabs();
+  }
+
+  function paintLtClosed() {
+    const R = V && V.lt;
+    if (!R || !R.closed) return;
+    const c = S.lt.closed;
+    const show = !!c && Date.now() - c.t < 30000;
+    R.closed.hidden = !show;
+    if (!show) return;
+    const key = c.t + c.nome;
+    if (R.closedKey === key) return;
+    R.closedKey = key;
+    R.closed.innerHTML = K.icon('check');
+    const mem = isNum(c.mem) && c.mem >= 50e6 ? ` A memória dele (${K.fmt.mem(c.mem)}) voltou pro Mac.` : '';
+    R.closed.appendChild(K.el('p', null, `${c.forced ? 'Fechei à força' : 'Fechou'}: ${inl(c.nome)}.${mem}`));
+  }
+
+  async function openBatterySettings(e, f) {
+    K.sound.plop();
+    try {
+      await K.api('open.settings', { painel: 'bateria' });
+      S.lt.msgs.delete(f.id);
+    } catch (err) {
+      K.sound.oops();
+      S.lt.msgs.set(f.id, { tone: 'crit', icon: 'alert', text: `Não abriu (${noDot(errMsg(err))}). Abra Ajustes do Sistema › Bateria.` });
+    }
+    repaintLtRows();
+  }
+
+  function ltStats(f) {
+    const bits = [];
+    if (isNum(f.cpu)) bits.push(`${cpuTxt(f.cpu)} de CPU`);
+    if (isNum(f.memBytes)) bits.push(`${K.fmt.mem(f.memBytes)} de memória`);
+    if (!bits.length) return null;
+    const n = isNum(f.processos) ? f.processos : 1;
+    return K.el('p', { class: 'kmodal-text ot-cf-stats' },
+      `Agora ele usa ${bits.join(' e ')}${n > 1 ? `, somando ${plural(n, 'processo', 'processos')}` : ''}.`);
+  }
+
+  async function ltQuit(f, opts) {
+    opts = opts || {};
+    if (S.lt.acting || !quittable(f)) return false;
+    const app = ltIsApp(f);
+    if (!opts.semConfirmar) {
+      K.sound.plop();
+      const ok = await K.confirm({
+        title: app ? `Fechar o app ${inl(ltName(f))}?` : `Fechar ${inl(ltName(f))}?`,
+        text: app ? 'Se tiver algo sem salvar, o próprio app pergunta antes de fechar.'
+          : 'Se ele estiver no meio de algo, como uma sincronização ou um download, isso para.',
+        body: ltStats(f),
+        note: { tone: 'good', icon: 'check', text: app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. Se ele for de um app, o app costuma abrir ele de novo quando precisar.' },
+        ok: 'Fechar', cancel: 'Deixar aberto', icon: 'otQuit',
+      });
+      if (!ok) return false;
+    }
+    await doLtQuit(f, false);
+    return true;
+  }
+
+  async function ltForce(f, opts) {
+    opts = opts || {};
+    if (S.lt.acting || !quittable(f)) return false;
+    const app = ltIsApp(f);
+    if (!opts.semConfirmar) {
+      K.sound.plop();
+      const ok = await K.confirm({
+        title: app ? `Forçar o app ${inl(ltName(f))} a fechar?` : `Forçar ${inl(ltName(f))} a fechar?`,
+        text: app ? 'Ele fecha na hora, sem perguntar nada. Use quando ele travou ou não responde.' : 'O processo para na hora, sem terminar o que estava fazendo.',
+        note: { tone: 'crit', icon: 'alert', text: 'O que não foi salvo nele se perde, e isso não dá pra desfazer.' },
+        ok: 'Forçar e fechar', cancel: 'Esperar mais', tone: 'danger', icon: 'alert',
+      });
+      if (!ok) return false;
+    }
+    await doLtQuit(f, true);
+    return true;
+  }
+
+  async function doLtQuit(f, force) {
+    const lt = S.lt;
+    const key = appKey(f);
+    lt.acting = true;
+    lt.phase.set(key, { phase: force ? 'forcing' : 'asking', t: Date.now(), nome: ltName(f), mem: f.memBytes });
+    repaintLtRows();
+    /* cada leitura registra ids novos no Swift: espera a que estiver em andamento e usa o alvo mais novo */
+    if (lt.p) { try { await withTimeout(lt.p, 16000); } catch (e) { /* segue com o que tem */ } }
+    const cur = (lt.rep && lt.rep.achados.find((x) => quittable(x) && appKey(x) === key)) || f;
+    let next;
+    let stale = false;
+    try {
+      const r = await withTimeout(K.api('optimize.quit', force ? { id: cur.alvo, forcar: true } : { id: cur.alvo }), 15000);
+      if (r && r.ok) { next = { phase: force ? 'forced' : 'asked', t: Date.now() }; K.sound.tick(); }
+      else { next = { phase: force ? 'forcefail' : 'refused', t: Date.now() }; K.sound.oops(); }
+    } catch (e) {
+      const fr = friendly(e);
+      next = { phase: 'err', t: Date.now(), f: fr, force };
+      if (!fr.test) K.sound.oops();
+      stale = !!fr.stale;
+    }
+    lt.phase.set(key, Object.assign(lt.phase.get(key) || { nome: ltName(cur), mem: cur.memBytes }, next));
+    lt.acting = false;
+    repaintLtRows();
+    /* confere de novo: o app some da lista ou, se não fechou a tempo, ganha o "Forçar" */
+    if (next.phase === 'asked' || next.phase === 'forced') {
+      const me = V;
+      const again = () => {
+        const ph = lt.phase.get(key);
+        if (me && !me.dead && ph && (ph.phase === 'asked' || ph.phase === 'forced')) diagnose();
+      };
+      setTimeout(again, LT_RECHECK);
+      setTimeout(again, STUCK_MS + 300);
+    } else if (stale) diagnose();
+  }
+
+  /* ---------- vigia (settings.vigia / vigiaIgnorar) ---------- */
+
+  function readVg(v) {
+    const vg = S.vg;
+    if (!v || typeof v !== 'object') return;
+    vg.vigia = v.vigia !== false;
+    vg.ignorar = (Array.isArray(v.vigiaIgnorar) ? v.vigiaIgnorar : []).filter((x) => typeof x === 'string' && x.trim());
+  }
+
+  async function loadVigia() {
+    const vg = S.vg;
+    const run = ++vg.run;
+    try {
+      const v = await withTimeout(K.settings.load(), 6000);
+      if (run !== vg.run) return;
+      readVg(v);
+      vg.status = 'ok';
+      vg.err = null;
+    } catch (e) {
+      if (run !== vg.run) return;
+      if (vg.status !== 'ok') vg.status = 'error';
+    }
+    paintVigia();
+  }
+
+  async function saveVigia(patch) {
+    const vg = S.vg;
+    if (vg.status !== 'ok' || vg.busy) return false;
+    K.sound.plop();
+    const before = { vigia: vg.vigia, ignorar: vg.ignorar.slice() };
+    if ('vigia' in patch) vg.vigia = !!patch.vigia;
+    if ('vigiaIgnorar' in patch) vg.ignorar = patch.vigiaIgnorar.slice();
+    vg.busy = true;
+    vg.err = null;
+    ++vg.run;
+    paintVigia();
+    try {
+      readVg(await withTimeout(K.settings.set(patch), 8000));
+    } catch (e) {
+      vg.vigia = before.vigia;
+      vg.ignorar = before.ignorar;
+      vg.err = `Não consegui salvar agora (${noDot(errMsg(e))}). Voltei como estava.`;
+      K.sound.oops();
+    }
+    vg.busy = false;
+    paintVigia();
+    return true;
+  }
+
+  function vigiaCard() {
+    const R = {};
+    V.vg = R;
+    R.sw = K.el('button', { class: 'switch ot-lt-sw', type: 'button', role: 'switch', 'aria-label': VIGIA_T,
+      onclick: () => { if (!R.sw.disabled) saveVigia({ vigia: !S.vg.vigia }); } });
+    R.err = K.el('p', { class: 'ot-lt-err', role: 'alert', hidden: true });
+    R.ign = K.el('div', { class: 'ot-lt-ign', hidden: true });
+    const card = K.el('section', { class: cls('card ot-lt-vigia'), style: delay(160), 'aria-label': 'Vigia' },
+      K.el('div', { class: 'ot-lt-vg-row' },
+        K.el('span', { class: 'head-ic', html: K.icon('bell') }),
+        K.el('div', { class: 'ot-lt-vg-text' }, K.el('h2', null, 'Vigia'), K.el('p', null, VIGIA_T)),
+        R.sw),
+      R.err, R.ign);
+    paintVigia();
+    return card;
+  }
+
+  function paintVigia() {
+    const R = V && V.vg;
+    if (!R || !mounted()) return;
+    const vg = S.vg;
+    const ok = vg.status === 'ok';
+    R.sw.setAttribute('aria-checked', String(ok && vg.vigia));
+    /* ocupado salvando: o clique é ignorado, mas o interruptor não perde o foco */
+    R.sw.disabled = !ok;
+    R.sw.setAttribute('aria-busy', String(vg.busy));
+    R.sw.title = !ok ? '' : vg.vigia ? 'Ligada: eu olho a cada minuto e te aviso. Toque pra desligar.' : 'Desligada: não aviso nada. Toque pra ligar.';
+    const err = vg.status === 'error' ? 'Não consegui ler esse ajuste agora. Tento de novo quando você voltar pra esta aba.' : vg.err;
+    R.err.hidden = !err;
+    setText(R.err, err || '');
+    const list = ok ? vg.ignorar : [];
+    R.ign.hidden = !list.length;
+    const had = R.ign.contains(document.activeElement);
+    K.keepFocus(R.ign, () => {
+      R.ign.textContent = '';
+      if (!list.length) return;
+      const ul = K.el('ul', { class: 'ot-lt-ign-list' });
+      for (const nome of list) {
+        ul.appendChild(K.el('li', null,
+          K.el('span', { class: 'ot-lt-ign-n' }, vis(nome)),
+          K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
+            'aria-label': `Voltar a avisar sobre ${vis(nome)}`,
+            onclick: () => { saveVigia({ vigiaIgnorar: S.vg.ignorar.filter((x) => x !== nome) }); } }, 'Voltar a avisar')));
+      }
+      R.ign.append(K.el('span', { class: 'ot-lt-ign-l' }, 'Não aviso mais destes'), ul);
+    }, '.ot-lt-ign-list button');
+    /* tirou o último da lista: o foco volta pro interruptor */
+    if (had && !R.ign.contains(document.activeElement)) { try { R.sw.focus({ preventScroll: true }); } catch (e) { /* sem foco */ } }
+  }
+
   /* ================= página ================= */
 
   function teardown() {
@@ -1373,6 +1984,7 @@
     V.dead = true;
     clearTimeout(V.pollId);
     if (V.onVis) document.removeEventListener('visibilitychange', V.onVis);
+    for (const c of V.charts) { try { c.destroy(); } catch (e) { /* já foi */ } }
     for (const m of V.mascots) { try { m.destroy(); } catch (e) { /* já foi */ } }
     K.tooltip.hide();
     V = null;
@@ -1384,26 +1996,34 @@
     async render(el) {
       teardown();
       host = el;
-      V = { dead: false, mascots: [], stRows: new Map(), tasks: new Map(), hv: null, sum: null, popped: new Set(), pop: true, pollId: 0 };
+      V = { dead: false, mascots: [], charts: [], stRows: new Map(), tasks: new Map(), hv: null, sum: null, lt: null, vg: null,
+        popped: new Set(), pop: true, pollId: 0 };
       const me = V;
+      /* a rota diz a aba (os avisos da vigia abrem otimizar?aba=lento); sem ela, a primeira */
       const q = /[?&]aba=([a-z]+)/.exec(location.hash || '');
-      if (q && TABS.some((t) => t.id === q[1])) S.tab = q[1];
+      S.tab = q && TABS.some((t) => t.id === q[1]) ? q[1] : TABS[0].id;
       /* recados e pedidos de fechar são desta visita; a lista e os resultados ficam */
       S.st.msgs.clear();
       S.hv.phase.clear();
       S.hv.closed = null;
       S.hv.acting = false;
+      S.lt.phase.clear();
+      S.lt.msgs.clear();
+      S.lt.closed = null;
+      S.lt.acting = false;
       await Promise.race([K.cached('battery.now', null, 5000).then((b) => { S.bat = b; }).catch(() => {}), K.sleep(700)]);
       if (me.dead || host !== el) return;
       paintShell();
       const pSt = loadStartup();
       const pTk = loadTasks();
       const pHv = S.tab === 'pesando' ? loadHeavy() : Promise.resolve();
+      const pLt = S.tab === 'lento' && ltStale() ? diagnose() : Promise.resolve();
+      loadVigia();
       paintTab();
       startPoll();
       me.onVis = () => { if (!document.hidden && S.tab === 'pesando') kickHeavy(); };
       document.addEventListener('visibilitychange', me.onVis);
-      const wait = S.tab === 'login' ? pSt : S.tab === 'pesando' ? pHv : pTk;
+      const wait = S.tab === 'lento' ? pLt : S.tab === 'login' ? pSt : S.tab === 'pesando' ? pHv : pTk;
       await Promise.race([wait, K.sleep(4000)]);
     },
     destroy() { teardown(); },
@@ -1419,13 +2039,21 @@
   }
 
   const hooks = {
-    /** troca de aba: 'login' | 'pesando' | 'manutencao' */
+    /** troca de aba: 'lento' | 'login' | 'pesando' | 'manutencao' */
     tab(nome) { setTab(nome); },
     /** lê de novo a aba (padrão: a atual) */
     reload(nome) {
       const t = nome || S.tab;
-      return t === 'login' ? loadStartup({ loud: true }) : t === 'pesando' ? loadHeavy() : loadTasks();
+      return t === 'lento' ? diagnose() : t === 'login' ? loadStartup({ loud: true }) : t === 'pesando' ? loadHeavy() : loadTasks();
     },
+    /** "Por que tá lento?": Fechar / Forçar um achado pelo nome ({semConfirmar: true} pula o modal) */
+    ltQuit(m, opts) { const f = S.lt.rep && findIn(S.lt.rep.achados.filter(quittable), m); return f ? ltQuit(f, opts) : Promise.resolve(false); },
+    ltForce(m, opts) { const f = S.lt.rep && findIn(S.lt.rep.achados.filter(quittable), m); return f ? ltForce(f, opts) : Promise.resolve(false); },
+    /** envelhece os pedidos de fechar da aba lento e confere de novo (pra ver o "Forçar" sem esperar) */
+    ltAge(ms) { for (const ph of S.lt.phase.values()) ph.t -= (ms || STUCK_MS); return diagnose(); },
+    /** liga/desliga a vigia; unignore('Spotify') tira um nome da lista de "não avisar" */
+    vigia(on) { return saveVigia({ vigia: on !== false }); },
+    unignore(nome) { return saveVigia({ vigiaIgnorar: S.vg.ignorar.filter((x) => x !== nome) }); },
     /** liga/desliga um item de início pelo nome ou label; {semConfirmar: true} pula o modal */
     toggle(m, ligar, opts) { const it = findIn(S.st.items, m); return it ? toggleStartup(it, ligar, opts) : Promise.resolve(false); },
     /** Fechar (abre o modal, a menos que {semConfirmar: true}) */
@@ -1446,12 +2074,16 @@
       Object.assign(S.st, { status: 'idle', items: [], err: null, at: 0, run: S.st.run + 1 });
       Object.assign(S.hv, { status: 'idle', items: [], sys: null, err: null, at: 0, run: S.hv.run + 1, fails: 0, paused: false, acting: false, closed: null, showCalm: false, calmN: 0 });
       Object.assign(S.tk, { status: 'idle', items: [], err: null, run: S.tk.run + 1, busy: null });
-      S.st.msgs.clear(); S.st.busy.clear(); S.hv.phase.clear(); S.tk.res.clear();
+      Object.assign(S.lt, { status: 'idle', rep: null, err: null, at: 0, run: S.lt.run + 1, busy: false, p: null, acting: false, closed: null });
+      Object.assign(S.vg, { status: 'idle', vigia: true, ignorar: [], busy: false, err: null, run: S.vg.run + 1 });
+      S.st.msgs.clear(); S.st.busy.clear(); S.hv.phase.clear(); S.tk.res.clear(); S.lt.phase.clear(); S.lt.msgs.clear();
       S.test = false;
     },
     state() {
       return {
         tab: S.tab, test: S.test,
+        lento: { status: S.lt.status, veredito: S.lt.rep && S.lt.rep.veredito, nota: S.lt.rep && S.lt.rep.nota, achados: S.lt.rep ? S.lt.rep.achados.map((f) => f.tipo + (f.detalhe ? ':' + f.detalhe : '')) : [],
+          fases: Array.from(S.lt.phase, ([k, p]) => ({ k, fase: p.phase })), vigia: S.vg.status === 'ok' ? S.vg.vigia : null, ignorar: S.vg.ignorar.slice() },
         login: { status: S.st.status, itens: S.st.items.length, ligados: S.st.items.filter((x) => x.ligado).length, recados: S.st.msgs.size },
         pesando: { status: S.hv.status, itens: S.hv.items.length, pausado: S.hv.paused, fases: Array.from(S.hv.phase, ([pid, p]) => ({ pid, fase: p.phase })) },
         manutencao: { status: S.tk.status, itens: S.tk.items.length, rodando: S.tk.busy, resultados: Array.from(S.tk.res, ([id, r]) => ({ id, fase: r.phase })) },

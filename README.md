@@ -31,17 +31,21 @@
 - Quem mais gasta bateria agora, com as abas e ajudantes somados no app certo.
 - Aviso quando a carga chega no limite que você escolher (ex.: 80%) e quando a bateria esquenta.
 
-**🔍 Varredura**: um botão confere bateria, energia, memória, processador, disco e sujeira, e diz o que dá pra fazer agora.
+**🔍 Varredura**: um botão confere bateria, energia, memória, processador, velocidade, disco e sujeira, e diz o que dá pra fazer agora. O **Deixar voando** faz tudo de uma vez, depois que você marca e confirma.
 
 **📊 Painel**: processador, memória (com a explicação de por que "liberar RAM" não ajuda), disco e o seu Mac, ao vivo.
 
 **🧹 Faxina**: caches de apps, caches de programação (npm, pip, Xcode…), logs, downloads esquecidos, arquivos grandes e duplicados. Tudo vai pra Lixeira, com desfazer.
 
-**🚀 Otimizar**: o que abre sozinho quando o Mac liga, o que está pesando agora e tarefas de manutenção (DNS, Spotlight, "Abrir com").
+**🚀 Otimizar**: **por que seu Mac tá lento** (o que pesa agora, do que mais pesa pro que menos pesa, com o botão pra resolver), o que abre sozinho quando o Mac liga, o que está pesando agora e tarefas de manutenção (DNS, Spotlight, "Abrir com").
+
+**👀 Vigia**: avisa quando um app fica 10 minutos no talo ou a memória chega no limite, mesmo com a janela fechada. Não avisa do app que está na sua frente (jogo, exportação).
 
 **📦 Desinstalar**: tira o app junto com as sobras que ele espalha pela sua pasta.
 
 **Na barra de menus**: a bateria sempre à vista, com um resumo a um clique.
+
+**Leve**: aberto e parado, ele usa uns 180 MB e quase nada do processador. O número de agora fica nos Ajustes.
 
 <table>
   <tr>

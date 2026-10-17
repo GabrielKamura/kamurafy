@@ -568,9 +568,9 @@
 
   /** depois de uma limpeza numa aba, as outras não podem continuar mostrando como presente o que
       já está na Lixeira: some da lista (pelo caminho) e fica um aviso de que a lista mudou */
-  function pruneOthers(kind, paths) {
+  function pruneOthers(kind, paths, by) {
     if (!paths.length) return;
-    const label = TABS.find((t) => t.id === TAB_OF[kind]).label;
+    const label = by || `aba ${TABS.find((t) => t.id === TAB_OF[kind]).label}`;
     for (const other of ['suj', 'gra', 'dup']) {
       if (other === kind) continue;
       const st = S[other];
@@ -613,7 +613,7 @@
     const s = st.stale;
     if (s) {
       const bits = [];
-      if (s.gone) bits.push(`${plural(s.gone, 'item daqui já foi', 'itens daqui já foram')} pra Lixeira pela aba ${s.by.join(' e ')}, e ${s.gone === 1 ? 'saiu' : 'saíram'} da lista`);
+      if (s.gone) bits.push(`${plural(s.gone, 'item daqui já foi', 'itens daqui já foram')} pra Lixeira pela ${s.by.join(' e ')}, e ${s.gone === 1 ? 'saiu' : 'saíram'} da lista`);
       if (s.dissolved) bits.push(`${s.dissolved === 1 ? 'um grupo ficou' : `${K.fmt.num(s.dissolved)} grupos ficaram`} com uma cópia só e ${s.dissolved === 1 ? 'saiu' : 'saíram'} também: essa cópia é a última fora da Lixeira`);
       if (s.changed.size) bits.push(`${plural(s.changed.size, 'pasta daqui tinha', 'pastas daqui tinham')} coisa que foi pra Lixeira, então o tamanho mostrado ficou maior que o de verdade`);
       if (s.back) bits.push('algo voltou da Lixeira e ainda não aparece aqui');
@@ -2071,6 +2071,13 @@
     }
     if (bat.status === 'fulfilled') S.bat = bat.value;
   }
+
+  /* o "Deixar voando" da Varredura mandou caches pra Lixeira: a lista daqui perde esses itens */
+  window.addEventListener('kamurafy:limpou', (e) => {
+    const d = (e && e.detail) || {};
+    if (d.origem === 'faxina' || !Array.isArray(d.caminhos)) return;
+    pruneOthers(null, d.caminhos.map(String).filter(Boolean), 'Varredura');
+  });
 
   K.pages.faxina = {
     title: 'Faxina',

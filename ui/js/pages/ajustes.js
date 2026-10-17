@@ -1,5 +1,6 @@
 /* Kamurafy — Ajustes (rota "ajustes", botão com a engrenagem no rodapé da barra lateral).
-   Cartões: Sons · Barra de menus · Abrir junto com o Mac · Avisos da bateria · Privacidade · Sobre.
+   Cartões: Sons · Barra de menus · Abrir junto com o Mac · Avisos (bateria e vigia) · Privacidade · Sobre.
+   No Sobre, quanto o próprio Kamurafy pesa agora (app.weight, lido ao abrir a página).
    Tudo salva na hora (settings.set / menubar.loginItem), sem botão de salvar: a tela muda
    primeiro e volta como estava se o Swift não aceitar, com o motivo no próprio cartão.
    Ao voltar pra janela (ex.: depois de aprovar algo nos Ajustes do Sistema), relê o que o
@@ -19,7 +20,9 @@
     ajDisk: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="12" cy="11.5" r="4"/><path d="M6.5 17h2"/><path d="M14.8 8.7 17.5 6"/>',
   });
 
-  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false };
+  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false, vigia: true };
+  /* o mesmo texto do cartão "Vigia" no Otimizar › Por que tá lento? */
+  const VIGIA_T = 'Me avisar quando um app ficar no talo ou a memória chegar no limite';
   const LIMITES = [70, 75, 80, 85, 90];
   const DATA_DIR = '~/Library/Application Support/Kamurafy';
   const LINKS = {
@@ -321,11 +324,12 @@
 
   /* ---------- avisos da bateria ---------- */
   function alertsCard(delay) {
-    const c = card('avisos', 'bell', 'Avisos da bateria', 'Eu te chamo na hora certa, com uma notificação do macOS.', null, delay);
+    const c = card('avisos', 'bell', 'Avisos', 'Eu te chamo na hora certa, com uma notificação do macOS.', null, delay);
     const err = errLine();
     V.t80 = K.el('b');
     V.sw80 = makeSwitch('Aviso de carga', (on) => save({ aviso80: on }, err));
     V.swHot = makeSwitch('Aviso de calor', (on) => save({ avisoQuente: on }, err));
+    V.swVigia = makeSwitch(VIGIA_T, (on) => save({ vigia: on }, err));
     V.lims = K.el('div', { class: 'aj-lims', role: 'radiogroup', 'aria-label': 'Avisar quando a carga chegar em' });
     V.limErr = err;
     V.limRow = K.el('div', { class: 'aj-limrow' }, K.el('span', { class: 'aj-limrow-l' }, 'Avisar em'), V.lims);
@@ -340,6 +344,8 @@
       V.limRow,
       setting(K.el('b', null, K.avisosTxt.quente),
         K.el('span', null, K.avisosTxt.quenteSub), V.swHot),
+      setting(K.el('b', null, VIGIA_T),
+        K.el('span', null, 'Olho a cada minuto. Processo do macOS fica de fora.'), V.swVigia),
       setting(K.el('b', null, 'Notificações do macOS', V.notifPill), V.notifTx, V.notifBtns, 'aj-notif'),
       err, V.notifErr, V.alertNote);
     return c;
@@ -349,6 +355,7 @@
     V.t80.textContent = K.avisosTxt.carga(S.limiteAviso);
     V.sw80.paint(!!S.aviso80, !loaded);
     V.swHot.paint(!!S.avisoQuente, !loaded);
+    V.swVigia.paint(S.vigia !== false, !loaded);
     const list = LIMITES.includes(S.limiteAviso) ? LIMITES : LIMITES.concat([S.limiteAviso]).sort((a, b) => a - b);
     if (V.lims.childElementCount !== list.length) {
       V.lims.textContent = '';
@@ -376,7 +383,7 @@
 
     const desk = V.bat && V.bat.present === false && !K.isLaptop(V.info);
     V.alertNote.textContent = desk
-      ? 'Este Mac não tem bateria, então os avisos ficam guardados sem ter o que avisar.'
+      ? 'Este Mac não tem bateria: os avisos de carga e de calor ficam guardados sem ter o que avisar.'
       : 'Os avisos funcionam enquanto o Kamurafy estiver aberto, mesmo com a janela fechada.';
   }
 
@@ -493,6 +500,7 @@
           K.el('span', { class: 'sticker aj-ver num' }, verTxt),
           v && v.publico === false ? K.el('span', { class: 'aj-devtag' }, 'versão de desenvolvimento') : null),
         K.el('p', { class: 'aj-about-lead' }, 'Cuida do seu Mac e, principalmente, da sua bateria. Grátis, de código aberto e sem assinatura.'),
+        weightLine(V.weight),
         K.el('p', { class: 'aj-about-by', html: K.icon('heart') }, K.el('span', null, 'Feito por Gabriel Kamura.'))),
       K.el('div', { class: 'aj-about-side' },
         K.el('span', { class: 'aj-where-l' }, 'Licença e créditos'),
@@ -505,6 +513,16 @@
     const pct = b && b.present !== false && typeof b.percent === 'number' ? b.percent : 78;
     try { mascots.push(K.mascot(mBox, { size: 130, state: { pct, tone: 'good', face: 'joy', label: 'Mascote do Kamurafy, feliz' } })); } catch (e) { /* sem mascote */ }
     return c;
+  }
+
+  /** "Agora eu uso 0,4% de um núcleo e 180 MB de memória." (app.weight; sem leitura, a linha some) */
+  function weightLine(w) {
+    const ok = (v) => typeof v === 'number' && isFinite(v) && v >= 0;
+    if (!w || !ok(w.cpu) || !ok(w.memBytes)) return null;
+    const cpu = w.cpu <= 0 ? '0%' : K.fmt.pct(w.cpu, w.cpu < 10 ? 1 : 0);
+    return K.el('p', { class: 'aj-weight', html: K.icon('leaf'),
+      title: 'Somando o app e os processos do WebKit dele. 100% seria um núcleo inteiro trabalhando.' },
+    K.el('span', null, `Agora eu uso ${cpu} de um núcleo e ${K.fmt.mem(w.memBytes)} de memória.`));
   }
 
   /* ================= tela ================= */
@@ -564,13 +582,14 @@
     for (const m of mascots) { try { m.destroy(); } catch (e) { /* já foi */ } }
     mascots = [];
     V = {};
-    const [s, mb, nt, b, info, ver] = await Promise.allSettled([
+    const [s, mb, nt, b, info, ver, wt] = await Promise.allSettled([
       withTimeout(K.settings.load(), 6000),
       withTimeout(K.api('menubar.status'), 6000),
       withTimeout(K.api('notify.status'), 6000),
       withTimeout(K.cached('battery.now', null, 5000), 6000),
       withTimeout(K.cached('battery.info', null, 600000), 6000),
       K.appVersion ? Promise.resolve(K.appVersion) : withTimeout(K.api('app.version'), 6000),
+      withTimeout(K.api('app.weight'), 6000),
     ]);
     if (my !== token || !host) return;
     loaded = s.status === 'fulfilled' && !!s.value;
@@ -581,6 +600,7 @@
     V.bat = b.status === 'fulfilled' ? b.value : null;
     V.info = info.status === 'fulfilled' ? info.value : null;
     V.ver = ver.status === 'fulfilled' ? ver.value : null;
+    V.weight = wt.status === 'fulfilled' ? wt.value : null;
     paint();
   }
 
