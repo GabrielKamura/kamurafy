@@ -10,7 +10,16 @@ K.inApp = !!(window.webkit && window.webkit.messageHandlers && window.webkit.mes
  */
 K.api = async function (cmd, args) {
   if (!K.inApp) throw new Error('Fora do app: abra pelo Kamurafy.app (ou tools/foto.sh).');
-  const raw = await window.webkit.messageHandlers.kamurafy.postMessage({ cmd, args: args || {} });
+  let raw;
+  try {
+    raw = await window.webkit.messageHandlers.kamurafy.postMessage({ cmd, args: args || {} });
+  } catch (e) {
+    /* a mensagem do Swift vem em português; a tradução fica no catálogo (o original segue em e.original) */
+    const msg = String((e && e.message) || e);
+    const err = new Error(K.t ? K.t(msg) : msg);
+    err.original = msg;
+    throw err;
+  }
   return raw == null ? null : JSON.parse(raw);
 };
 

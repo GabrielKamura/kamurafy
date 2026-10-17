@@ -44,10 +44,10 @@
   });
 
   const TABS = [
-    { id: 'lento', label: 'Por que tá lento?', icon: 'gauge' },
-    { id: 'login', label: 'Abrem com o Mac', icon: 'otPower' },
-    { id: 'pesando', label: 'Pesando agora', icon: 'otWeight' },
-    { id: 'manutencao', label: 'Manutenção', icon: 'otWrench' },
+    { id: 'lento', label: K.t('Por que tá lento?'), icon: 'gauge' },
+    { id: 'login', label: K.t('Abrem com o Mac'), icon: 'otPower' },
+    { id: 'pesando', label: K.t('Pesando agora'), icon: 'otWeight' },
+    { id: 'manutencao', label: K.t('Manutenção'), icon: 'otWrench' },
   ];
 
   const HEAVY_MS = 5000;         // "Pesando agora" relê a cada 5 s (só com a aba aberta)
@@ -59,38 +59,38 @@
   const CALM_MEM = 200 * 1048576;
 
   const ORIGENS = {
-    ajudante: { titulo: 'Ajudantes de apps', icon: 'apps',
-      sub: 'Atualizador, ícone na barra de menus, sincronização.' },
-    agente: { titulo: 'Agentes da sua pasta', icon: 'otScript',
-      sub: 'Programas da sua pasta (Biblioteca › LaunchAgents) que o macOS roda sozinho.' },
-    sistema: { titulo: 'Do sistema todo', icon: 'lock',
-      sub: 'Valem pra todos os usuários e pedem senha: é pelos Ajustes. Ficam fora da conta lá em cima.' },
+    ajudante: { titulo: K.t('Ajudantes de apps'), icon: 'apps',
+      sub: K.t('Atualizador, ícone na barra de menus, sincronização.') },
+    agente: { titulo: K.t('Agentes da sua pasta'), icon: 'otScript',
+      sub: K.t('Programas da sua pasta (Biblioteca › LaunchAgents) que o macOS roda sozinho.') },
+    sistema: { titulo: K.t('Do sistema todo'), icon: 'lock',
+      sub: K.t('Valem pra todos os usuários e pedem senha: é pelos Ajustes. Ficam fora da conta lá em cima.') },
   };
   const ORIGEM_ORDER = ['ajudante', 'agente', 'sistema'];
 
-  const PASS = 'O macOS vai pedir sua senha de administrador. O Kamurafy nunca vê a senha.';
+  const PASS = K.t('O macOS vai pedir sua senha de administrador. O Kamurafy nunca vê a senha.');
   /* o que a tela sabe a mais de cada tarefa (o Swift manda título, descrição, quando e demora) */
   const TASK_UI = {
-    dns: { icon: 'otGlobe', order: 0, ok: 'Limpar o cache',
-      bits: ['O primeiro acesso a cada site demora um tiquinho a mais.', 'Não apaga senha, histórico nem favorito.'] },
-    abrircom: { icon: 'otMenu', order: 1, ok: 'Arrumar a lista',
-      bits: ['Alguns ícones podem sumir e voltar.', 'Não apaga app nem arquivo.'] },
-    dock: { icon: 'otDock', order: 2, ok: 'Reiniciar o Dock',
-      bits: ['Nenhum app fecha. O Dock some e volta em um ou dois segundos.'] },
-    finder: { icon: 'otFolder', order: 3, ok: 'Reiniciar o Finder',
-      card: 'Se o Finder estiver copiando arquivos, espere terminar.',
-      warn: 'Se o Finder estiver copiando arquivos, isso para no meio. Espere terminar.',
-      bits: ['As janelas do Finder fecham; os arquivos ficam onde estão.'] },
-    spotlight: { icon: 'scan', order: 4, ok: 'Refazer o índice',
-      card: 'O Mac fica ocupado por algumas horas. Melhor na tomada.',
-      warn: 'O Mac fica ocupado por algumas horas: a busca fica incompleta e a ventoinha pode ligar. Melhor na tomada.',
-      bits: ['Não apaga arquivo: só o índice da busca.', 'Depois de começar, vai até o fim.'] },
+    dns: { icon: 'otGlobe', order: 0, ok: K.t('Limpar o cache'),
+      bits: [K.t('O primeiro acesso a cada site demora um tiquinho a mais.'), K.t('Não apaga senha, histórico nem favorito.')] },
+    abrircom: { icon: 'otMenu', order: 1, ok: K.t('Arrumar a lista'),
+      bits: [K.t('Alguns ícones podem sumir e voltar.'), K.t('Não apaga app nem arquivo.')] },
+    dock: { icon: 'otDock', order: 2, ok: K.t('Reiniciar o Dock'),
+      bits: [K.t('Nenhum app fecha. O Dock some e volta em um ou dois segundos.')] },
+    finder: { icon: 'otFolder', order: 3, ok: K.t('Reiniciar o Finder'),
+      card: K.t('Se o Finder estiver copiando arquivos, espere terminar.'),
+      warn: K.t('Se o Finder estiver copiando arquivos, isso para no meio. Espere terminar.'),
+      bits: [K.t('As janelas do Finder fecham; os arquivos ficam onde estão.')] },
+    spotlight: { icon: 'scan', order: 4, ok: K.t('Refazer o índice'),
+      card: K.t('O Mac fica ocupado por algumas horas. Melhor na tomada.'),
+      warn: K.t('O Mac fica ocupado por algumas horas: a busca fica incompleta e a ventoinha pode ligar. Melhor na tomada.'),
+      bits: [K.t('Não apaga arquivo: só o índice da busca.'), K.t('Depois de começar, vai até o fim.')] },
   };
 
   const PRESSURE = {
-    normal: { label: 'Pressão normal', tone: 'good', icon: 'check' },
-    atencao: { label: 'Pressão alta', tone: 'warn', icon: 'eye' },
-    critica: { label: 'Pressão crítica', tone: 'crit', icon: 'alert' },
+    normal: { label: K.t('Pressão normal'), tone: 'good', icon: 'check' },
+    atencao: { label: K.t('Pressão alta'), tone: 'warn', icon: 'eye' },
+    critica: { label: K.t('Pressão crítica'), tone: 'crit', icon: 'alert' },
   };
 
   /* ================= estado (sobrevive à troca de tela) ================= */
@@ -120,7 +120,8 @@
   const snap = () => document.documentElement.classList.contains('snap');
   const calm = () => snap() || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches;
   const nowS = () => Date.now() / 1000;
-  const errMsg = (e) => (e && e.message ? String(e.message) : String(e || 'erro desconhecido'));
+  /* original em português (pras comparações abaixo); a tela mostra com K.t */
+  const errMsg = (e) => (e && (e.original || e.message) ? String(e.original || e.message) : String(e || K.t('erro desconhecido')));
   const mounted = () => !!V && !V.dead && !!host && document.body.contains(host);
   const setText = (n, t) => { if (n && n.textContent !== t) n.textContent = t; };
   const plural = (n, um, varios) => `${K.fmt.num(n)} ${n === 1 ? um : varios}`;
@@ -135,20 +136,20 @@
   const inl = (s) => '\u2068' + vis(s) + '\u2069';
 
   function withTimeout(p, ms, msg) {
-    return Promise.race([p, K.sleep(ms).then(() => { throw new Error(msg || 'demorou demais pra responder'); })]);
+    return Promise.race([p, K.sleep(ms).then(() => { throw new Error(msg || K.t('demorou demais pra responder')); })]);
   }
 
   /** "52%", "0,4%", "0%" */
   function cpuTxt(v) {
-    if (!isNum(v)) return 'sem leitura';
+    if (!isNum(v)) return K.t('sem leitura');
     if (v <= 0) return '0%';
     return K.fmt.pct(v, v < 10 ? 1 : 0);
   }
   /** 250 → "2,5 núcleos"; 100 → "1 núcleo" */
   function coresTxt(v) {
     const n = Math.round(v / 10) / 10;
-    if (n <= 1) return '1 núcleo';
-    return K.fmt.num(n, n % 1 ? 1 : 0) + ' núcleos';
+    if (n <= 1) return K.t('1 núcleo');
+    return K.fmt.num(n, n % 1 ? 1 : 0) + K.t(' núcleos');
   }
 
   /** mensagem do Swift → frase de gente. test = recusado por ser modo de teste (não é erro) */
@@ -157,19 +158,19 @@
     if (/só no app aberto/i.test(m)) {
       S.test = true;
       paintTest();
-      return { tone: 'none', icon: 'otFlask', test: true, text: 'Modo de teste: aqui eu só mostro, não mudo nada.' };
+      return { tone: 'none', icon: 'otFlask', test: true, text: K.t('Modo de teste: aqui eu só mostro, não mudo nada.') };
     }
     if (/não está mais na lista|abra a tela de novo|atualize|o arquivo mudou/i.test(m)) {
-      return { tone: 'warn', icon: 'cycle', stale: true, text: 'A lista estava velha e já olhei de novo. Tente outra vez.' };
+      return { tone: 'warn', icon: 'cycle', stale: true, text: K.t('A lista estava velha e já olhei de novo. Tente outra vez.') };
     }
-    if (/não encerra/i.test(m)) return { tone: 'none', icon: 'lock', text: 'É do macOS: esse eu não fecho.' };
-    if (/esse sou eu/i.test(m)) return { tone: 'none', icon: 'info', text: 'Esse sou eu. Pra me fechar, use Kamurafy › Sair.' };
-    if (/não mexo/i.test(m)) return { tone: 'none', icon: 'lock', text: 'Esse eu não mexo: é do macOS.' };
+    if (/não encerra/i.test(m)) return { tone: 'none', icon: 'lock', text: K.t('É do macOS: esse eu não fecho.') };
+    if (/esse sou eu/i.test(m)) return { tone: 'none', icon: 'info', text: K.t('Esse sou eu. Pra me fechar, use Kamurafy › Sair.') };
+    if (/não mexo/i.test(m)) return { tone: 'none', icon: 'lock', text: K.t('Esse eu não mexo: é do macOS.') };
     /* "Não deu certo (-1743)." → "Não deu certo (código -1743)." (sem repetir o começo) */
     const code = /^não deu certo\s*\((-?\d+)\)/i.exec(m);
-    if (code) return { tone: 'crit', icon: 'alert', text: `Não deu certo (código ${code[1]}). Tente de novo daqui a pouco.` };
-    if (/^não deu certo/i.test(m)) return { tone: 'crit', icon: 'alert', text: noDot(m) + '.' };
-    return { tone: 'crit', icon: 'alert', text: `Não deu certo: ${noDot(m) || 'erro desconhecido'}.` };
+    if (code) return { tone: 'crit', icon: 'alert', text: K.t('Não deu certo (código {0}). Tente de novo daqui a pouco.', code[1]) };
+    if (/^não deu certo/i.test(m)) return { tone: 'crit', icon: 'alert', text: noDot(K.t(m)) + '.' };
+    return { tone: 'crit', icon: 'alert', text: K.t('Não deu certo: {0}.', noDot(K.t(m)) || K.t('erro desconhecido')) };
   }
 
   /* entrada animada só na primeira vez que cada estado da aba aparece nesta montagem */
@@ -232,7 +233,7 @@
 
   /** o mesmo cartão de erro das outras telas (K.errorCard): rosa, mascote preocupado, botão ouro */
   function errorCard(title, err, retry, hint) {
-    const c = K.errorCard({ title, reason: noDot(err) || 'erro desconhecido', retry, retryHint: hint || 'Leva uns segundos.' });
+    const c = K.errorCard({ title, reason: noDot(err) || K.t('erro desconhecido'), retry, retryHint: hint || K.t('Leva uns segundos.') });
     if (V && V.pop) c.classList.add('pop-in');
     return c;
   }
@@ -251,16 +252,16 @@
   function paintShell() {
     host.innerHTML = '';
     V.testTag = K.el('span', { class: 'sticker has-ic ot-test', html: K.icon('otFlask'),
-      title: 'Modo de teste: mostra tudo, mas não muda nada.' }, 'modo de teste');
+      title: K.t('Modo de teste: mostra tudo, mas não muda nada.') }, K.t('modo de teste'));
     /* a promessa vai no subtítulo, como na Faxina e no Desinstalar; o canto direito fica só pra figurinha */
     host.appendChild(K.el('header', { class: 'page-head ot-head', 'data-drag': true },
       K.el('div', { class: 'ot-head-text' },
-        K.el('h1', null, 'Velocidade'),
-        K.el('p', { title: 'Desligar, fechar e as arrumações só mudam o que roda.' },
-          'O que deixa o Mac lento e como resolver. Nada aqui apaga arquivo seu.')),
+        K.el('h1', null, K.t('Velocidade')),
+        K.el('p', { title: K.t('Desligar, fechar e as arrumações só mudam o que roda.') },
+          K.t('O que deixa o Mac lento e como resolver. Nada aqui apaga arquivo seu.'))),
       K.el('div', { class: 'ot-head-side' }, V.testTag)));
 
-    const nav = K.el('nav', { class: 'ktabs ot-tabs', role: 'tablist', 'aria-label': 'Partes da Velocidade' });
+    const nav = K.el('nav', { class: 'ktabs ot-tabs', role: 'tablist', 'aria-label': K.t('Partes da Velocidade') });
     V.tabs = {};
     for (const t of TABS) {
       const badge = K.el('span', { class: 'ktab-badge ot-tab-badge num', hidden: true });
@@ -283,15 +284,15 @@
       const n = S.lt.rep.achados.length;
       if (!n) return null;
       const heavy = S.lt.rep.veredito === 'pesado' || S.lt.rep.veredito === 'travando';
-      return { text: K.fmt.num(n), tone: heavy ? 'warn' : null, icon: heavy ? 'alert' : null, title: `${plural(n, 'coisa pesando', 'coisas pesando')} agora` };
+      return { text: K.fmt.num(n), tone: heavy ? 'warn' : null, icon: heavy ? 'alert' : null, title: `${plural(n, K.t('coisa pesando'), K.t('coisas pesando'))} agora` };
     }
     if (id === 'login' && S.st.status === 'ok' && counted(S.st.items).length) {
       const on = counted(S.st.items).filter((x) => x.ligado).length;
-      return { text: plural(on, 'ligado', 'ligados'), title: `${plural(on, 'item abre', 'itens abrem')} sozinho${on === 1 ? '' : 's'} com o Mac` };
+      return { text: plural(on, K.t('ligado'), K.t('ligados')), title: K.t('{0} sozinho{1} com o Mac', plural(on, K.t('item abre'), K.t('itens abrem')), on === 1 ? '' : K.t('s')) };
     }
     if (id === 'pesando') {
       const stuck = Array.from(S.hv.phase.values()).filter((p) => p.phase === 'stuck' || p.phase === 'refused' || p.phase === 'forcefail').length;
-      if (stuck) return { text: K.fmt.num(stuck), tone: 'warn', icon: 'alert', title: stuck === 1 ? 'Um app que você pediu pra fechar continua aberto' : `${K.fmt.num(stuck)} apps que você pediu pra fechar continuam abertos` };
+      if (stuck) return { text: K.fmt.num(stuck), tone: 'warn', icon: 'alert', title: stuck === 1 ? K.t('Um app que você pediu pra fechar continua aberto') : K.t('{0} apps que você pediu pra fechar continuam abertos', K.fmt.num(stuck)) };
     }
     return null;
   }
@@ -406,28 +407,28 @@
     /* aria-disabled (e não disabled): o botão continua com o foco enquanto procura */
     V.sum.again.setAttribute('aria-disabled', String(busy));
     V.sum.again.classList.toggle('is-busy', busy);
-    setText(V.sum.againT, busy ? 'Procurando…' : 'Procurar de novo');
+    setText(V.sum.againT, busy ? K.t('Procurando…') : K.t('Procurar de novo'));
   }
 
   function paintLogin() {
     const st = S.st;
     if (st.status === 'idle' || st.status === 'loading') {
-      V.panel.appendChild(loadingCard('Procurando o que abre junto com o Mac…', 3));
+      V.panel.appendChild(loadingCard(K.t('Procurando o que abre junto com o Mac…'), 3));
       return;
     }
     if (st.status === 'error') {
-      V.panel.appendChild(errorCard('Não consegui ver o que abre com o Mac', st.err, () => loadStartup({ loud: true }), 'Leva uns 2 segundos.'));
+      V.panel.appendChild(errorCard(K.t('Não consegui ver o que abre com o Mac'), st.err, () => loadStartup({ loud: true }), K.t('Leva uns 2 segundos.')));
       return;
     }
     const items = st.items;
     if (items.length) V.panel.appendChild(startupSummary(items));
     if (st.err) {
       V.panel.appendChild(K.el('div', { class: 'tip ot-note warn', html: K.icon('alert') },
-        K.el('p', null, `Não consegui olhar de novo (${noDot(st.err)}). Mostro a última lista.`)));
+        K.el('p', null, K.t('Não consegui olhar de novo ({0}). Mostro a última lista.', noDot(st.err)))));
     }
     if (!items.length) {
-      const box = emptyBox('Nada abre sozinho com o Mac',
-        'Pelo menos nada que eu enxergue daqui.');
+      const box = emptyBox(K.t('Nada abre sozinho com o Mac'),
+        K.t('Pelo menos nada que eu enxergue daqui.'));
       V.panel.appendChild(box);
       addMascot(box._art, 96, { face: 'joy' });
     } else {
@@ -451,16 +452,16 @@
     const big = K.el('span', { class: 'ot-big num' });
     const lab = K.el('span', { class: 'ot-big-lab' });
     const sub = K.el('p', { class: 'ot-sum-sub' });
-    const againT = K.el('span', null, 'Procurar de novo');
+    const againT = K.el('span', null, K.t('Procurar de novo'));
     const again = K.el('button', { class: 'btn small ot-again', type: 'button', html: K.icon('cycle'), dataset: { fk: 'ot-again' },
       onclick: () => { if (S.st.refreshing) return; K.sound.tick(); loadStartup(); } }, againT);
-    const card = K.el('section', { class: cls('card gold ot-sum'), 'aria-label': 'Resumo do que abre com o Mac' },
+    const card = K.el('section', { class: cls('card gold ot-sum'), 'aria-label': K.t('Resumo do que abre com o Mac') },
       art,
       K.el('div', { class: 'ot-sum-text' },
         K.el('div', { class: 'ot-sum-num' }, big, lab),
         sub,
         K.el('p', { class: 'ot-promise', html: K.icon('check') },
-          K.el('span', null, 'Desligar não apaga nada. Dá pra ligar de novo aqui.'))),
+          K.el('span', null, K.t('Desligar não apaga nada. Dá pra ligar de novo aqui.')))),
       K.el('div', { class: 'ot-sum-act' }, again));
     V.sum = { card, big, lab, sub, bubble, again, againT, mascot: null, mascotBox };
     V.sum.mascot = addMascot(mascotBox, 116, { face: 'happy' });
@@ -479,19 +480,19 @@
     const running = mine.filter((x) => x.rodando).length;
     setText(R.big, K.fmt.num(on));
     R.lab.innerHTML = '';
-    R.lab.append(on === 1 ? 'item abre sozinho' : 'itens abrem sozinhos', K.el('small', null, 'quando você entra no Mac'));
+    R.lab.append(on === 1 ? K.t('item abre sozinho') : K.t('itens abrem sozinhos'), K.el('small', null, K.t('quando você entra no Mac')));
     const bits = [];
-    if (!items.length) bits.push('Não encontrei nada que abra sozinho');
+    if (!items.length) bits.push(K.t('Não encontrei nada que abra sozinho'));
     else {
       if (mine.length) {
-        bits.push(`${plural(mine.length, 'encontrado', 'encontrados')} na sua conta`);
-        if (off) bits.push(plural(off, 'desligado', 'desligados'));
-        bits.push(running ? `${plural(running, 'rodando', 'rodando')} agora` : 'nenhum rodando agora');
+        bits.push(K.t('{0} na sua conta', plural(mine.length, K.t('encontrado'), K.t('encontrados'))));
+        if (off) bits.push(plural(off, K.t('desligado'), K.t('desligados')));
+        bits.push(running ? `${plural(running, K.t('rodando'), K.t('rodando'))} agora` : K.t('nenhum rodando agora'));
       }
-      if (sys) bits.push(`${mine.length ? 'e ' : ''}${plural(sys, 'do sistema todo', 'do sistema todo')}`);
+      if (sys) bits.push(`${mine.length ? 'e ' : ''}${plural(sys, K.t('do sistema todo'), K.t('do sistema todo'))}`);
     }
     setText(R.sub, bits.join(' · '));
-    setText(R.bubble, on === 0 ? 'Entrada leve!' : on <= 4 ? 'Esses chegam junto.' : 'Quanta coisa junto!');
+    setText(R.bubble, on === 0 ? K.t('Entrada leve!') : on <= 4 ? K.t('Esses chegam junto.') : K.t('Quanta coisa junto!'));
     if (R.mascot) R.mascot.set({ face: on > 8 ? 'worried' : on === 0 ? 'joy' : 'happy' });
   }
 
@@ -503,7 +504,7 @@
       K.el('div', { class: 'ot-group-head' },
         K.el('span', { class: 'head-ic' + (o === 'sistema' ? ' none' : ''), html: K.icon(g.icon) }),
         K.el('div', { class: 'ot-group-text' }, K.el('h2', null, g.titulo), K.el('p', { class: 'card-sub' }, g.sub)),
-        K.el('span', { class: 'ot-count num' }, plural(list.length, 'item', 'itens'))),
+        K.el('span', { class: 'ot-count num' }, plural(list.length, K.t('item'), K.t('itens')))),
       ul);
   }
 
@@ -519,9 +520,9 @@
     let act;
     if (sys) {
       act = K.el('button', { class: 'btn small ot-settings', type: 'button', html: K.icon('otSliders'),
-        title: 'Abre os Ajustes do Sistema em Geral › Itens de Início', onclick: openLoginSettings }, 'Ajustes');
+        title: K.t('Abre os Ajustes do Sistema em Geral › Itens de Início'), onclick: openLoginSettings }, K.t('Ajustes'));
     } else if (apple) {
-      act = K.el('span', { class: 'ot-na', html: K.icon('lock'), title: 'É um agente da própria Apple: o Kamurafy não liga nem desliga.' }, 'é do macOS');
+      act = K.el('span', { class: 'ot-na', html: K.icon('lock'), title: K.t('É um agente da própria Apple: o Kamurafy não liga nem desliga.') }, K.t('é do macOS'));
     } else {
       sw = K.el('button', { class: 'switch ot-switch', type: 'button', role: 'switch', onclick: () => { toggleStartup(r.it); } });
       act = sw;
@@ -543,11 +544,11 @@
     const nome = vis(it.nome || it.label);
     setText(r.name, nome);
     r.tags.innerHTML = '';
-    if (it.rodando) r.tags.appendChild(tag('good run', null, 'rodando agora', 'Está carregado e rodando neste momento'));
+    if (it.rodando) r.tags.appendChild(tag('good run', null, K.t('rodando agora'), K.t('Está carregado e rodando neste momento')));
     /* agente que não abre no login, só de tempos em tempos (o Swift manda "quando" quando souber) */
-    if (it.quando && !r.sys) r.tags.appendChild(tag('none', 'clock', 'roda de vez em quando', `Não abre no login: roda ${vis(it.quando)}.`));
-    if (!it.app && origemOf(it) === 'ajudante') r.tags.appendChild(tag('warn', 'alert', 'app não encontrado', 'Não achei o app que colocou isso: ele pode já ter sido apagado.'));
-    if (r.sys) r.tags.appendChild(tag('none', 'lock', 'pede senha', 'Vale pra todos os usuários: mexer pede senha de administrador.'));
+    if (it.quando && !r.sys) r.tags.appendChild(tag('none', 'clock', K.t('roda de vez em quando'), K.t('Não abre no login: roda {0}.', vis(it.quando))));
+    if (!it.app && origemOf(it) === 'ajudante') r.tags.appendChild(tag('warn', 'alert', K.t('app não encontrado'), K.t('Não achei o app que colocou isso: ele pode já ter sido apagado.')));
+    if (r.sys) r.tags.appendChild(tag('none', 'lock', K.t('pede senha'), K.t('Vale pra todos os usuários: mexer pede senha de administrador.')));
     r.meta.innerHTML = '';
     const bits = [];
     if (it.nota && !(r.sys && /pede senha|senha de administrador/i.test(it.nota))) bits.push(K.el('span', { class: 'ot-meta-note' }, vis(it.nota)));
@@ -555,13 +556,13 @@
     if (tech && tech !== it.nome) bits.push(K.el('span', { class: 'ot-tech', title: [it.label, it.programa, it.arquivo].filter(Boolean).map(vis).join('\n') }, vis(tech)));
     r.meta.append(...bits);
     r.meta.hidden = !bits.length;
-    setText(r.stateTxt, busy ? 'Mudando…' : r.sys ? 'veja nos Ajustes' : it.ligado ? (it.quando ? 'Roda sozinho' : 'Abre sozinho') : 'Desligado');
+    setText(r.stateTxt, busy ? K.t('Mudando…') : r.sys ? K.t('veja nos Ajustes') : it.ligado ? (it.quando ? K.t('Roda sozinho') : K.t('Abre sozinho')) : K.t('Desligado'));
     if (r.sw) {
       r.sw.setAttribute('aria-checked', String(!!it.ligado));
       r.sw.disabled = busy;
       r.sw.classList.toggle('is-busy', busy);
-      r.sw.setAttribute('aria-label', `Abrir ${nome} junto com o Mac`);
-      r.sw.title = it.ligado ? 'Ligado: abre sozinho com o Mac.' : 'Desligado: não abre sozinho.';
+      r.sw.setAttribute('aria-label', K.t('Abrir {0} junto com o Mac', nome));
+      r.sw.title = it.ligado ? K.t('Ligado: abre sozinho com o Mac.') : K.t('Desligado: não abre sozinho.');
     }
     r.li.classList.toggle('is-off', !r.sys && !it.ligado);
     r.li.classList.toggle('is-busy', busy);
@@ -587,20 +588,20 @@
       /* religar algo cujo app sumiu: o programa pode rodar na hora (o macOS carrega ele já) */
       K.sound.plop();
       const ok = await K.confirm({
-        title: `Ligar ${inl(it.nome || it.label)}?`,
-        text: 'Não achei o app que colocou isso. Ligando, o programa pode rodar na hora.',
-        body: it.programa ? K.el('p', { class: 'kmodal-text ot-cf-stats' }, 'O que roda: ', K.el('b', null, vis(it.programa))) : null,
-        note: { tone: 'warn', icon: 'alert', text: 'Só ligue se você sabe o que é. Dá pra desligar de novo aqui.' },
-        ok: 'Ligar mesmo assim', cancel: 'Deixar desligado', icon: 'otPower',
+        title: K.t('Ligar {0}?', inl(it.nome || it.label)),
+        text: K.t('Não achei o app que colocou isso. Ligando, o programa pode rodar na hora.'),
+        body: it.programa ? K.el('p', { class: 'kmodal-text ot-cf-stats' }, K.t('O que roda: '), K.el('b', null, vis(it.programa))) : null,
+        note: { tone: 'warn', icon: 'alert', text: K.t('Só ligue se você sabe o que é. Dá pra desligar de novo aqui.') },
+        ok: K.t('Ligar mesmo assim'), cancel: K.t('Deixar desligado'), icon: 'otPower',
       });
       if (!ok) return false;
     } else if (!ligar && it.rodando && !opts.semConfirmar) {
       K.sound.plop();
       const ok = await K.confirm({
-        title: `Desligar ${inl(it.nome || it.label)}?`,
-        text: 'Ele está rodando e para na hora.',
-        note: { tone: 'good', icon: 'check', text: 'Não apaga nada. Dá pra ligar de novo aqui.' },
-        ok: 'Desligar', cancel: 'Deixar ligado', icon: 'otPower',
+        title: K.t('Desligar {0}?', inl(it.nome || it.label)),
+        text: K.t('Ele está rodando e para na hora.'),
+        note: { tone: 'good', icon: 'check', text: K.t('Não apaga nada. Dá pra ligar de novo aqui.') },
+        ok: K.t('Desligar'), cancel: K.t('Deixar ligado'), icon: 'otPower',
       });
       if (!ok) return false;
     } else K.sound.tick();
@@ -614,9 +615,9 @@
       if (r && typeof r.ligado === 'boolean') it.ligado = r.ligado;
       if (r && typeof r.rodando === 'boolean') it.rodando = r.rodando;
       let m;
-      if (!!it.ligado !== ligar) m = { tone: 'warn', icon: 'alert', text: 'O macOS não aceitou a mudança agora. Tente de novo, ou mude pelos Ajustes.' };
-      else if (ligar) m = { tone: 'good', icon: 'check', text: it.rodando ? 'Ligado e já rodando.' : 'Ligado: abre sozinho a partir do próximo login.' };
-      else m = { tone: 'good', icon: 'check', text: wasRunning && !it.rodando ? 'Desligado e parado. O app continua instalado.' : 'Desligado. O app continua instalado.' };
+      if (!!it.ligado !== ligar) m = { tone: 'warn', icon: 'alert', text: K.t('O macOS não aceitou a mudança agora. Tente de novo, ou mude pelos Ajustes.') };
+      else if (ligar) m = { tone: 'good', icon: 'check', text: it.rodando ? K.t('Ligado e já rodando.') : K.t('Ligado: abre sozinho a partir do próximo login.') };
+      else m = { tone: 'good', icon: 'check', text: wasRunning && !it.rodando ? K.t('Desligado e parado. O app continua instalado.') : K.t('Desligado. O app continua instalado.') };
       st.msgs.set(key, m);
       if (m.tone === 'warn') K.sound.oops(); else K.sound.tick();
     } catch (e) {
@@ -641,7 +642,7 @@
       if (btn && btn.parentNode) {
         const old = btn.parentNode.querySelector('.ot-settings-err');
         if (old) old.remove();
-        btn.insertAdjacentElement('afterend', K.el('span', { class: 'ot-settings-err', role: 'status' }, `Não abriu (${noDot(errMsg(err))}). Abra Ajustes › Geral › Itens de Início.`));
+        btn.insertAdjacentElement('afterend', K.el('span', { class: 'ot-settings-err', role: 'status' }, K.t('Não abriu ({0}). Abra Ajustes › Geral › Itens de Início.', noDot(errMsg(err)))));
       }
     }
   }
@@ -649,10 +650,10 @@
   function blindNote() {
     return K.el('div', { class: cls('tip ot-note ot-blind'), style: delay(260), html: K.icon('otEye') },
       K.el('p', null,
-        K.el('b', null, 'O que eu não enxergo: '),
-        'os apps de “Abrir ao iniciar sessão”. Eles ficam nos Ajustes do Sistema.'),
+        K.el('b', null, K.t('O que eu não enxergo: ')),
+        K.t('os apps de “Abrir ao iniciar sessão”. Eles ficam nos Ajustes do Sistema.')),
       K.el('div', { class: 'ot-note-act' },
-        K.el('button', { class: 'btn small', type: 'button', html: K.icon('otSliders'), onclick: openLoginSettings }, 'Abrir Itens de Início')));
+        K.el('button', { class: 'btn small', type: 'button', html: K.icon('otSliders'), onclick: openLoginSettings }, K.t('Abrir Itens de Início'))));
   }
 
   /* ================= Pesando agora ================= */
@@ -759,16 +760,16 @@
   }
 
   /** nome pra mostrar: processo solto com nome técnico ganha o nome em português (igual à Bateria) */
-  const hvName = (a) => (a.app ? String(a.nome || '') : K.procName(a.nome)) || `Processo ${a.pid}`;
+  const hvName = (a) => (a.app ? String(a.nome || '') : K.procName(a.nome)) || K.t('Processo {0}', a.pid);
 
   function paintHeavy() {
     const hv = S.hv;
     if (hv.status === 'idle' || (hv.status === 'loading' && !hv.items.length)) {
-      V.panel.appendChild(loadingCard('Olhando quem está pesando…', 4));
+      V.panel.appendChild(loadingCard(K.t('Olhando quem está pesando…'), 4));
       return;
     }
     if (hv.status === 'error' && !hv.items.length) {
-      V.panel.appendChild(errorCard('Não consegui ver quem está pesando', hv.err, () => { kickHeavy(true); }, 'Leva uns 2 segundos.'));
+      V.panel.appendChild(errorCard(K.t('Não consegui ver quem está pesando'), hv.err, () => { kickHeavy(true); }, K.t('Leva uns 2 segundos.')));
       return;
     }
     const R = { rows: new Map(), hover: false, want: [], scale: { cpu: 100, mem: 1, memIsTotal: false } };
@@ -788,24 +789,24 @@
     R.memV = K.el('span', { class: 'ot-stat-v num' });
     R.memS = K.el('span', { class: 'ot-stat-s' });
     R.pill = K.el('span', { class: 'ot-stat-pill' });
-    return K.el('section', { class: cls('card ot-now'), 'aria-label': 'O Mac agora' },
+    return K.el('section', { class: cls('card ot-now'), 'aria-label': K.t('O Mac agora') },
       K.el('div', { class: 'ot-now-art' }, R.bubble, R.mascotBox),
       K.el('div', { class: 'ot-stat' },
-        K.el('span', { class: 'ot-stat-t', html: K.icon('cpu') }, 'Processador agora'),
+        K.el('span', { class: 'ot-stat-t', html: K.icon('cpu') }, K.t('Processador agora')),
         R.cpuV, R.cpuS),
       K.el('div', { class: 'ot-stat' },
-        K.el('span', { class: 'ot-stat-t', html: K.icon('memory') }, 'Memória em uso'),
+        K.el('span', { class: 'ot-stat-t', html: K.icon('memory') }, K.t('Memória em uso')),
         K.el('span', { class: 'ot-stat-row' }, R.memV, R.pill), R.memS));
   }
 
   function listCard(R) {
-    R.liveText = K.el('span', null, 'Ao vivo');
+    R.liveText = K.el('span', null, K.t('Ao vivo'));
     R.live = K.el('span', { class: 'live-badge', role: 'status' }, K.el('i', { class: 'live-dot' }), R.liveText);
     R.pause = K.el('button', { class: 'btn small ot-pause', type: 'button', onclick: () => { K.sound.tick(); setPaused(!S.hv.paused); } });
-    R.list = K.el('ul', { class: 'ot-hv-list', 'aria-label': 'Apps que mais pesam agora' });
+    R.list = K.el('ul', { class: 'ot-hv-list', 'aria-label': K.t('Apps que mais pesam agora') });
     R.closed = K.el('div', { class: 'tip ot-closed', role: 'status', 'aria-live': 'polite', hidden: true });
     R.stale = K.el('div', { class: 'tip ot-note warn ot-stale', hidden: true, html: K.icon('alert') }, K.el('p'));
-    R.empty = K.el('div', { class: 'empty ot-hv-empty', hidden: true }, 'Tudo calmo: nenhum app pesando agora.');
+    R.empty = K.el('div', { class: 'empty ot-hv-empty', hidden: true }, K.t('Tudo calmo: nenhum app pesando agora.'));
     R.calmT = K.el('span');
     R.calmBtn = K.el('button', { class: 'btn small', type: 'button', dataset: { fk: 'ot-calm' },
       onclick: () => { K.sound.tick(); S.hv.showCalm = !S.hv.showCalm; updateHeavy(); } });
@@ -816,21 +817,21 @@
     R.list.addEventListener('pointerleave', () => { if (!R.list.contains(document.activeElement)) holdOff(); });
     R.list.addEventListener('focusin', holdOn);
     R.list.addEventListener('focusout', (e) => { if (!R.list.contains(e.relatedTarget) && !R.list.matches(':hover')) holdOff(); });
-    return K.el('section', { class: cls('card ot-hvcard'), style: delay(80), 'aria-label': 'Quem mais pesa agora' },
+    return K.el('section', { class: cls('card ot-hvcard'), style: delay(80), 'aria-label': K.t('Quem mais pesa agora') },
       K.el('div', { class: 'card-head ot-hv-head' },
         K.el('div', { class: 'ot-hv-title' },
           K.el('span', { class: 'head-ic', html: K.icon('otWeight') }),
           K.el('div', null,
-            K.el('h2', null, 'Quem mais pesa agora'),
-            K.el('div', { class: 'card-sub' }, 'Cada app com abas e ajudantes somados.'))),
+            K.el('h2', null, K.t('Quem mais pesa agora')),
+            K.el('div', { class: 'card-sub' }, K.t('Cada app com abas e ajudantes somados.')))),
         K.el('div', { class: 'ot-hv-side' }, R.live, R.pause)),
       R.closed,
       R.stale,
       R.cols = K.el('div', { class: 'ot-cols', 'aria-hidden': 'true' },
         K.el('span'),
-        K.el('span', null, 'App'),
+        K.el('span', null, K.t('App')),
         K.el('span', { class: 'ot-key' }, K.el('i', { class: 'ot-sw cpu' }), 'CPU'),
-        K.el('span', { class: 'ot-key' }, K.el('i', { class: 'ot-sw mem' }), 'Memória'),
+        K.el('span', { class: 'ot-key' }, K.el('i', { class: 'ot-sw mem' }), K.t('Memória')),
         K.el('span')),
       R.list,
       R.empty,
@@ -842,14 +843,14 @@
     const item = (icon, title, p) => K.el('div', { class: 'ot-how-item' },
       K.el('span', { class: 'ot-how-ic', html: K.icon(icon) }),
       K.el('div', null, K.el('b', null, title), p));
-    return K.el('section', { class: cls('card panel ot-how'), style: delay(160), 'aria-label': 'Como ler estes números' },
-      K.el('h3', null, 'Como ler estes números'),
+    return K.el('section', { class: cls('card panel ot-how'), style: delay(160), 'aria-label': K.t('Como ler estes números') },
+      K.el('h3', null, K.t('Como ler estes números')),
       K.el('div', { class: 'ot-how-grid' },
-        item('cpu', 'CPU acima de 100%?', R.coresP),
-        item('memory', 'Memória cheia não é defeito',
-          K.el('p', null, 'O macOS usa a sobra como cache. Feche algo quando a pressão ficar alta.')),
-        item('otQuit', 'Fechar ou forçar',
-          K.el('p', null, 'Fechar é como o Cmd+Q: o app pergunta se quer salvar. Forçar perde o que não foi salvo.'))));
+        item('cpu', K.t('CPU acima de 100%?'), R.coresP),
+        item('memory', K.t('Memória cheia não é defeito'),
+          K.el('p', null, K.t('O macOS usa a sobra como cache. Feche algo quando a pressão ficar alta.'))),
+        item('otQuit', K.t('Fechar ou forçar'),
+          K.el('p', null, K.t('Fechar é como o Cmd+Q: o app pergunta se quer salvar. Forçar perde o que não foi salvo.')))));
   }
 
   function paintNow() {
@@ -859,13 +860,13 @@
     K.readOr(R.cpuV, cpu, (v) => K.fmt.pct(v, v < 10 ? 1 : 0));
     const coresFull = s && s.cpu ? K.fmt.cores(s.cpu) : '';
     /* o mesmo texto do Painel: é média, não soma */
-    setText(R.cpuS, 'média do chip todo (0 a 100%)');
+    setText(R.cpuS, K.t('média do chip todo (0 a 100%)'));
     const m = s && s.memory;
     const used = m && isNum(m.usedBytes) ? m.usedBytes : null;
     const total = m && isNum(m.totalBytes) && m.totalBytes > 0 ? m.totalBytes : null;
     /* memória em base 2, como o Painel e o Monitor de Atividade ("de 16 GB", nunca "de 17,2 GB") */
     K.readOr(R.memV, used, (v) => K.fmt.mem(v));
-    setText(R.memS, total ? `de ${K.fmt.mem(total, 0)}, sem contar o cache` : 'sem contar o cache');
+    setText(R.memS, total ? K.t('de {0}, sem contar o cache', K.fmt.mem(total, 0)) : K.t('sem contar o cache'));
     const p = m && PRESSURE[m.pressure];
     const pk = p ? m.pressure : '';
     if (R.pillKey !== pk) {
@@ -875,17 +876,17 @@
     }
     /* mascote e balão pelo aperto do Mac (processador alto um instante não é defeito) */
     let face = 'happy';
-    let say = 'Tudo tranquilo.';
-    if (!s) say = 'Dando uma olhada…';
-    else if (m && m.pressure === 'critica') { face = 'sad'; say = 'Tá faltando memória!'; }
-    else if (m && m.pressure === 'atencao') { face = 'worried'; say = 'A memória tá apertada.'; }
-    else if (isNum(cpu) && cpu >= 85) { face = 'hot'; say = 'Ufa, trabalhando pesado!'; }
-    else if (isNum(cpu) && cpu >= 45) say = 'Trabalhando de boa.';
+    let say = K.t('Tudo tranquilo.');
+    if (!s) say = K.t('Dando uma olhada…');
+    else if (m && m.pressure === 'critica') { face = 'sad'; say = K.t('Tá faltando memória!'); }
+    else if (m && m.pressure === 'atencao') { face = 'worried'; say = K.t('A memória tá apertada.'); }
+    else if (isNum(cpu) && cpu >= 85) { face = 'hot'; say = K.t('Ufa, trabalhando pesado!'); }
+    else if (isNum(cpu) && cpu >= 45) say = K.t('Trabalhando de boa.');
     setText(R.bubble, say);
     if (R.mascot && R.face !== face) { R.face = face; R.mascot.set({ face }); }
     setText(R.coresP, coresFull
-      ? `Na lista, 100% é um núcleo inteiro. Este Mac tem ${coresFull}.`
-      : 'Na lista, 100% é um núcleo inteiro: 250% são dois núcleos e meio.');
+      ? K.t('Na lista, 100% é um núcleo inteiro. Este Mac tem {0}.', coresFull)
+      : K.t('Na lista, 100% é um núcleo inteiro: 250% são dois núcleos e meio.'));
   }
 
   function paintLive() {
@@ -896,13 +897,13 @@
     const stale = !paused && hv.fails > 0;
     R.live.classList.toggle('paused', paused);
     R.live.classList.toggle('stale', stale);
-    setText(R.liveText, paused ? 'Pausado' : stale ? 'Sem resposta agora' : 'Ao vivo · a cada 5 s');
-    R.live.title = paused ? 'A lista está parada.' : 'Atualiza a cada 5 segundos com esta aba aberta';
+    setText(R.liveText, paused ? K.t('Pausado') : stale ? K.t('Sem resposta agora') : K.t('Ao vivo · a cada 5 s'));
+    R.live.title = paused ? K.t('A lista está parada.') : K.t('Atualiza a cada 5 segundos com esta aba aberta');
     R.pause.innerHTML = K.icon(paused ? 'play' : 'pause');
-    R.pause.appendChild(K.el('span', null, paused ? 'Continuar' : 'Pausar'));
+    R.pause.appendChild(K.el('span', null, paused ? K.t('Continuar') : K.t('Pausar')));
     R.pause.setAttribute('aria-pressed', String(paused));
     R.stale.hidden = !stale;
-    if (stale) setText(R.stale.querySelector('p'), `Não consegui atualizar (${noDot(hv.err)}). Tento de novo em 5 segundos.`);
+    if (stale) setText(R.stale.querySelector('p'), K.t('Não consegui atualizar ({0}). Tento de novo em 5 segundos.', noDot(hv.err)));
   }
 
   function paintClosed() {
@@ -915,8 +916,8 @@
     if (R.closedKey === key) return;
     R.closedKey = key;
     R.closed.innerHTML = K.icon('check');
-    const mem = isNum(c.mem) && c.mem >= 50e6 ? ` A memória dele (${K.fmt.mem(c.mem)}) voltou pro Mac.` : '';
-    R.closed.appendChild(K.el('p', null, `${c.forced ? 'Fechei à força' : 'Fechou'}: ${inl(c.nome)}.${mem}`));
+    const mem = isNum(c.mem) && c.mem >= 50e6 ? K.t(' A memória dele ({0}) voltou pro Mac.', K.fmt.mem(c.mem)) : '';
+    R.closed.appendChild(K.el('p', null, `${c.forced ? K.t('Fechei à força') : K.t('Fechou')}: ${inl(c.nome)}.${mem}`));
   }
 
   function updateHeavy(first) {
@@ -951,10 +952,10 @@
     R.calm.hidden = !nc;
     if (nc) {
       setText(R.calmT, hv.showCalm
-        ? `Mostrando também ${plural(nc, 'processo tranquilo do macOS', 'processos tranquilos do macOS')}.`
-        : nc === 1 ? 'Deixei de fora 1 processo tranquilo do macOS: não pesa e não dá pra fechar.'
-          : `Deixei de fora ${K.fmt.num(nc)} processos tranquilos do macOS: não pesam e não dá pra fechar.`);
-      setText(R.calmBtn, hv.showCalm ? 'Esconder de novo' : 'Mostrar também');
+        ? K.t('Mostrando também {0}.', plural(nc, K.t('processo tranquilo do macOS'), K.t('processos tranquilos do macOS')))
+        : nc === 1 ? K.t('Deixei de fora 1 processo tranquilo do macOS: não pesa e não dá pra fechar.')
+          : K.t('Deixei de fora {0} processos tranquilos do macOS: não pesam e não dá pra fechar.', K.fmt.num(nc)));
+      setText(R.calmBtn, hv.showCalm ? K.t('Esconder de novo') : K.t('Mostrar também'));
       R.calmBtn.setAttribute('aria-expanded', String(!!hv.showCalm));
     }
     applyOrder(first);
@@ -994,13 +995,13 @@
     const a = r.a;
     const sc = V.hv.scale;
     if (kind === 'cpu') {
-      const rows = [{ value: cpuTxt(a.cpu), name: isNum(a.cpu) && a.cpu >= 100 ? `≈ ${coresTxt(a.cpu)} trabalhando` : 'de um núcleo', color: 'var(--s2)' }];
-      if ((a.processos || 1) > 1) rows.push({ value: K.fmt.num(a.processos), name: 'processos somados' });
-      return { title: vis(hvName(a)) + ' · CPU', rows };
+      const rows = [{ value: cpuTxt(a.cpu), name: isNum(a.cpu) && a.cpu >= 100 ? K.t('≈ {0} trabalhando', coresTxt(a.cpu)) : K.t('de um núcleo'), color: 'var(--s2)' }];
+      if ((a.processos || 1) > 1) rows.push({ value: K.fmt.num(a.processos), name: K.t('processos somados') });
+      return { title: vis(hvName(a)) + K.t(' · CPU'), rows };
     }
-    const rows = [{ value: K.fmt.mem(a.memBytes), name: 'de memória', color: 'var(--s1)' }];
-    if (sc.memIsTotal && isNum(a.memBytes)) rows.push({ value: K.fmt.pct(a.memBytes / sc.mem * 100, 0), name: `dos ${K.fmt.mem(sc.mem, 0)} do Mac` });
-    return { title: vis(hvName(a)) + ' · Memória', rows };
+    const rows = [{ value: K.fmt.mem(a.memBytes), name: K.t('de memória'), color: 'var(--s1)' }];
+    if (sc.memIsTotal && isNum(a.memBytes)) rows.push({ value: K.fmt.pct(a.memBytes / sc.mem * 100, 0), name: K.t('dos {0} do Mac', K.fmt.mem(sc.mem, 0)) });
+    return { title: vis(hvName(a)) + K.t(' · Memória'), rows };
   }
 
   function bindTip(cell, r, kind) {
@@ -1014,11 +1015,11 @@
   function phaseMsg(ph) {
     if (!ph) return null;
     switch (ph.phase) {
-      case 'asked': return { tone: 'none', icon: 'clock', text: 'Pedi pra fechar. Se ele perguntar se quer salvar, responda na janela dele.' };
-      case 'stuck': return { tone: 'warn', icon: 'alert', text: 'Ainda aberto: talvez esperando você salvar. Se travou, dá pra forçar.' };
-      case 'refused': return { tone: 'warn', icon: 'alert', text: 'Não quis fechar: pode estar perguntando algo. Se travou, dá pra forçar.' };
-      case 'forced': return { tone: 'none', icon: 'clock', text: 'Mandei fechar à força. Já já ele some da lista.' };
-      case 'forcefail': return { tone: 'crit', icon: 'alert', text: 'Nem forçando ele fechou. Tente pelo Monitor de Atividade ou reinicie o Mac.' };
+      case 'asked': return { tone: 'none', icon: 'clock', text: K.t('Pedi pra fechar. Se ele perguntar se quer salvar, responda na janela dele.') };
+      case 'stuck': return { tone: 'warn', icon: 'alert', text: K.t('Ainda aberto: talvez esperando você salvar. Se travou, dá pra forçar.') };
+      case 'refused': return { tone: 'warn', icon: 'alert', text: K.t('Não quis fechar: pode estar perguntando algo. Se travou, dá pra forçar.') };
+      case 'forced': return { tone: 'none', icon: 'clock', text: K.t('Mandei fechar à força. Já já ele some da lista.') };
+      case 'forcefail': return { tone: 'crit', icon: 'alert', text: K.t('Nem forçando ele fechou. Tente pelo Monitor de Atividade ou reinicie o Mac.') };
       case 'err': return ph.f;
       default: return null;
     }
@@ -1035,20 +1036,20 @@
   function actFor(r) {
     const a = r.a;
     const nome = vis(hvName(a));
-    if (a.sistema) return K.el('span', { class: 'ot-na', html: K.icon('lock'), title: 'O Kamurafy não fecha processos do macOS: eles seguram o sistema de pé.' }, 'é do macOS');
-    if (a.proprio) return K.el('span', { class: 'ot-na', html: K.icon('sparkle'), title: 'É o Kamurafy. Pra fechar, use Kamurafy › Sair.' }, 'sou eu');
+    if (a.sistema) return K.el('span', { class: 'ot-na', html: K.icon('lock'), title: K.t('O Kamurafy não fecha processos do macOS: eles seguram o sistema de pé.') }, K.t('é do macOS'));
+    if (a.proprio) return K.el('span', { class: 'ot-na', html: K.icon('sparkle'), title: K.t('É o Kamurafy. Pra fechar, use Kamurafy › Sair.') }, K.t('sou eu'));
     const ph = S.hv.phase.get(a.pid);
     const p = ph && ph.phase;
     const busy = S.hv.acting;
-    if (p === 'asking') return K.el('button', { class: 'btn small ot-quit is-busy', type: 'button', disabled: true, html: K.icon('otQuit') }, 'Fechando…');
-    if (p === 'forcing') return K.el('button', { class: 'btn small danger ot-force is-busy', type: 'button', disabled: true, html: K.icon('alert') }, 'Forçando…');
-    if (p === 'asked' || p === 'forced') return K.el('button', { class: 'btn small ot-wait', type: 'button', disabled: true, html: K.icon('clock') }, 'Esperando…');
+    if (p === 'asking') return K.el('button', { class: 'btn small ot-quit is-busy', type: 'button', disabled: true, html: K.icon('otQuit') }, K.t('Fechando…'));
+    if (p === 'forcing') return K.el('button', { class: 'btn small danger ot-force is-busy', type: 'button', disabled: true, html: K.icon('alert') }, K.t('Forçando…'));
+    if (p === 'asked' || p === 'forced') return K.el('button', { class: 'btn small ot-wait', type: 'button', disabled: true, html: K.icon('clock') }, K.t('Esperando…'));
     if (p === 'stuck' || p === 'refused' || p === 'forcefail' || (p === 'err' && ph.force)) {
       return K.el('button', { class: 'btn small danger ot-force', type: 'button', html: K.icon('alert'), disabled: busy,
-        'aria-label': `Forçar ${nome} a fechar`, onclick: () => { forceApp(r.a); } }, 'Forçar');
+        'aria-label': K.t('Forçar {0} a fechar', nome), onclick: () => { forceApp(r.a); } }, K.t('Forçar'));
     }
     return K.el('button', { class: 'btn small ot-quit', type: 'button', html: K.icon('otQuit'), disabled: busy,
-      'aria-label': `${a.app ? 'Fechar' : 'Encerrar'} ${nome}`, onclick: () => { quitApp(r.a); } }, a.app ? 'Fechar' : 'Encerrar');
+      'aria-label': `${a.app ? K.t('Fechar') : K.t('Encerrar')} ${nome}`, onclick: () => { quitApp(r.a); } }, a.app ? K.t('Fechar') : K.t('Encerrar'));
   }
 
   function paintHvRow(r) {
@@ -1056,7 +1057,7 @@
     const sc = V.hv.scale;
     const nome = vis(hvName(a));
     setText(r.name, nome);
-    r.name.title = !a.app && nome !== vis(a.nome) ? `Nome técnico: ${vis(a.nome)}` : '';
+    r.name.title = !a.app && nome !== vis(a.nome) ? K.t('Nome técnico: {0}', vis(a.nome)) : '';
     const iconKey = (a.icon ? 'img' : 'ic') + (a.sistema ? 's' : a.app ? 'a' : 'p');
     if (r.iconKey !== iconKey) {
       r.iconKey = iconKey;
@@ -1072,9 +1073,9 @@
     /* "do macOS" já aparece no lugar do botão; aqui só o que ajuda a reconhecer a linha */
     const n = a.processos || 1;
     const meta = [];
-    if (a.sistema) meta.push('parte do macOS');
-    else if (!a.app) meta.push('sem janela');
-    if (n > 1) meta.push(`${plural(n, 'processo', 'processos')} somados`);
+    if (a.sistema) meta.push(K.t('parte do macOS'));
+    else if (!a.app) meta.push(K.t('sem janela'));
+    if (n > 1) meta.push(`${plural(n, K.t('processo'), K.t('processos'))} somados`);
     setText(r.meta, meta.join(' · '));
     r.meta.hidden = !meta.length;
     /* CPU: 100% = um núcleo; a escala sobe de 100 em 100 e cada núcleo ganha um risquinho */
@@ -1088,14 +1089,14 @@
       r.cpuTicks.innerHTML = '';
       for (let k = 100; k < sc.cpu; k += 100) r.cpuTicks.appendChild(K.el('i', { class: 'ot-tick', style: { left: (k / sc.cpu * 100) + '%' } }));
     }
-    r.cpuCell.setAttribute('aria-label', `CPU: ${cpuTxt(a.cpu)}${cpu >= 100 ? ', cerca de ' + coresTxt(cpu) : ' de um núcleo'}`);
+    r.cpuCell.setAttribute('aria-label', `CPU: ${cpuTxt(a.cpu)}${cpu >= 100 ? K.t(', cerca de ') + coresTxt(cpu) : K.t(' de um núcleo')}`);
     const mem = isNum(a.memBytes) ? a.memBytes : 0;
     setText(r.memVal, K.fmt.mem(mem));
     const mp = sc.memIsTotal ? mem / sc.mem * 100 : null;
     setText(r.memSub, mp != null ? K.fmt.pct(mp, mp > 0 && mp < 1 ? 1 : 0) : '');
     r.memFill.style.width = Math.min(100, mem / sc.mem * 100) + '%';
     r.memFill.classList.toggle('is-zero', mem <= 0);
-    r.memCell.setAttribute('aria-label', `Memória: ${K.fmt.mem(mem)}${mp != null ? ', ' + K.fmt.pct(mp, 0) + ' do total' : ''}`);
+    r.memCell.setAttribute('aria-label', K.t('Memória: {0}{1}', K.fmt.mem(mem), mp != null ? ', ' + K.fmt.pct(mp, 0) + K.t(' do total') : ''));
     const ak = actKey(r);
     if (r.actKey !== ak) { r.actKey = ak; r.act.innerHTML = ''; r.act.appendChild(actFor(r)); }
     const ph = S.hv.phase.get(a.pid);
@@ -1166,7 +1167,7 @@
   function statsLine(a) {
     const n = a.processos || 1;
     return K.el('p', { class: 'kmodal-text ot-cf-stats' },
-      `Agora ele usa ${cpuTxt(a.cpu)} de CPU e ${K.fmt.mem(a.memBytes || 0)} de memória${n > 1 ? `, somando ${plural(n, 'processo', 'processos')}` : ''}.`);
+      K.t('Agora ele usa {0} de CPU e {1} de memória{2}.', cpuTxt(a.cpu), K.fmt.mem(a.memBytes || 0), n > 1 ? K.t(', somando {0}', plural(n, K.t('processo'), K.t('processos'))) : ''));
   }
 
   async function quitApp(a, opts) {
@@ -1176,12 +1177,12 @@
     if (!opts.semConfirmar) {
       K.sound.plop();
       const ok = await K.confirm({
-        title: a.app ? `Fechar o app ${inl(a.nome)}?` : `Encerrar ${inl(hvName(a))}?`,
-        text: a.app ? 'Se tiver algo sem salvar, o próprio app pergunta antes de fechar.'
-          : 'Programa sem janela. Encerrar pode interromper uma sincronização ou um download.',
+        title: a.app ? K.t('Fechar o app {0}?', inl(a.nome)) : K.t('Encerrar {0}?', inl(hvName(a))),
+        text: a.app ? K.t('Se tiver algo sem salvar, o próprio app pergunta antes de fechar.')
+          : K.t('Programa sem janela. Encerrar pode interromper uma sincronização ou um download.'),
         body: statsLine(a),
-        note: { tone: 'good', icon: 'check', text: a.app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. O app dono costuma abrir ele de novo.' },
-        ok: a.app ? 'Fechar' : 'Encerrar', cancel: 'Deixar aberto', icon: 'otQuit',
+        note: { tone: 'good', icon: 'check', text: a.app ? K.t('Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.') : K.t('Não apaga nada. O app dono costuma abrir ele de novo.') },
+        ok: a.app ? K.t('Fechar') : K.t('Encerrar'), cancel: K.t('Deixar aberto'), icon: 'otQuit',
       });
       if (!ok) return false;
     }
@@ -1195,10 +1196,10 @@
     if (!opts.semConfirmar) {
       K.sound.plop();
       const ok = await K.confirm({
-        title: a.app ? `Forçar o app ${inl(a.nome)} a fechar?` : `Forçar ${inl(hvName(a))} a fechar?`,
-        text: a.app ? 'Ele fecha na hora, sem perguntar nada. Use quando ele travou ou não responde.' : 'O processo para na hora, sem terminar o que estava fazendo.',
-        note: { tone: 'crit', icon: 'alert', text: 'O que não foi salvo nele se perde, e isso não dá pra desfazer.' },
-        ok: 'Forçar e fechar', cancel: 'Esperar mais', tone: 'danger', icon: 'alert',
+        title: a.app ? K.t('Forçar o app {0} a fechar?', inl(a.nome)) : K.t('Forçar {0} a fechar?', inl(hvName(a))),
+        text: a.app ? K.t('Ele fecha na hora, sem perguntar nada. Use quando ele travou ou não responde.') : K.t('O processo para na hora, sem terminar o que estava fazendo.'),
+        note: { tone: 'crit', icon: 'alert', text: K.t('O que não foi salvo nele se perde, e isso não dá pra desfazer.') },
+        ok: K.t('Forçar e fechar'), cancel: K.t('Esperar mais'), tone: 'danger', icon: 'alert',
       });
       if (!ok) return false;
     }
@@ -1265,21 +1266,21 @@
 
   function paintTasks() {
     const tk = S.tk;
-    if (tk.status === 'idle' || tk.status === 'loading') { V.panel.appendChild(loadingCard('Lendo as arrumações…', 3)); return; }
-    if (tk.status === 'error') { V.panel.appendChild(errorCard('Não consegui ler as arrumações', tk.err, () => loadTasks(), 'Leva um segundo.')); return; }
+    if (tk.status === 'idle' || tk.status === 'loading') { V.panel.appendChild(loadingCard(K.t('Lendo as arrumações…'), 3)); return; }
+    if (tk.status === 'error') { V.panel.appendChild(errorCard(K.t('Não consegui ler as arrumações'), tk.err, () => loadTasks(), K.t('Leva um segundo.'))); return; }
 
     const art = K.el('div', { class: 'ot-tk-art' });
     const intro = K.el('section', { class: cls('card ot-tk-intro') },
       art,
       K.el('div', { class: 'ot-tk-text' },
-        K.el('h2', null, 'Arrumações do próprio macOS'),
-        K.el('p', null, 'Cada uma resolve um defeito específico. Se está tudo funcionando, deixe quieto.')));
+        K.el('h2', null, K.t('Arrumações do próprio macOS')),
+        K.el('p', null, K.t('Cada uma resolve um defeito específico. Se está tudo funcionando, deixe quieto.'))));
     V.panel.appendChild(intro);
     addMascot(art, 92, { face: 'happy' });
     art.appendChild(K.el('span', { class: 'ot-tk-badge', html: K.icon('otWrench') }));
 
     if (!tk.items.length) {
-      const box = emptyBox('Sem arrumações por aqui', 'Não recebi nenhuma tarefa de manutenção desta vez.');
+      const box = emptyBox(K.t('Sem arrumações por aqui'), K.t('Não recebi nenhuma tarefa de manutenção desta vez.'));
       V.panel.appendChild(box);
       addMascot(box._art, 96, { face: 'worried' });
       return;
@@ -1297,9 +1298,9 @@
   function taskCard(t, i, wide) {
     const ui = TASK_UI[t.id] || {};
     const chips = K.el('div', { class: 'ot-chips' },
-      K.el('span', { class: 'ot-chip', html: K.icon('clock'), title: 'Quanto demora' }, pretty(t.demora || 'rapidinho')));
-    if (t.precisaSenha) chips.appendChild(K.el('span', { class: 'ot-chip warn', html: K.icon('lock'), title: 'O macOS pede a sua senha de administrador. Quem pede é ele, não o Kamurafy.' }, 'pede senha'));
-    const btnT = K.el('span', null, 'Rodar');
+      K.el('span', { class: 'ot-chip', html: K.icon('clock'), title: K.t('Quanto demora') }, pretty(t.demora || 'rapidinho')));
+    if (t.precisaSenha) chips.appendChild(K.el('span', { class: 'ot-chip warn', html: K.icon('lock'), title: K.t('O macOS pede a sua senha de administrador. Quem pede é ele, não o Kamurafy.') }, K.t('pede senha')));
+    const btnT = K.el('span', null, K.t('Rodar'));
     const btn = K.el('button', { class: 'btn gold ot-run', type: 'button', html: K.icon('play'), onclick: () => { runTask(t); } }, btnT);
     const res = K.el('div', { class: 'ot-res', role: 'status', 'aria-live': 'polite' });
     const card = K.el('section', { class: cls('card ot-task' + (wide ? ' is-wide' : '')), style: delay(80 + i * 60), 'aria-label': pretty(t.titulo) },
@@ -1308,7 +1309,7 @@
       K.el('div', { class: 'ot-task-body' },
         K.el('p', { class: 'ot-task-desc' }, pretty(t.descricao)),
         K.el('div', { class: 'ot-when', html: K.icon('otBulb') },
-          K.el('div', null, K.el('span', { class: 'ot-when-t' }, 'Quando vale a pena'), K.el('span', { class: 'ot-when-d' }, pretty(t.quando)))),
+          K.el('div', null, K.el('span', { class: 'ot-when-t' }, K.t('Quando vale a pena')), K.el('span', { class: 'ot-when-d' }, pretty(t.quando)))),
         ui.card ? K.el('div', { class: 'tip ot-task-warn', html: K.icon('alert') }, K.el('p', null, ui.card)) : null),
       K.el('div', { class: 'ot-task-foot' }, res, btn));
     V.tasks.set(t.id, { t, card, btn, btnT, res });
@@ -1331,17 +1332,17 @@
     const running = busy === id;
     x.btn.disabled = !!busy;
     x.btn.classList.toggle('is-busy', running);
-    setText(x.btnT, running ? 'Rodando…' : r && r.phase === 'done' ? 'Rodar de novo' : 'Rodar');
-    x.btn.title = busy && !running ? 'Espere a outra arrumação terminar' : '';
+    setText(x.btnT, running ? K.t('Rodando…') : r && r.phase === 'done' ? K.t('Rodar de novo') : K.t('Rodar'));
+    x.btn.title = busy && !running ? K.t('Espere a outra arrumação terminar') : '';
     x.res.innerHTML = '';
     x.card.classList.toggle('is-done', !!r && r.phase === 'done' && !running);
     if (running) {
       x.res.appendChild(K.el('span', { class: 'ot-res-line none', html: K.icon('clock') },
-        x.t.precisaSenha ? 'Se aparecer um pedido de senha, é o macOS.' : 'Rodando…'));
+        x.t.precisaSenha ? K.t('Se aparecer um pedido de senha, é o macOS.') : K.t('Rodando…')));
     } else if (r) {
       const s = RES[r.phase] || RES.fail;
       x.res.appendChild(K.el('span', { class: 'ot-res-line ' + s.tone, html: K.icon(s.icon) },
-        K.el('span', null, r.text, r.at ? K.el('span', { class: 'ot-res-at' }, ` · às ${K.fmt.time(r.at)}`) : null)));
+        K.el('span', null, r.text, r.at ? K.el('span', { class: 'ot-res-at' }, K.t(' · às {0}', K.fmt.time(r.at))) : null)));
     }
   }
   function paintAllTasks() { if (V && V.tasks) for (const id of V.tasks.keys()) paintTaskState(id); }
@@ -1357,11 +1358,11 @@
       let note;
       if (ui.warn) { note = { tone: 'warn', icon: 'alert', text: ui.warn }; if (t.precisaSenha) bits.push(PASS); }
       else if (t.precisaSenha) note = { tone: 'warn', icon: 'lock', text: PASS };
-      else note = { tone: 'good', icon: 'check', text: 'Não pede senha e não apaga nada seu.' };
+      else note = { tone: 'good', icon: 'check', text: K.t('Não pede senha e não apaga nada seu.') };
       const body = bits.length ? K.el('ul', { class: 'ot-cf' }, bits.map((b) => K.el('li', { html: K.icon(b === PASS ? 'lock' : 'check') }, K.el('span', null, b)))) : null;
       const ok = await K.confirm({
         title: pretty(t.titulo) + '?', text: pretty(t.descricao), body, note,
-        ok: ui.ok || 'Rodar agora', cancel: 'Agora não', icon: ui.icon || 'otWrench',
+        ok: ui.ok || K.t('Rodar agora'), cancel: K.t('Agora não'), icon: ui.icon || 'otWrench',
       });
       if (!ok) return false;
     }
@@ -1374,18 +1375,18 @@
       const r = await K.api('optimize.run', { id: t.id, confirmado: true });
       const m = noDot(r && r.mensagem);
       if (r && r.ok) {
-        res = { phase: 'done', text: (m || 'Pronto') + '.' + (t.id === 'spotlight' ? ' A busca volta aos poucos nas próximas horas.' : ''), at: nowS() };
+        res = { phase: 'done', text: (m ? noDot(K.t(r.mensagem)) : K.t('Pronto')) + '.' + (t.id === 'spotlight' ? K.t(' A busca volta aos poucos nas próximas horas.') : ''), at: nowS() };
         K.sound.tada();
       } else if (/cancel/i.test(m)) {
-        res = { phase: 'cancel', text: 'Você cancelou o pedido de senha. Nada foi mexido.' };
+        res = { phase: 'cancel', text: K.t('Você cancelou o pedido de senha. Nada foi mexido.') };
         K.sound.tick();
       } else {
-        res = { phase: 'fail', text: `Não deu certo${m ? ': ' + m : ''}. Nada foi mexido.` };
+        res = { phase: 'fail', text: K.t('Não deu certo{0}. Nada foi mexido.', m ? ': ' + m : '') };
         K.sound.oops();
       }
     } catch (e) {
       const f = friendly(e);
-      res = { phase: f.test ? 'test' : 'fail', text: f.test ? 'Modo de teste: nada rodou de verdade.' : f.text };
+      res = { phase: f.test ? 'test' : 'fail', text: f.test ? K.t('Modo de teste: nada rodou de verdade.') : f.text };
       if (!f.test) K.sound.oops();
     }
     tk.busy = null;
@@ -1398,33 +1399,33 @@
 
   const LT_FRESH = 30000;        // abrir a aba lê de novo se a última leitura tiver mais que isso
   const LT_RECHECK = 2000;       // depois de pedir pra fechar, quando conferir de novo
-  const VIGIA_T = 'Me avisar quando um app ficar no talo ou a memória chegar no limite';
+  const VIGIA_T = K.t('Me avisar quando um app ficar no talo ou a memória chegar no limite');
   const VEREDITO = {
     voando: { t: 'Voando!', face: 'joy' },
-    deboa: { t: 'De boa', face: 'happy' },
-    pesado: { t: 'Tá pesado', face: 'worried' },
-    travando: { t: 'Tá travando', face: 'worried' },
+    deboa: { t: K.t('De boa'), face: 'happy' },
+    pesado: { t: K.t('Tá pesado'), face: 'worried' },
+    travando: { t: K.t('Tá travando'), face: 'worried' },
   };
   /* as mesmas faixas do veredito no Swift: ≥ 85 voando · ≥ 65 de boa · ≥ 40 pesado */
   const NOTA_ZONES = [
-    { to: 40, tone: 'crit', label: 'Tá travando' },
-    { to: 65, tone: 'serious', label: 'Tá pesado' },
-    { to: 85, tone: 'good', label: 'De boa' },
-    { to: 100, tone: 'good', label: 'Voando' },
+    { to: 40, tone: 'crit', label: K.t('Tá travando') },
+    { to: 65, tone: 'serious', label: K.t('Tá pesado') },
+    { to: 85, tone: 'good', label: K.t('De boa') },
+    { to: 100, tone: 'good', label: K.t('Voando') },
   ];
   const FUNDO = {
-    spotlight: { icon: 'scan', t: 'O Spotlight está indexando', d: 'Comum depois de atualizar ou copiar muitos arquivos.' },
-    timemachine: { icon: 'clock', t: 'O Time Machine está fazendo backup', d: 'Termina sozinho.' },
-    fotos: { icon: 'otPhoto', t: 'O Fotos está analisando a biblioteca', d: 'Na tomada ele termina mais rápido.' },
-    icloud: { icon: 'cloud', t: 'O iCloud está sincronizando', d: 'Termina sozinho.' },
-    atualizacao: { icon: 'otDownload', t: 'O macOS está preparando uma atualização', d: 'Termina sozinho.' },
+    spotlight: { icon: 'scan', t: K.t('O Spotlight está indexando'), d: 'Comum depois de atualizar ou copiar muitos arquivos.' },
+    timemachine: { icon: 'clock', t: K.t('O Time Machine está fazendo backup'), d: 'Termina sozinho.' },
+    fotos: { icon: 'otPhoto', t: K.t('O Fotos está analisando a biblioteca'), d: 'Na tomada ele termina mais rápido.' },
+    icloud: { icon: 'cloud', t: K.t('O iCloud está sincronizando'), d: 'Termina sozinho.' },
+    atualizacao: { icon: 'otDownload', t: K.t('O macOS está preparando uma atualização'), d: 'Termina sozinho.' },
   };
-  const HEAT_TIP = 'Tira de cima de almofada ou cobertor.';
+  const HEAT_TIP = K.t('Tira de cima de almofada ou cobertor.');
 
   const ltStale = () => !S.lt.at || Date.now() - S.lt.at > LT_FRESH;
   const appKey = (f) => 'app:' + String(f.nome || f.alvo || f.id || '');
   const quittable = (f) => (f.tipo === 'processo' || f.tipo === 'navegador') && f.acao === 'encerrar' && !!f.alvo;
-  const ltName = (f) => K.procName(f.nome) || 'Um processo';
+  const ltName = (f) => K.procName(f.nome) || K.t('Um processo');
   /* com ícone de app (ou navegador) é app: "o próprio app pergunta antes de fechar" */
   const ltIsApp = (f) => f.tipo === 'navegador' || (typeof f.icon === 'string' && f.icon.indexOf('data:image/') === 0);
 
@@ -1445,10 +1446,10 @@
 
   /** 120 → "1,2 núcleo"; perto de 100 → "um núcleo inteiro"; 250 → "2,5 núcleos" */
   function ltCores(cpu) {
-    if (!isNum(cpu)) return 'um núcleo inteiro';
-    if (cpu >= 90 && cpu < 110) return 'um núcleo inteiro';
+    if (!isNum(cpu)) return K.t('um núcleo inteiro');
+    if (cpu >= 90 && cpu < 110) return K.t('um núcleo inteiro');
     const n = Math.round(cpu / 10) / 10;
-    return `${K.fmt.num(n, n % 1 ? 1 : 0)} ${n >= 2 ? 'núcleos' : 'núcleo'}`;
+    return `${K.fmt.num(n, n % 1 ? 1 : 0)} ${n >= 2 ? K.t('núcleos') : K.t('núcleo')}`;
   }
 
   /** título, linha, ícone e ação de um achado. Nome vem de fora: tudo aqui vira textContent. */
@@ -1461,64 +1462,64 @@
     switch (f.tipo) {
       case 'memoria':
         if (f.detalhe === 'critica') {
-          return { icon: 'memory', t: 'A memória está no limite',
-            d: `O Mac usa o disco como memória${swap ? ` (${K.fmt.mem(swap)} no disco)` : ''}. Feche abas e apps parados.` };
+          return { icon: 'memory', t: K.t('A memória está no limite'),
+            d: `O Mac usa o disco como memória${swap ? K.t(' ({0} no disco)', K.fmt.mem(swap)) : ''}. Feche abas e apps parados.` };
         }
         if (f.detalhe === 'swap') {
-          return { icon: 'memory', t: 'A memória já apertou hoje',
-            d: `${swap ? K.fmt.mem(swap) + ' foram' : 'Uma parte foi'} parar no disco. Reiniciar zera isso.` };
+          return { icon: 'memory', t: K.t('A memória já apertou hoje'),
+            d: `${swap ? K.fmt.mem(swap) + ' foram' : K.t('Uma parte foi')} parar no disco. Reiniciar zera isso.` };
         }
-        return { icon: 'memory', t: 'A memória está apertada', d: 'Fechar abas e apps parados alivia na hora.' };
+        return { icon: 'memory', t: K.t('A memória está apertada'), d: 'Fechar abas e apps parados alivia na hora.' };
       case 'processo':
         if (f.detalhe === 'memoria') {
           const frac = isNum(f.valor) ? f.valor : isNum(f.memBytes) && isNum(rep.memTotalBytes) && rep.memTotalBytes > 0 ? f.memBytes / rep.memTotalBytes : null;
-          return { icon: 'cpu', img, t: `${nome} ocupa ${mem || 'muita memória'}`,
-            d: frac != null ? `É ${K.fmt.pct(frac * 100, 0)} da memória do Mac.` : 'Fechar devolve essa memória pro Mac.', act: quit };
+          return { icon: 'cpu', img, t: `${nome} ocupa ${mem || K.t('muita memória')}`,
+            d: frac != null ? K.t('É {0} da memória do Mac.', K.fmt.pct(frac * 100, 0)) : K.t('Fechar devolve essa memória pro Mac.'), act: quit };
         }
-        return { icon: 'cpu', img, t: `${nome} está no talo`, d: `Usa ${ltCores(f.cpu)} do processador há mais de um minuto.`, act: quit };
+        return { icon: 'cpu', img, t: K.t('{0} está no talo', nome), d: `Usa ${ltCores(f.cpu)} do processador há mais de um minuto.`, act: quit };
       case 'navegador': {
         const procs = isNum(f.processos) && f.processos > 1 ? `${K.fmt.num(f.processos)} processos` : null;
         /* no talo, o que pesa é o processador; com a memória apertada, o tamanho */
         const what = f.detalhe === 'cpu' && isNum(f.cpu)
-          ? `Usa ${ltCores(f.cpu)} do processador${procs ? ` em ${procs}` : ''}`
+          ? K.t('Usa {0} do processador{1}', ltCores(f.cpu), procs ? ` em ${procs}` : '')
           : [procs, mem].filter(Boolean).join(' e ');
-        return { icon: 'otGlobe', img, t: `${nome} está pesando`,
+        return { icon: 'otGlobe', img, t: K.t('{0} está pesando', nome),
           d: `${what ? what + '. ' : ''}Fechar abas paradas alivia.`, act: quit };
       }
       case 'fundo': {
-        const x = FUNDO[f.detalhe] || { icon: 'otMac', t: 'O macOS está trabalhando por baixo', d: 'Termina sozinho.' };
-        return { icon: x.icon, t: x.t, d: x.d, act: { kind: 'tag', tone: 'none', icon: 'clock', text: 'passa sozinho', title: 'Trabalho do macOS: termina sozinho.' } };
+        const x = FUNDO[f.detalhe] || { icon: 'otMac', t: K.t('O macOS está trabalhando por baixo'), d: 'Termina sozinho.' };
+        return { icon: x.icon, t: x.t, d: x.d, act: { kind: 'tag', tone: 'none', icon: 'clock', text: K.t('passa sozinho'), title: K.t('Trabalho do macOS: termina sozinho.') } };
       }
       case 'calor': {
         const lim = isNum(f.valor) ? f.valor : isNum(rep.limiteCPU) ? rep.limiteCPU : null;
         if (lim != null && lim < 100) {
-          return { icon: 'thermo', t: 'O calor está freando o processador', d: `Ele está rodando a ${K.fmt.num(lim, 0)}% da velocidade. ${HEAT_TIP}` };
+          return { icon: 'thermo', t: K.t('O calor está freando o processador'), d: `Ele está rodando a ${K.fmt.num(lim, 0)}% da velocidade. ${HEAT_TIP}` };
         }
-        return { icon: 'thermo', t: 'O Mac está quente', d: HEAT_TIP };
+        return { icon: 'thermo', t: K.t('O Mac está quente'), d: HEAT_TIP };
       }
       case 'economia':
-        return { icon: 'leaf', t: 'Modo de Pouca Energia ligado', d: 'O macOS deixa o Mac mais lento de propósito pra bateria durar.',
-          act: f.acao === 'ajustes-bateria' ? { kind: 'btn', label: 'Abrir Ajustes', icon: 'otSliders', run: openBatterySettings } : null };
+        return { icon: 'leaf', t: K.t('Modo de Pouca Energia ligado'), d: 'O macOS deixa o Mac mais lento de propósito pra bateria durar.',
+          act: f.acao === 'ajustes-bateria' ? { kind: 'btn', label: K.t('Abrir Ajustes'), icon: 'otSliders', run: openBatterySettings } : null };
       case 'disco': {
         const livre = isNum(f.valor) ? f.valor : isNum(rep.discoLivreBytes) ? rep.discoLivreBytes : null;
-        return { icon: 'disk', t: 'O disco está quase cheio',
-          d: `${livre != null ? `Sobram ${K.fmt.bytes(livre)}.` : 'Sobra pouco espaço.'} O macOS precisa de espaço pra trabalhar.`,
-          act: f.acao === 'faxina' ? { kind: 'btn', label: 'Liberar espaço', icon: 'broom', run: () => { K.sound.plop(); location.hash = '#/faxina'; } } : null };
+        return { icon: 'disk', t: K.t('O disco está quase cheio'),
+          d: `${livre != null ? K.t('Sobram {0}.', K.fmt.bytes(livre)) : K.t('Sobra pouco espaço.')} O macOS precisa de espaço pra trabalhar.`,
+          act: f.acao === 'faxina' ? { kind: 'btn', label: K.t('Liberar espaço'), icon: 'broom', run: () => { K.sound.plop(); location.hash = '#/faxina'; } } : null };
       }
       case 'reiniciar': {
         const dias = isNum(f.valor) ? Math.floor(f.valor) : isNum(rep.uptimeSec) ? Math.floor(rep.uptimeSec / 86400) : null;
-        return { icon: 'cycle', t: dias != null ? `Ligado há ${plural(dias, 'dia', 'dias')}` : 'Faz tempo que o Mac não reinicia',
+        return { icon: 'cycle', t: dias != null ? K.t('Ligado há {0}', plural(dias, K.t('dia'), K.t('dias'))) : K.t('Faz tempo que o Mac não reinicia'),
           d: 'Reiniciar zera a memória acumulada. Menu Apple › Reiniciar.',
-          act: { kind: 'tag', tone: 'none', icon: 'otBulb', text: 'dica', title: 'Uma dica: o Kamurafy não reinicia o Mac por você.' } };
+          act: { kind: 'tag', tone: 'none', icon: 'otBulb', text: K.t('dica'), title: K.t('Uma dica: o Kamurafy não reinicia o Mac por você.') } };
       }
       case 'inicio': {
         const n = isNum(f.processos) ? f.processos : null;
-        return { icon: 'otPower', t: n != null ? `${plural(n, 'app abre', 'apps abrem')} com o Mac` : 'Muita coisa abre com o Mac',
+        return { icon: 'otPower', t: n != null ? K.t('{0} com o Mac', plural(n, K.t('app abre'), K.t('apps abrem'))) : K.t('Muita coisa abre com o Mac'),
           d: 'Deixam o Mac mais lento pra ligar.',
-          act: { kind: 'btn', label: 'Ver quais', icon: 'arrow', run: () => { K.sound.plop(); setTab('login'); } } };
+          act: { kind: 'btn', label: K.t('Ver quais'), icon: 'arrow', run: () => { K.sound.plop(); setTab('login'); } } };
       }
       default:
-        return f.nome ? { icon: 'alert', t: `${nome} está pesando`, d: '', act: quit } : null;
+        return f.nome ? { icon: 'alert', t: K.t('{0} está pesando', nome), d: '', act: quit } : null;
     }
   }
 
@@ -1576,9 +1577,9 @@
   function paintLento() {
     const lt = S.lt;
     if (lt.status === 'idle' || (lt.status === 'loading' && !lt.rep)) {
-      V.panel.appendChild(loadingCard('Vendo o que está pesando agora…', 3));
+      V.panel.appendChild(loadingCard(K.t('Vendo o que está pesando agora…'), 3));
     } else if (lt.status === 'error' && !lt.rep) {
-      V.panel.appendChild(errorCard('Não consegui ver o que está pesando', lt.err, () => { diagnose(); }, 'Leva uns 2 segundos.'));
+      V.panel.appendChild(errorCard(K.t('Não consegui ver o que está pesando'), lt.err, () => { diagnose(); }, K.t('Leva uns 2 segundos.')));
     } else {
       const R = { rows: new Map() };
       V.lt = R;
@@ -1590,7 +1591,7 @@
       R.mascot = addMascot(R.mascotBox, 116, { face: verdictOf(lt.rep).face });
       try {
         R.gauge = K.charts.gauge(R.gaugeBox, { value: lt.rep.nota, min: 0, max: 100, zones: NOTA_ZONES, size: 210, pill: false,
-          format: (v) => K.fmt.num(v, 0), endFormat: (v) => K.fmt.num(v, 0), label: 'de 100', tipTitle: 'Nota do Mac agora' });
+          format: (v) => K.fmt.num(v, 0), endFormat: (v) => K.fmt.num(v, 0), label: K.t('de 100'), tipTitle: K.t('Nota do Mac agora') });
         V.charts.push(R.gauge);
       } catch (e) { console.warn('otimizar/mostrador: ' + errMsg(e)); }
       fillLento(true);
@@ -1603,12 +1604,12 @@
     R.verdict = K.el('h2', { class: 'ot-lt-verdict' });
     R.line = K.el('p', { class: 'ot-lt-line' });
     R.facts = K.el('p', { class: 'ot-lt-facts' });
-    R.againT = K.el('span', null, 'Conferir de novo');
+    R.againT = K.el('span', null, K.t('Conferir de novo'));
     R.again = K.el('button', { class: 'btn small ot-again', type: 'button', html: K.icon('cycle'), dataset: { fk: 'ot-lt-again' },
       onclick: () => { if (S.lt.busy) return; K.sound.tick(); diagnose(); } }, R.againT);
     R.at = K.el('span', { class: 'ot-lt-at' });
     R.gaugeBox = K.el('div', { class: 'ot-lt-gauge-in' });
-    return K.el('section', { class: cls('card gold ot-lt-hero'), 'aria-label': 'Por que o Mac está lento agora' },
+    return K.el('section', { class: cls('card gold ot-lt-hero'), 'aria-label': K.t('Por que o Mac está lento agora') },
       K.el('div', { class: 'ot-lt-art' }, R.mascotBox, K.el('span', { class: 'ot-sum-badge ot-lt-badge', html: K.icon('gauge') })),
       K.el('div', { class: 'ot-lt-main' }, K.el('div', { role: 'status', 'aria-live': 'polite' }, R.verdict, R.line), R.facts,
         K.el('div', { class: 'ot-lt-act' }, R.again, R.at)),
@@ -1621,17 +1622,17 @@
     const busy = S.lt.busy;
     R.again.setAttribute('aria-disabled', String(busy));
     R.again.classList.toggle('is-busy', busy);
-    setText(R.againT, busy ? 'Conferindo…' : 'Conferir de novo');
+    setText(R.againT, busy ? K.t('Conferindo…') : K.t('Conferir de novo'));
   }
 
   function factsOf(rep) {
     const out = [];
-    if (isNum(rep.cpu)) out.push(['cpu', 'Processador', K.fmt.pct(rep.cpu, rep.cpu > 0 && rep.cpu < 10 ? 1 : 0)]);
+    if (isNum(rep.cpu)) out.push(['cpu', K.t('Processador'), K.fmt.pct(rep.cpu, rep.cpu > 0 && rep.cpu < 10 ? 1 : 0)]);
     if (isNum(rep.memUsadaBytes)) {
-      out.push(['memory', 'Memória', K.fmt.mem(rep.memUsadaBytes) + (isNum(rep.memTotalBytes) && rep.memTotalBytes > 0 ? ' de ' + K.fmt.mem(rep.memTotalBytes, 0) : '')]);
+      out.push(['memory', K.t('Memória'), K.fmt.mem(rep.memUsadaBytes) + (isNum(rep.memTotalBytes) && rep.memTotalBytes > 0 ? ' de ' + K.fmt.mem(rep.memTotalBytes, 0) : '')]);
     }
-    if (isNum(rep.discoLivreBytes)) out.push(['disk', 'Disco', K.fmt.bytes(rep.discoLivreBytes) + ' livres']);
-    if (isNum(rep.uptimeSec)) out.push(['clock', 'Ligado há', K.fmt.duration(rep.uptimeSec)]);
+    if (isNum(rep.discoLivreBytes)) out.push(['disk', K.t('Disco'), K.fmt.bytes(rep.discoLivreBytes) + ' livres']);
+    if (isNum(rep.uptimeSec)) out.push(['clock', K.t('Ligado há'), K.fmt.duration(rep.uptimeSec)]);
     return out;
   }
 
@@ -1647,17 +1648,17 @@
     const n = rep.achados.length;
     setText(R.verdict, vd.t);
     /* voando com algo na lista: é pouca coisa, não "pesando" */
-    setText(R.line, !n ? 'Nada pesando agora.'
-      : rep.veredito === 'voando' ? `Só ${n === 1 ? 'um detalhe' : `${K.fmt.num(n)} detalhes`} pra olhar.`
-      : `${plural(n, 'coisa pesando', 'coisas pesando')} agora`);
+    setText(R.line, !n ? K.t('Nada pesando agora.')
+      : rep.veredito === 'voando' ? K.t('Só {0} pra olhar.', n === 1 ? K.t('um detalhe') : `${K.fmt.num(n)} detalhes`)
+      : `${plural(n, K.t('coisa pesando'), K.t('coisas pesando'))} agora`);
     R.facts.textContent = '';
     for (const [ic, lab, val] of factsOf(rep)) R.facts.appendChild(K.el('span', { class: 'ot-lt-fact', html: K.icon(ic) }, K.el('span', null, lab + ' ', K.el('b', null, val))));
     R.facts.hidden = !R.facts.childNodes.length;
-    setText(R.at, isNum(rep.readAt) ? `lido às ${K.fmt.time(rep.readAt)}` : '');
+    setText(R.at, isNum(rep.readAt) ? K.t('lido às {0}', K.fmt.time(rep.readAt)) : '');
     if (R.mascot && R.face !== vd.face) { R.face = vd.face; R.mascot.set({ face: vd.face }); }
     if (R.gauge) R.gauge.update({ value: rep.nota });
     R.note.hidden = !lt.err;
-    if (lt.err) setText(R.note.querySelector('p'), `Não consegui conferir de novo agora (${noDot(lt.err)}). Mostro a última leitura.`);
+    if (lt.err) setText(R.note.querySelector('p'), K.t('Não consegui conferir de novo agora ({0}). Mostro a última leitura.', noDot(lt.err)));
     paintLtClosed();
     const had = R.body.contains(document.activeElement);
     K.keepFocus(R.body, () => {
@@ -1674,15 +1675,15 @@
   }
 
   function ltListCard(rows) {
-    const ul = K.el('ul', { class: 'ot-lt-list', 'aria-label': 'O que está pesando' });
+    const ul = K.el('ul', { class: 'ot-lt-list', 'aria-label': K.t('O que está pesando') });
     for (const r of rows) ul.appendChild(r.li);
     return K.el('section', { class: cls('card ot-lt-card'), style: delay(80) },
       K.el('div', { class: 'card-head ot-lt-head' },
         K.el('div', { class: 'ot-hv-title' },
           K.el('span', { class: 'head-ic', html: K.icon('otWeight') }),
           K.el('div', null,
-            K.el('h2', null, 'O que está pesando'),
-            K.el('div', { class: 'card-sub' }, 'Do que mais pesa pro que menos pesa.')))),
+            K.el('h2', null, K.t('O que está pesando')),
+            K.el('div', { class: 'card-sub' }, K.t('Do que mais pesa pro que menos pesa.'))))),
       ul);
   }
 
@@ -1690,7 +1691,7 @@
     return K.el('section', { class: cls('ot-empty ot-lt-empty'), style: delay(80) },
       K.el('span', { class: 'ot-lt-empty-ic', 'aria-hidden': 'true', html: K.icon('otEye') }),
       K.el('div', { class: 'ot-empty-text' },
-        K.el('p', null, 'Ficou lento? Volte aqui na hora.')));
+        K.el('p', null, K.t('Ficou lento? Volte aqui na hora.'))));
   }
 
   function ltRow(f, rep) {
@@ -1725,7 +1726,7 @@
     const a = r.d.act;
     if (!a) return null;
     if (a.kind === 'tag') return tag(a.tone + ' ot-lt-tag', a.icon, a.text, a.title);
-    if (a.kind === 'na') return K.el('span', { class: 'ot-na', html: K.icon('lock'), title: 'O Kamurafy não fecha processos do macOS: eles seguram o sistema de pé.' }, 'é do macOS');
+    if (a.kind === 'na') return K.el('span', { class: 'ot-na', html: K.icon('lock'), title: K.t('O Kamurafy não fecha processos do macOS: eles seguram o sistema de pé.') }, K.t('é do macOS'));
     if (a.kind === 'btn') {
       return K.el('button', { class: 'btn small', type: 'button', html: K.icon(a.icon), onclick: (e) => { a.run(e, f); } }, a.label);
     }
@@ -1733,15 +1734,15 @@
     const ph = S.lt.phase.get(appKey(f));
     const p = ph && ph.phase;
     const busy = S.lt.acting;
-    if (p === 'asking') return K.el('button', { class: 'btn small ot-quit is-busy', type: 'button', disabled: true, html: K.icon('otQuit') }, 'Fechando…');
-    if (p === 'forcing') return K.el('button', { class: 'btn small danger ot-force is-busy', type: 'button', disabled: true, html: K.icon('alert') }, 'Forçando…');
-    if (p === 'asked' || p === 'forced') return K.el('button', { class: 'btn small ot-wait', type: 'button', disabled: true, html: K.icon('clock') }, 'Esperando…');
+    if (p === 'asking') return K.el('button', { class: 'btn small ot-quit is-busy', type: 'button', disabled: true, html: K.icon('otQuit') }, K.t('Fechando…'));
+    if (p === 'forcing') return K.el('button', { class: 'btn small danger ot-force is-busy', type: 'button', disabled: true, html: K.icon('alert') }, K.t('Forçando…'));
+    if (p === 'asked' || p === 'forced') return K.el('button', { class: 'btn small ot-wait', type: 'button', disabled: true, html: K.icon('clock') }, K.t('Esperando…'));
     if (p === 'stuck' || p === 'refused' || p === 'forcefail' || (p === 'err' && ph.force)) {
       return K.el('button', { class: 'btn small danger ot-force', type: 'button', html: K.icon('alert'), disabled: busy,
-        'aria-label': `Forçar ${nome} a fechar`, onclick: () => { ltForce(f); } }, 'Forçar');
+        'aria-label': K.t('Forçar {0} a fechar', nome), onclick: () => { ltForce(f); } }, K.t('Forçar'));
     }
     return K.el('button', { class: 'btn small ot-quit', type: 'button', html: K.icon('otQuit'), disabled: busy,
-      'aria-label': `Fechar ${nome}`, onclick: () => { ltQuit(f); } }, 'Fechar');
+      'aria-label': K.t('Fechar {0}', nome), onclick: () => { ltQuit(f); } }, K.t('Fechar'));
   }
 
   function paintLtRow(r) {
@@ -1776,8 +1777,8 @@
     if (R.closedKey === key) return;
     R.closedKey = key;
     R.closed.innerHTML = K.icon('check');
-    const mem = isNum(c.mem) && c.mem >= 50e6 ? ` A memória dele (${K.fmt.mem(c.mem)}) voltou pro Mac.` : '';
-    R.closed.appendChild(K.el('p', null, `${c.forced ? 'Fechei à força' : 'Fechou'}: ${inl(c.nome)}.${mem}`));
+    const mem = isNum(c.mem) && c.mem >= 50e6 ? K.t(' A memória dele ({0}) voltou pro Mac.', K.fmt.mem(c.mem)) : '';
+    R.closed.appendChild(K.el('p', null, `${c.forced ? K.t('Fechei à força') : K.t('Fechou')}: ${inl(c.nome)}.${mem}`));
   }
 
   async function openBatterySettings(e, f) {
@@ -1787,19 +1788,19 @@
       S.lt.msgs.delete(f.id);
     } catch (err) {
       K.sound.oops();
-      S.lt.msgs.set(f.id, { tone: 'crit', icon: 'alert', text: `Não abriu (${noDot(errMsg(err))}). Abra Ajustes do Sistema › Bateria.` });
+      S.lt.msgs.set(f.id, { tone: 'crit', icon: 'alert', text: K.t('Não abriu ({0}). Abra Ajustes do Sistema › Bateria.', noDot(errMsg(err))) });
     }
     repaintLtRows();
   }
 
   function ltStats(f) {
     const bits = [];
-    if (isNum(f.cpu)) bits.push(`${cpuTxt(f.cpu)} de CPU`);
-    if (isNum(f.memBytes)) bits.push(`${K.fmt.mem(f.memBytes)} de memória`);
+    if (isNum(f.cpu)) bits.push(K.t('{0} de CPU', cpuTxt(f.cpu)));
+    if (isNum(f.memBytes)) bits.push(K.t('{0} de memória', K.fmt.mem(f.memBytes)));
     if (!bits.length) return null;
     const n = isNum(f.processos) ? f.processos : 1;
     return K.el('p', { class: 'kmodal-text ot-cf-stats' },
-      `Agora ele usa ${bits.join(' e ')}${n > 1 ? `, somando ${plural(n, 'processo', 'processos')}` : ''}.`);
+      K.t('Agora ele usa {0}{1}.', bits.join(' e '), n > 1 ? K.t(', somando {0}', plural(n, K.t('processo'), K.t('processos'))) : ''));
   }
 
   async function ltQuit(f, opts) {
@@ -1809,12 +1810,12 @@
     if (!opts.semConfirmar) {
       K.sound.plop();
       const ok = await K.confirm({
-        title: app ? `Fechar o app ${inl(ltName(f))}?` : `Fechar ${inl(ltName(f))}?`,
-        text: app ? 'Se tiver algo sem salvar, o próprio app pergunta antes de fechar.'
-          : 'Se ele estiver sincronizando ou baixando algo, isso para.',
+        title: app ? K.t('Fechar o app {0}?', inl(ltName(f))) : K.t('Fechar {0}?', inl(ltName(f))),
+        text: app ? K.t('Se tiver algo sem salvar, o próprio app pergunta antes de fechar.')
+          : K.t('Se ele estiver sincronizando ou baixando algo, isso para.'),
         body: ltStats(f),
-        note: { tone: 'good', icon: 'check', text: app ? 'Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.' : 'Não apaga nada. O app dono costuma abrir ele de novo.' },
-        ok: 'Fechar', cancel: 'Deixar aberto', icon: 'otQuit',
+        note: { tone: 'good', icon: 'check', text: app ? K.t('Fechar não apaga nada. Dá pra abrir o app de novo quando quiser.') : K.t('Não apaga nada. O app dono costuma abrir ele de novo.') },
+        ok: K.t('Fechar'), cancel: K.t('Deixar aberto'), icon: 'otQuit',
       });
       if (!ok) return false;
     }
@@ -1829,10 +1830,10 @@
     if (!opts.semConfirmar) {
       K.sound.plop();
       const ok = await K.confirm({
-        title: app ? `Forçar o app ${inl(ltName(f))} a fechar?` : `Forçar ${inl(ltName(f))} a fechar?`,
-        text: app ? 'Ele fecha na hora, sem perguntar nada. Use quando ele travou ou não responde.' : 'O processo para na hora, sem terminar o que estava fazendo.',
-        note: { tone: 'crit', icon: 'alert', text: 'O que não foi salvo nele se perde, e isso não dá pra desfazer.' },
-        ok: 'Forçar e fechar', cancel: 'Esperar mais', tone: 'danger', icon: 'alert',
+        title: app ? K.t('Forçar o app {0} a fechar?', inl(ltName(f))) : K.t('Forçar {0} a fechar?', inl(ltName(f))),
+        text: app ? K.t('Ele fecha na hora, sem perguntar nada. Use quando ele travou ou não responde.') : K.t('O processo para na hora, sem terminar o que estava fazendo.'),
+        note: { tone: 'crit', icon: 'alert', text: K.t('O que não foi salvo nele se perde, e isso não dá pra desfazer.') },
+        ok: K.t('Forçar e fechar'), cancel: K.t('Esperar mais'), tone: 'danger', icon: 'alert',
       });
       if (!ok) return false;
     }
@@ -1917,7 +1918,7 @@
     } catch (e) {
       vg.vigia = before.vigia;
       vg.ignorar = before.ignorar;
-      vg.err = `Não consegui salvar agora (${noDot(errMsg(e))}). Voltei como estava.`;
+      vg.err = K.t('Não consegui salvar agora ({0}). Voltei como estava.', noDot(errMsg(e)));
       K.sound.oops();
     }
     vg.busy = false;
@@ -1932,10 +1933,10 @@
       onclick: () => { if (!R.sw.disabled) saveVigia({ vigia: !S.vg.vigia }); } });
     R.err = K.el('p', { class: 'ot-lt-err', role: 'alert', hidden: true });
     R.ign = K.el('div', { class: 'ot-lt-ign', hidden: true });
-    const card = K.el('section', { class: cls('card ot-lt-vigia'), style: delay(160), 'aria-label': 'Vigia' },
+    const card = K.el('section', { class: cls('card ot-lt-vigia'), style: delay(160), 'aria-label': K.t('Vigia') },
       K.el('div', { class: 'ot-lt-vg-row' },
         K.el('span', { class: 'head-ic', html: K.icon('bell') }),
-        K.el('div', { class: 'ot-lt-vg-text' }, K.el('h2', null, 'Vigia'), K.el('p', null, VIGIA_T)),
+        K.el('div', { class: 'ot-lt-vg-text' }, K.el('h2', null, K.t('Vigia')), K.el('p', null, VIGIA_T)),
         R.sw),
       R.err, R.ign);
     paintVigia();
@@ -1951,8 +1952,8 @@
     /* ocupado salvando: o clique é ignorado, mas o interruptor não perde o foco */
     R.sw.disabled = !ok;
     R.sw.setAttribute('aria-busy', String(vg.busy));
-    R.sw.title = !ok ? '' : vg.vigia ? 'Ligada: olho a cada minuto.' : 'Desligada: não aviso nada.';
-    const err = vg.status === 'error' ? 'Não consegui ler esse ajuste. Tento de novo quando você voltar aqui.' : vg.err;
+    R.sw.title = !ok ? '' : vg.vigia ? K.t('Ligada: olho a cada minuto.') : K.t('Desligada: não aviso nada.');
+    const err = vg.status === 'error' ? K.t('Não consegui ler esse ajuste. Tento de novo quando você voltar aqui.') : vg.err;
     R.err.hidden = !err;
     setText(R.err, err || '');
     const list = ok ? vg.ignorar : [];
@@ -1966,11 +1967,11 @@
         ul.appendChild(K.el('li', null,
           K.el('span', { class: 'ot-lt-ign-n' }, vis(nome)),
           K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
-            'aria-label': `Voltar a avisar sobre ${vis(nome)}`,
-            onclick: () => { saveVigia({ vigiaIgnorar: S.vg.ignorar.filter((x) => x !== nome) }); } }, 'Voltar a avisar')));
+            'aria-label': K.t('Voltar a avisar sobre {0}', vis(nome)),
+            onclick: () => { saveVigia({ vigiaIgnorar: S.vg.ignorar.filter((x) => x !== nome) }); } }, K.t('Voltar a avisar'))));
       }
-      R.ign.append(K.el('span', { class: 'ot-lt-ign-l' }, 'Não aviso mais destes'), ul);
-    }, '.ot-lt-ign-list button');
+      R.ign.append(K.el('span', { class: 'ot-lt-ign-l' }, K.t('Não aviso mais destes')), ul);
+    }, K.t('.ot-lt-ign-list button'));
     /* tirou o último da lista: o foco volta pro interruptor */
     if (had && !R.ign.contains(document.activeElement)) { try { R.sw.focus({ preventScroll: true }); } catch (e) { /* sem foco */ } }
   }
@@ -1991,7 +1992,7 @@
   }
 
   K.pages.otimizar = {
-    title: 'Velocidade',
+    title: K.t('Velocidade'),
     async render(el) {
       teardown();
       host = el;

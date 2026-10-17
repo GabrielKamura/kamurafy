@@ -13,14 +13,14 @@
      dev: só na build de desenvolvimento · foot: botão no rodapé da barra lateral, não no menu */
   const ROUTES = [
     /* uma promessa por item: começar, deixar rápido, cuidar da bateria, abrir espaço, tirar app, acompanhar */
-    { id: 'inicio', label: 'Início', icon: 'scan' },
-    { id: 'otimizar', label: 'Velocidade', icon: 'rocket' },
-    { id: 'bateria', label: 'Bateria', icon: 'battery', star: true },
-    { id: 'faxina', label: 'Espaço', icon: 'broom' },
-    { id: 'desinstalar', label: 'Desinstalar', icon: 'box' },
-    { id: 'painel', label: 'Ao vivo', icon: 'gauge' },
-    { id: 'ajustes', label: 'Ajustes', icon: 'gear', hidden: true, foot: true },
-    { id: 'galeria', label: 'Galeria de componentes', icon: 'sparkle', hidden: true, dev: true },  // só pra testes
+    { id: 'inicio', label: K.t('Início'), icon: 'scan' },
+    { id: 'otimizar', label: K.t('Velocidade'), icon: 'rocket' },
+    { id: 'bateria', label: K.t('Bateria'), icon: 'battery', star: true },
+    { id: 'faxina', label: K.t('Espaço'), icon: 'broom' },
+    { id: 'desinstalar', label: K.t('Desinstalar'), icon: 'box' },
+    { id: 'painel', label: K.t('Ao vivo'), icon: 'gauge' },
+    { id: 'ajustes', label: K.t('Ajustes'), icon: 'gear', hidden: true, foot: true },
+    { id: 'galeria', label: K.t('Galeria de componentes'), icon: 'sparkle', hidden: true, dev: true },  // só pra testes
   ];
 
   let current = null;
@@ -44,9 +44,9 @@
     const side = K.$('#sidebar');
     side.innerHTML = '';
     side.appendChild(K.el('div', { class: 'brand', 'data-drag': true, html: K.logo() },
-      K.el('span', { class: 'brand-name' }, 'Kamurafy')));
+      K.el('span', { class: 'brand-name' }, K.t('Kamurafy'))));
 
-    const nav = K.el('nav', { class: 'nav', 'aria-label': 'Seções' });
+    const nav = K.el('nav', { class: 'nav', 'aria-label': K.t('Seções') });
     /* um selo "em breve" por grupo, em vez de um em cada item: vai no rótulo da seção quando ela
        inteira ainda não existe, ou logo acima dos itens que faltam (os prontos ficam fora dele) */
     let soonShown = false;
@@ -55,16 +55,16 @@
       if (publico && r.soon) continue;
       if (r.section) {
         soonShown = !!r.soon;
-        nav.appendChild(K.el('div', { class: 'nav-label' }, r.section, r.soon ? K.el('span', { class: 'soon' }, 'em breve') : null));
+        nav.appendChild(K.el('div', { class: 'nav-label' }, r.section, r.soon ? K.el('span', { class: 'soon' }, K.t('em breve')) : null));
         continue;
       }
       if (r.soon && !soonShown) {
         soonShown = true;
-        nav.appendChild(K.el('div', { class: 'nav-label nav-soon' }, K.el('span', { class: 'soon' }, 'em breve')));
+        nav.appendChild(K.el('div', { class: 'nav-label nav-soon' }, K.el('span', { class: 'soon' }, K.t('em breve'))));
       }
       const item = K.el('button', {
         class: 'nav-item' + (r.soon ? ' is-soon' : ''), dataset: { route: r.id }, html: K.icon(r.icon),
-        title: r.soon ? `${r.label}: chega numa próxima versão` : null,
+        title: r.soon ? K.t('{0}: chega numa próxima versão', r.label) : null,
         onclick: () => goTo(r.id),
       }, K.el('span', null, r.label));
       if (r.star) item.appendChild(K.el('span', { class: 'star', html: K.icon('star') }));
@@ -73,8 +73,8 @@
     side.appendChild(nav);
 
     const foot = K.el('div', { class: 'sidebar-foot' });
-    foot.appendChild(K.el('div', { id: 'side-battery', class: 'side-battery', role: 'button', tabindex: 0, 'aria-label': 'Ver a bateria' },
-      K.el('span', { class: 'side-bat-wait' }, 'Lendo a bateria…')));
+    foot.appendChild(K.el('div', { id: 'side-battery', class: 'side-battery', role: 'button', tabindex: 0, 'aria-label': K.t('Ver a bateria') },
+      K.el('span', { class: 'side-bat-wait' }, K.t('Lendo a bateria…'))));
     /* Ajustes (com a engrenagem) e, do lado, o som num botão só de ícone */
     const tools = K.el('div', { class: 'side-tools' });
     for (const r of ROUTES) {
@@ -93,12 +93,12 @@
     const b = K.$('#side-sound');
     if (!b) return;
     const on = K.sound.enabled;
-    const label = on ? 'Som ligado' : 'Som desligado';
+    const label = on ? K.t('Som ligado') : K.t('Som desligado');
     b.innerHTML = K.icon(on ? 'soundOn' : 'soundOff');
     b.appendChild(K.el('span', { class: 'side-sound-t' }, label));
     b.setAttribute('aria-pressed', String(on));
     b.setAttribute('aria-label', label);
-    b.title = on ? 'Som ligado (clique pra desligar)' : 'Som desligado (clique pra ligar)';
+    b.title = on ? K.t('Som ligado (clique pra desligar)') : K.t('Som desligado (clique pra ligar)');
     b.classList.toggle('is-off', !on);
   }
 
@@ -149,8 +149,8 @@
         const laptop = K.isLaptop(info);
         box.innerHTML = '';
         box.appendChild(K.el('div', { class: 'side-bat-row' },
-          K.el('span', { class: 'side-bat-icon', html: K.icon(laptop ? 'battery' : 'plug') }), K.el('span', { class: 'side-bat-word' }, laptop ? 'Sem leitura' : 'Sem bateria')));
-        box.appendChild(K.el('div', { class: 'side-bat-sub' }, laptop ? 'Não achei a bateria' : 'Mac de mesa'));
+          K.el('span', { class: 'side-bat-icon', html: K.icon(laptop ? 'battery' : 'plug') }), K.el('span', { class: 'side-bat-word' }, laptop ? K.t('Sem leitura') : K.t('Sem bateria'))));
+        box.appendChild(K.el('div', { class: 'side-bat-sub' }, laptop ? K.t('Não achei a bateria') : K.t('Mac de mesa')));
         return;
       }
       const st = K.batStatus(b);
@@ -159,12 +159,12 @@
         K.el('span', { class: 'side-bat-pct' }, b.percent != null ? K.fmt.pct(b.percent, 0) : '—'),
         K.el('span', { class: `side-bat-dot ${st.tone}`, title: st.label })));
       box.appendChild(K.el('div', { class: 'side-bat-sub' },
-        b.healthPct != null ? `Saúde ${K.fmt.pct(b.healthPct)} · ${st.label}` : 'Saúde sem leitura agora'));
+        b.healthPct != null ? K.t('Saúde {0} · {1}', K.fmt.pct(b.healthPct), st.label) : K.t('Saúde sem leitura agora')));
     } catch (e) {
       box.innerHTML = '';
       box.appendChild(K.el('div', { class: 'side-bat-row' },
-        K.el('span', { class: 'side-bat-icon', html: K.icon('battery') }), K.el('span', { class: 'side-bat-word' }, 'Sem leitura')));
-      box.appendChild(K.el('div', { class: 'side-bat-sub' }, 'Tento de novo em 30 s'));
+        K.el('span', { class: 'side-bat-icon', html: K.icon('battery') }), K.el('span', { class: 'side-bat-word' }, K.t('Sem leitura'))));
+      box.appendChild(K.el('div', { class: 'side-bat-sub' }, K.t('Tento de novo em 30 s')));
     }
   }
 
@@ -187,12 +187,12 @@
     const page = K.pages[id] || K.pages.embreve;
     current = { id, page };
     const route = ROUTES.find((r) => r.id === id);
-    document.title = `${(route || {}).label || 'Kamurafy'} · Kamurafy`;
+    document.title = K.t('{0} · Kamurafy', (route || {}).label || K.t('Kamurafy'));
     try {
       await page.render(host, { id, route });
     } catch (e) {
       console.error('render ' + id + ': ' + (e && (e.stack || e.message) || e));
-      host.appendChild(K.errorCard({ title: 'Algo deu errado nesta tela', reason: String(e && e.message || e), retry: () => { go(); }, retryHint: 'Abro a tela de novo.' }));
+      host.appendChild(K.errorCard({ title: K.t('Algo deu errado nesta tela'), reason: String(e && e.message || e), retry: () => { go(); }, retryHint: K.t('Abro a tela de novo.') }));
     }
     if (!readySent) {
       readySent = true;

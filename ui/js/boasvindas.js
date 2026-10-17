@@ -49,14 +49,14 @@
       b.setAttribute('aria-checked', String(on));
       try { await K.settings.set({ aviso80: on }); } catch (e) {
         b.setAttribute('aria-checked', String(!on));
-        msg.replaceChildren(line('crit', 'alert', 'Não consegui salvar agora. Dá pra mudar depois, em Ajustes.'));
+        msg.replaceChildren(line('crit', 'alert', K.t('Não consegui salvar agora. Dá pra mudar depois, em Ajustes.')));
       }
     });
-    const notif = K.el('div', { class: 'kw-notif' }, K.el('span', { class: 'loading' }, 'Vendo se posso mostrar avisos…'));
+    const notif = K.el('div', { class: 'kw-notif' }, K.el('span', { class: 'loading' }, K.t('Vendo se posso mostrar avisos…')));
     box.append(
       K.el('div', { class: 'kw-setting' },
         K.el('div', { class: 'kw-setting-t' }, K.el('b', null, K.avisosTxt.carga(lim)),
-          K.el('span', null, 'Uma vez por carga, com o carregador ligado.')),
+          K.el('span', null, K.t('Uma vez por carga, com o carregador ligado.'))),
         toggle),
       notif, msg);
     (async () => {
@@ -64,19 +64,19 @@
       try { st = await K.api('notify.status'); } catch (e) { st = null; }
       if (!cur) return;
       notif.textContent = '';
-      if (!st) { notif.appendChild(line('none', 'info', 'Não consegui ver se posso mostrar avisos. Confira depois, em Ajustes.')); return; }
+      if (!st) { notif.appendChild(line('none', 'info', K.t('Não consegui ver se posso mostrar avisos. Confira depois, em Ajustes.'))); return; }
       if (st.permitido) {
-        notif.append(line('good', 'check', st.estado === 'provisorio' ? 'Notificações liberadas, no modo discreto.' : 'Notificações liberadas: os avisos vão chegar.'),
+        notif.append(line('good', 'check', st.estado === 'provisorio' ? K.t('Notificações liberadas, no modo discreto.') : K.t('Notificações liberadas: os avisos vão chegar.')),
           K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'),
-            onclick: async () => { K.sound.plop(); try { await K.api('notify.test'); } catch (e) { /* sem teste */ } } }, 'Mandar um de teste'));
+            onclick: async () => { K.sound.plop(); try { await K.api('notify.test'); } catch (e) { /* sem teste */ } } }, K.t('Mandar um de teste')));
       } else if (st.estado === 'negado') {
-        notif.append(line('warn', 'alert', 'Notificações desligadas: o aviso não chega.'),
+        notif.append(line('warn', 'alert', K.t('Notificações desligadas: o aviso não chega.')),
           K.el('button', { class: 'btn small gold', type: 'button',
-            onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'notificacoes' }).catch(() => {}); } }, 'Abrir Ajustes'));
+            onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'notificacoes' }).catch(() => {}); } }, K.t('Abrir Ajustes')));
       } else if (st.estado === 'nao-pedido') {
-        notif.appendChild(line('none', 'bell', 'O macOS vai pedir permissão. Responda “Permitir”.'));
+        notif.appendChild(line('none', 'bell', K.t('O macOS vai pedir permissão. Responda “Permitir”.')));
       } else {
-        notif.appendChild(line('none', 'info', 'Os avisos não estão disponíveis nesta versão.'));
+        notif.appendChild(line('none', 'info', K.t('Os avisos não estão disponíveis nesta versão.')));
       }
     })();
   }
@@ -84,7 +84,7 @@
   /* ---------- passo 2: barra de menus e abrir junto com o Mac ---------- */
   function stepMenubar(box) {
     const msg = K.el('div', { class: 'kw-msg' });
-    const toggle = sw('Abrir o Kamurafy junto com o Mac', false, async (on, b) => {
+    const toggle = sw(K.t('Abrir o Kamurafy junto com o Mac'), false, async (on, b) => {
       K.sound.tick();
       b.disabled = true;
       b.setAttribute('aria-checked', String(on));
@@ -93,14 +93,14 @@
         const r = await K.api('menubar.loginItem', { ligar: on });
         paint(r);
         if (r && r.abrirNoLogin === 'precisa-aprovar') {
-          msg.appendChild(line('warn', 'info', 'Falta aprovar em Ajustes do Sistema › Geral › Itens de Início.'));
+          msg.appendChild(line('warn', 'info', K.t('Falta aprovar em Ajustes do Sistema › Geral › Itens de Início.')));
         }
       } catch (e) {
         b.setAttribute('aria-checked', String(!on));
         const m = String((e && e.message) || '');
         msg.appendChild(/só no app aberto/i.test(m)
-          ? line('none', 'info', 'Modo de teste: aqui eu só mostro.')
-          : line('crit', 'alert', 'Não deu pra mudar agora. Tente depois, em Ajustes.'));
+          ? line('none', 'info', K.t('Modo de teste: aqui eu só mostro.'))
+          : line('crit', 'alert', K.t('Não deu pra mudar agora. Tente depois, em Ajustes.')));
       }
       b.disabled = false;
     });
@@ -109,7 +109,7 @@
       toggle.setAttribute('aria-checked', String(s === 'ligado' || s === 'precisa-aprovar'));
       toggle.disabled = !s || s === 'indisponivel';
       if (s === 'indisponivel') {
-        msg.replaceChildren(line('none', 'info', 'Esta cópia não pode se registrar. Mova o Kamurafy pra pasta Aplicativos e abra de novo.'));
+        msg.replaceChildren(line('none', 'info', K.t('Esta cópia não pode se registrar. Mova o Kamurafy pra pasta Aplicativos e abra de novo.')));
       }
     }
     box.append(
@@ -117,11 +117,11 @@
         K.el('span', { class: 'kw-bar-apple' }),
         K.el('span', { class: 'kw-bar-gap' }),
         K.el('span', { class: 'kw-bar-me', html: K.icon('battery') }, '80%'),
-        K.el('span', { class: 'kw-bar-clock' }, 'qui 10:42'),
-        K.el('span', { class: 'kw-bar-arrow' }, 'eu fico aqui')),
+        K.el('span', { class: 'kw-bar-clock' }, K.t('qui 10:42')),
+        K.el('span', { class: 'kw-bar-arrow' }, K.t('eu fico aqui'))),
       K.el('div', { class: 'kw-setting' },
-        K.el('div', { class: 'kw-setting-t' }, K.el('b', null, 'Abrir o Kamurafy junto com o Mac'),
-          K.el('span', null, 'Os avisos só chegam comigo aberto.')),
+        K.el('div', { class: 'kw-setting-t' }, K.el('b', null, K.t('Abrir o Kamurafy junto com o Mac')),
+          K.el('span', null, K.t('Os avisos só chegam comigo aberto.'))),
         toggle),
       msg);
     toggle.disabled = true;
@@ -133,29 +133,29 @@
     const msg = K.el('div', { class: 'kw-msg' });
     box.append(
       K.el('ul', { class: 'kw-list' },
-        K.el('li', { html: K.icon('eye') }, K.el('span', null, 'Com ou sem ela, nada sai sem você confirmar.')),
-        K.el('li', { html: K.icon('lock') }, K.el('span', null, 'Dá pra tirar a qualquer hora, nos Ajustes do Sistema.'))),
+        K.el('li', { html: K.icon('eye') }, K.el('span', null, K.t('Com ou sem ela, nada sai sem você confirmar.'))),
+        K.el('li', { html: K.icon('lock') }, K.el('span', null, K.t('Dá pra tirar a qualquer hora, nos Ajustes do Sistema.')))),
       K.el('div', { class: 'kw-row' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('lock'),
           onclick: () => {
             K.sound.plop();
             K.api('open.settings', { painel: 'privacidade-disco' })
-              .then(() => { msg.replaceChildren(line('good', 'check', 'Abri os Ajustes. Ligue o Kamurafy na lista, ou clique em + e escolha ele.')); })
-              .catch(() => { msg.replaceChildren(line('crit', 'alert', 'Não consegui abrir agora. Fica em Ajustes do Sistema › Privacidade e Segurança › Acesso Total ao Disco.')); });
-          } }, 'Abrir Acesso Total ao Disco'),
-        K.el('span', { class: 'kw-hint' }, 'ou depois, em Ajustes')),
+              .then(() => { msg.replaceChildren(line('good', 'check', K.t('Abri os Ajustes. Ligue o Kamurafy na lista, ou clique em + e escolha ele.'))); })
+              .catch(() => { msg.replaceChildren(line('crit', 'alert', K.t('Não consegui abrir agora. Fica em Ajustes do Sistema › Privacidade e Segurança › Acesso Total ao Disco.'))); });
+          } }, K.t('Abrir Acesso Total ao Disco')),
+        K.el('span', { class: 'kw-hint' }, K.t('ou depois, em Ajustes'))),
       msg);
   }
 
   const STEPS = [
-    { icon: 'bell', kicker: 'Oi! Eu sou o Kamurafy', title: 'Eu cuido da bateria do seu Mac',
-      text: 'Parar a carga antes do 100% ajuda a bateria a durar mais. Eu te aviso na hora.',
+    { icon: 'bell', kicker: K.t('Oi! Eu sou o Kamurafy'), title: K.t('Eu cuido da bateria do seu Mac'),
+      text: K.t('Parar a carga antes do 100% ajuda a bateria a durar mais. Eu te aviso na hora.'),
       face: 'happy', paint: stepBattery },
-    { icon: 'kwBar', kicker: 'Sempre à mão', title: 'Eu fico na barra de menus',
-      text: 'Um clique no meu ícone, do lado do relógio, mostra a carga e quem está gastando.',
+    { icon: 'kwBar', kicker: K.t('Sempre à mão'), title: K.t('Eu fico na barra de menus'),
+      text: K.t('Um clique no meu ícone, do lado do relógio, mostra a carga e quem está gastando.'),
       face: 'joy', paint: stepMenubar },
-    { icon: 'kwDisk', kicker: 'Sem pressa', title: 'Acesso Total ao Disco é opcional',
-      text: 'Deixa eu olhar as pastas que o macOS protege. Sem ela, tudo funciona.',
+    { icon: 'kwDisk', kicker: K.t('Sem pressa'), title: K.t('Acesso Total ao Disco é opcional'),
+      text: K.t('Deixa eu olhar as pastas que o macOS protege. Sem ela, tudo funciona.'),
       face: 'happy', paint: stepDisk },
   ];
 
@@ -186,7 +186,7 @@
     c.back2.hidden = c.i === 0;
     const last = c.i === STEPS.length - 1;
     c.next.textContent = '';
-    c.next.append(last ? 'Bora começar' : 'Continuar', K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
+    c.next.append(last ? K.t('Bora começar') : K.t('Continuar'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
     c.skip.hidden = last;
     if (c.mascot) c.mascot.set({ face: st.face });
     c.card.classList.toggle('is-last', last);
@@ -202,10 +202,10 @@
     c.text = K.el('p', { class: 'kw-text', id: 'kw-text' });
     c.body = K.el('div', { class: 'kw-body' });
     c.panel = K.el('div', { class: 'kw-panel' }, K.el('div', { class: 'kw-head' }, c.icon, K.el('div', null, c.kicker, c.title)), c.text, c.body);
-    c.dots = STEPS.map((s, k) => K.el('button', { class: 'kw-dot', type: 'button', 'aria-label': `Passo ${k + 1}: ${s.title}`, onclick: () => { K.sound.tick(); paintStep(c, k); } }));
+    c.dots = STEPS.map((s, k) => K.el('button', { class: 'kw-dot', type: 'button', 'aria-label': K.t('Passo {0}: {1}', k + 1, s.title), onclick: () => { K.sound.tick(); paintStep(c, k); } }));
     c.count = K.el('span', { class: 'kw-count' });
-    c.skip = K.el('button', { class: 'btn small ghost kw-skip', type: 'button', onclick: () => { K.sound.tick(); close(); } }, 'Pular');
-    c.back2 = K.el('button', { class: 'btn kw-prev', type: 'button', onclick: () => { K.sound.tick(); paintStep(c, c.i - 1); } }, 'Voltar');
+    c.skip = K.el('button', { class: 'btn small ghost kw-skip', type: 'button', onclick: () => { K.sound.tick(); close(); } }, K.t('Pular'));
+    c.back2 = K.el('button', { class: 'btn kw-prev', type: 'button', onclick: () => { K.sound.tick(); paintStep(c, c.i - 1); } }, K.t('Voltar'));
     c.next = K.el('button', { class: 'btn gold kw-next', type: 'button', onclick: () => {
       K.sound.plop();
       if (c.i >= STEPS.length - 1) { K.sound.tada(); close(); } else paintStep(c, c.i + 1);
@@ -219,7 +219,7 @@
         K.el('div', { class: 'kw-acts' }, c.skip, c.back2, c.next)));
     c.back = K.el('div', { class: 'kw-back' }, c.card);
     document.body.appendChild(c.back);
-    try { c.mascot = K.mascot(c.art.firstChild, { size: 168, state: { pct: 80, tone: 'good', charging: true, plugged: true, face: 'happy', label: 'Mascote do Kamurafy dando oi' } }); } catch (e) { c.mascot = null; }
+    try { c.mascot = K.mascot(c.art.firstChild, { size: 168, state: { pct: 80, tone: 'good', charging: true, plugged: true, face: 'happy', label: K.t('Mascote do Kamurafy dando oi') } }); } catch (e) { c.mascot = null; }
     c.onKey = (e) => {
       if (cur !== c) return;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); return; }

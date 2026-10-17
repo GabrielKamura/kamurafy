@@ -55,7 +55,7 @@
 
   function asEl(el) {
     const n = typeof el === 'string' ? document.querySelector(el) : el;
-    if (!n || !n.appendChild) throw new Error('K.charts: elemento não encontrado');
+    if (!n || !n.appendChild) throw new Error(K.t('K.charts: elemento não encontrado'));
     return n;
   }
 
@@ -115,7 +115,7 @@
   const minus = (s) => String(s).replace(/^-/, '−');
   function fmtNum(v, casas) {
     if (!isNum(v)) return '—';
-    return minus(Number(v).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }));
+    return minus(Number(v).toLocaleString(K.locale || 'pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }));
   }
   function decimalsOf(step) {
     const s = String(+Number(step).toPrecision(6));
@@ -158,16 +158,16 @@
   }
 
   /* ---------- tempo (rótulos pt-BR) ---------- */
-  const WD = (d) => d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
-  const MON = (d) => d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-  const HM = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const HMS = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const WD = (d) => d.toLocaleDateString(K.locale || 'pt-BR', { weekday: 'short' }).replace('.', '');
+  const MON = (d) => d.toLocaleDateString(K.locale || 'pt-BR', { month: 'short' }).replace('.', '');
+  const HM = (d) => d.toLocaleTimeString(K.locale || 'pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const HMS = (d) => d.toLocaleTimeString(K.locale || 'pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const T_STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 10800, 21600, 43200, DAY, 2 * DAY, 7 * DAY, 14 * DAY];
 
   function agoText(d, prefix) {
     d = Math.max(0, Math.round(d));
     if (d < 3) return 'agora';
-    const p = prefix ? 'há ' : '−';
+    const p = prefix ? K.t('há ') : '−';
     if (d < 60) return `${p}${d} s`;
     if (d < 3600) {
       /* 90 s vira "1,5 min" (antes arredondava pra "2 min" e repetia o rótulo vizinho) */
@@ -333,7 +333,7 @@
       const btn = K.el('button', { class: 'btn small ghost kc-tbtn', type: 'button', 'aria-expanded': String(!!st.open) });
       const paint = () => {
         btn.innerHTML = K.icon('table');
-        btn.appendChild(document.createTextNode(st.open ? 'Esconder números' : 'Ver números'));
+        btn.appendChild(document.createTextNode(st.open ? K.t('Esconder números') : K.t('Ver números')));
         btn.setAttribute('aria-expanded', String(!!st.open));
       };
       paint();
@@ -387,11 +387,11 @@
     if (m.rows.length > st.rows) {
       const falta = m.rows.length - st.rows;
       const more = K.el('div', { class: 'kc-more' },
-        K.el('span', { class: 'muted' }, `Mostrando ${fmtNum(st.rows, 0)} de ${fmtNum(m.rows.length, 0)}${m.order ? ' · ' + m.order : ''}`),
+        K.el('span', { class: 'muted' }, K.t('Mostrando {0} de {1}{2}', fmtNum(st.rows, 0), fmtNum(m.rows.length, 0), m.order ? ' · ' + m.order : '')),
         K.el('button', {
           class: 'btn small', type: 'button',
           onclick: () => { st.rows += Math.max(TABLE_STEP, Math.min(100, falta)); drawTable(box, model, st); },
-        }, `Mostrar mais ${fmtNum(Math.min(falta, Math.max(TABLE_STEP, Math.min(100, falta))), 0)}`));
+        }, K.t('Mostrar mais {0}', fmtNum(Math.min(falta, Math.max(TABLE_STEP, Math.min(100, falta))), 0))));
       box.appendChild(more);
     } else if (m.note) {
       box.appendChild(K.el('div', { class: 'kc-more muted' }, m.note));
@@ -423,7 +423,7 @@
       const byX = new Map();
       for (const p of points) if (p.y != null) byX.set(p.x, p);
       return {
-        name: s.name || (i === 0 ? '' : `Série ${i + 1}`),
+        name: s.name || (i === 0 ? '' : K.t('Série {0}', i + 1)),
         color, dash, points, byX,
         area: s.area != null ? !!s.area : (kind === 'area' && !dash),
         width: s.width || 2.5,
@@ -482,7 +482,7 @@
       const series = normSeries(opts, kind);
       const pts = [];
       for (const s of series) for (const p of s.points) if (p.y != null) pts.push(p);
-      if (!pts.length) { hover = null; h.empty(opts.empty || 'Ainda não há dados pra mostrar aqui.'); return; }
+      if (!pts.length) { hover = null; h.empty(opts.empty || K.t('Ainda não há dados pra mostrar aqui.')); return; }
 
       const H = opts.height || 220;
       const first = series.find((s) => s.points.length) || series[0];
@@ -560,7 +560,7 @@
       const id = ++uid;
       const svg = sv('svg', {
         class: 'kc-svg', width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', tabindex: 0,
-        'aria-label': opts.ariaLabel || opts.title || series.map((s) => s.name).filter(Boolean).join(', ') || 'Gráfico',
+        'aria-label': opts.ariaLabel || opts.title || series.map((s) => s.name).filter(Boolean).join(', ') || K.t('Gráfico'),
       });
       const rs = rough1(svg);
       const ink = col('--ink');
@@ -637,7 +637,7 @@
       /* dados (recortados na área do gráfico) */
       const clipId = 'kc-clip-' + id;
       const clipRect = sv('rect', { x: x0 - 6, y: y0 - 8, width: pw + 12 + padR, height: ph + 10 }, sv('clipPath', { id: clipId }, sv('defs', null, svg)));
-      const gD = sv('g', { class: 'kc-data', 'clip-path': `url(#${clipId})` }, svg);
+      const gD = sv('g', { class: 'kc-data', 'clip-path': K.t('url(#{0})', clipId) }, svg);
       const yb = sy(clamp(0, ylo, yhi));
       const gapStyle = opts.gapStyle || 'dots';
       let hasGap = false;
@@ -658,9 +658,9 @@
         if (s.area) {
           for (const seg of segs) {
             if (seg.length < 2) continue;
-            let d = `M${r1(sx(seg[0].x))},${r1(yb)}`;
-            for (const p of seg) d += `L${r1(sx(p.x))},${r1(sy(p.y))}`;
-            d += `L${r1(sx(seg[seg.length - 1].x))},${r1(yb)}Z`;
+            let d = K.t('M{0},{1}', r1(sx(seg[0].x)), r1(yb));
+            for (const p of seg) d += K.t('L{0},{1}', r1(sx(p.x)), r1(sy(p.y)));
+            d += K.t('L{0},{1}Z', r1(sx(seg[seg.length - 1].x)), r1(yb));
             const a = sv('path', { d, class: 'kc-fill' }, gD);
             a.style.fill = s.color;
           }
@@ -855,8 +855,8 @@
           if (to.rows) return to.rows();
           const order = to.order || (isTime ? 'desc' : 'asc');
           const list = order === 'desc' ? xs.slice().reverse() : xs;
-          const head = [to.xLabel || (isTime ? 'Quando' : 'x')].concat(series.map((s) => s.name || 'Valor'));
-          if (bands.some((b) => b.label)) head.push(to.bandLabel || 'Situação');
+          const head = [to.xLabel || (isTime ? K.t('Quando') : 'x')].concat(series.map((s) => s.name || K.t('Valor')));
+          if (bands.some((b) => b.label)) head.push(to.bandLabel || K.t('Situação'));
           const hasBands = head.length > series.length + 1;
           const rows = list.map((xv) => {
             const row = [(to.xFormat || titleOf)(xv)];
@@ -864,7 +864,7 @@
             if (hasBands) { const b = bands.find((bb) => xv >= bb.from && xv <= bb.to); row.push(b ? b.label : '—'); }
             return row;
           });
-          return { head, rows, order: order === 'desc' ? 'mais recentes primeiro' : '' };
+          return { head, rows, order: order === 'desc' ? K.t('mais recentes primeiro') : '' };
         };
       }
       footer(h, legend, model, st);
@@ -883,7 +883,7 @@
 
   function barPath(x, y, w, t, r) {
     r = Math.min(r, w / 2, t / 2);
-    return `M${x},${y}H${x + w - r}A${r},${r} 0 0 1 ${x + w},${y + r}V${y + t - r}A${r},${r} 0 0 1 ${x + w - r},${y + t}H${x}Z`;
+    return K.t('M{0},{1}H{2}A{3},{4} 0 0 1 {5},{6}V{7}A{8},{9} 0 0 1 {10},{11}H{12}Z', x, y, x + w - r, r, r, x + w, y + r, y + t - r, r, r, x + w - r, y + t, x);
   }
 
   function iconBox(icon) {
@@ -910,7 +910,7 @@
       if (!W) return;
       h.clear();
       const items = (opts.items || []).filter((it) => it && isNum(+it.value)).map((it) => Object.assign({}, it, { value: +it.value }));
-      if (!items.length) { h.empty(opts.empty || 'Nada pra mostrar agora.'); return; }
+      if (!items.length) { h.empty(opts.empty || K.t('Nada pra mostrar agora.')); return; }
       const fmt = opts.format || ((v) => fmtNum(v, Math.abs(v) < 10 ? 1 : 0));
       const color = col(opts.color, 'var(--s1)');
       const max = opts.max != null ? +opts.max : Math.max(0, ...items.map((i) => i.value)) || 1;
@@ -928,7 +928,7 @@
       const twoLines = items.some((i) => textW(i.label || '', 15) > labelW - 2);
       const hasNote = items.some((i) => i.note);
       const rowH = Math.max(thick + 14, (twoLines ? 35 : 18) + (hasNote ? 16 : 0) + 8);
-      const cols = `${hasIcon ? iconW + 'px ' : ''}${labelW}px ${trackW}px`;
+      const cols = K.t('{0}{1}px {2}px', hasIcon ? iconW + 'px ' : '', labelW, trackW);
       const ink = col('--ink');
 
       const list = K.el('div', { class: 'kb-list', role: 'list', 'aria-label': opts.ariaLabel || opts.title || null });
@@ -936,7 +936,7 @@
         const row = K.el('div', { class: 'kb-row', role: 'listitem', tabindex: 0, style: { gridTemplateColumns: cols, gap: gap + 'px', height: rowH + 'px' } });
         if (hasIcon) row.appendChild(iconBox(it.icon));
         const lab = K.el('div', { class: 'kb-label' }, K.el('span', { class: 'kb-name', title: it.label || '' }, it.label || '—'));
-        if (it.note) lab.appendChild(K.el('span', { class: 'kb-note', title: it.note }, it.note));
+        if (it.note) lab.appendChild(K.el('span', { class: 'kb-note', title: K.t(it.note) }, K.t(it.note)));
         row.appendChild(lab);
 
         const track = K.el('div', { class: 'kb-track' });
@@ -963,8 +963,8 @@
           row.classList.add('hot');
           const r = svg.getBoundingClientRect();
           const rows = [{ value: fmt(it.value, it), name: opts.valueName || '', color: it.color ? col(it.color) : color }];
-          if (opts.share !== false && total > 0 && items.length > 1) rows.push({ value: fmtNum((Math.max(0, it.value) / total) * 100, 0) + '%', name: opts.shareName || 'do total da lista' });
-          if (it.note) rows.push({ value: '', name: it.note });
+          if (opts.share !== false && total > 0 && items.length > 1) rows.push({ value: fmtNum((Math.max(0, it.value) / total) * 100, 0) + '%', name: opts.shareName || K.t('do total da lista') });
+          if (it.note) rows.push({ value: '', name: K.t(it.note) });
           h.tip(r.left + bw + 2, r.top + top, it.label || '', rows);
         };
         const hide = () => { row.classList.remove('hot'); h.untip(); };
@@ -977,8 +977,8 @@
       h.el.appendChild(list);
 
       const model = opts.table ? () => ({
-        head: [opts.labelName || 'Nome', opts.valueName || 'Valor'].concat(items.some((i) => i.note) ? ['Detalhe'] : []),
-        rows: items.map((i) => [i.label || '—', fmt(i.value, i)].concat(items.some((x) => x.note) ? [i.note || '—'] : [])),
+        head: [opts.labelName || K.t('Nome'), opts.valueName || K.t('Valor')].concat(items.some((i) => i.note) ? [K.t('Detalhe')] : []),
+        rows: items.map((i) => [i.label || '—', fmt(i.value, i)].concat(items.some((x) => x.note) ? [i.note ? K.t(i.note) : '—'] : [])),
         numeric: true,
       }) : null;
       footer(h, opts.legend || null, model, st);
@@ -999,7 +999,7 @@
   function arcD(cx, cy, r, t0, t1) {
     const [ax, ay] = arcPt(cx, cy, r, t0);
     const [bx, by] = arcPt(cx, cy, r, Math.min(t1, 0.99999));
-    return `M${r1(ax)},${r1(ay)}A${r},${r} 0 0 1 ${r1(bx)},${r1(by)}`;
+    return K.t('M{0},{1}A{2},{3} 0 0 1 {4},{5}', r1(ax), r1(ay), r, r, r1(bx), r1(by));
   }
 
   C.gauge = function (el, opts0) {
@@ -1024,7 +1024,7 @@
 
       const wrap = K.el('div', { class: 'kg', style: { maxWidth: size + 'px' } });
       const VW = 220, VH = 136, cx = 110, cy = 112, R = 96, bw = 22, rm = R - bw / 2;
-      const svg = sv('svg', { class: 'kg-svg', viewBox: `0 0 ${VW} ${VH}`, role: 'img', 'aria-label': `${opts.label || 'Medidor'}: ${has ? fmt(v) : 'sem leitura'}${zone && zone.label ? ', ' + zone.label : ''}` });
+      const svg = sv('svg', { class: 'kg-svg', viewBox: `0 0 ${VW} ${VH}`, role: 'img', 'aria-label': `${opts.label || K.t('Medidor')}: ${has ? fmt(v) : K.t('sem leitura')}${zone && zone.label ? ', ' + zone.label : ''}` });
       const rs = rough1(svg);
       const ink = col('--ink');
 
@@ -1056,7 +1056,7 @@
       const [o0x, o0y] = arcPt(cx, cy, R, 0), [o1x, o1y] = arcPt(cx, cy, R, 0.99999);
       const ri = R - bw;
       const [i1x, i1y] = arcPt(cx, cy, ri, 0.99999), [i0x, i0y] = arcPt(cx, cy, ri, 0);
-      const outline = `M${r1(o0x)},${r1(o0y)}A${R},${R} 0 0 1 ${r1(o1x)},${r1(o1y)}L${r1(i1x)},${r1(i1y)}A${ri},${ri} 0 0 0 ${r1(i0x)},${r1(i0y)}Z`;
+      const outline = K.t('M{0},{1}A{2},{3} 0 0 1 {4},{5}L{6},{7}A{8},{9} 0 0 0 {10},{11}Z', r1(o0x), r1(o0y), R, R, r1(o1x), r1(o1y), r1(i1x), r1(i1y), ri, ri, r1(i0x), r1(i0y));
       const og = rs.path(outline, { stroke: ink, strokeWidth: 3, roughness: 0.55, bowing: 0.4, seed: SEED, fill: 'none' });
       og.setAttribute('class', 'kg-outline');
       svg.appendChild(og);
@@ -1079,7 +1079,7 @@
       wrap.appendChild(svg);
       /* sem leitura: o texto de espera ("Medindo…") vai apagado no lugar do número, nunca um "—" preto */
       const txt = K.el('div', { class: 'kg-text' },
-        K.el('div', { class: 'kg-val' + (has ? '' : ' no-read') }, has ? fmt(v) : (opts.empty || 'sem leitura')));
+        K.el('div', { class: 'kg-val' + (has ? '' : ' no-read') }, has ? fmt(v) : (opts.empty || K.t('sem leitura'))));
       if (opts.label) txt.appendChild(K.el('div', { class: 'kg-label' }, opts.label));
       if (zone && zone.label && opts.pill !== false) txt.appendChild(K.statusPill(zone.tone, zone.label, zone.icon));
       wrap.appendChild(txt);
@@ -1097,9 +1097,9 @@
       /* dica: explica as faixas */
       const tip = () => {
         const r = svg.getBoundingClientRect();
-        const rows = [{ value: has ? fmt(v) : 'sem leitura', name: opts.label || '', color: zone ? col(zone.tone) : null }];
+        const rows = [{ value: has ? fmt(v) : K.t('sem leitura'), name: opts.label || '', color: zone ? col(zone.tone) : null }];
         for (const z of zones) if (z.label) rows.push({ value: `${fmtNum(z.from, 0)}–${endFmt(z.to)}`, name: z.label, color: col(z.tone) });
-        h.tip(r.left + r.width / 2, r.top + 8, opts.tipTitle || opts.label || 'Faixas', rows);
+        h.tip(r.left + r.width / 2, r.top + 8, opts.tipTitle || opts.label || K.t('Faixas'), rows);
       };
       svg.addEventListener('pointerenter', tip);
       svg.addEventListener('pointerleave', () => h.untip());
@@ -1125,7 +1125,7 @@
       const H = opts.height || 40;
       const pts = vals.map((v, i) => (v != null && typeof v === 'object' ? { x: +v.x, y: v.y == null ? null : +v.y } : { x: i, y: v == null ? null : +v }));
       const ok = pts.filter((p) => isNum(p.y));
-      if (!ok.length) { h.empty(opts.empty || 'sem dados', true); return; }
+      if (!ok.length) { h.empty(opts.empty || K.t('sem dados'), true); return; }
       const color = col(opts.color, 'var(--s1)');
       let lo = opts.min != null ? opts.min : Math.min(...ok.map((p) => p.y));
       let hi = opts.max != null ? opts.max : Math.max(...ok.map((p) => p.y));
@@ -1136,16 +1136,16 @@
       /* um valor só: fica na ponta direita (é "o mais recente") */
       const sx = (x) => (xhi === xlo ? W - pad : pad + ((x - xlo) / (xhi - xlo)) * (W - pad * 2));
       const sy = (y) => H - pad - ((y - lo) / (hi - lo)) * (H - pad * 2);
-      const svg = sv('svg', { class: 'kc-svg ksp-svg', width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opts.ariaLabel || 'Minigráfico' });
+      const svg = sv('svg', { class: 'kc-svg ksp-svg', width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opts.ariaLabel || K.t('Minigráfico') });
       const rs = rough1(svg);
       if (opts.ref != null) sv('line', { x1: 0, x2: W, y1: crisp(sy(opts.ref)), y2: crisp(sy(opts.ref)), class: 'ksp-ref' }, svg);
       const segs = splitSegments(pts, Infinity);
       for (const seg of segs) {
         if (opts.area !== false && seg.length > 1) {
           const base = sy(clamp(opts.base != null ? opts.base : lo, lo, hi));
-          let d = `M${r1(sx(seg[0].x))},${r1(base)}`;
-          for (const p of seg) d += `L${r1(sx(p.x))},${r1(sy(p.y))}`;
-          d += `L${r1(sx(seg[seg.length - 1].x))},${r1(base)}Z`;
+          let d = K.t('M{0},{1}', r1(sx(seg[0].x)), r1(base));
+          for (const p of seg) d += K.t('L{0},{1}', r1(sx(p.x)), r1(sy(p.y)));
+          d += K.t('L{0},{1}Z', r1(sx(seg[seg.length - 1].x)), r1(base));
           const a = sv('path', { d, class: 'kc-fill' }, svg);
           a.style.fill = color;
         }
@@ -1214,7 +1214,7 @@
         sum = +opts.total;
       }
       const total = opts.total != null ? Math.max(+opts.total, sum) : sum;
-      if (!segs.length || !(total > 0)) { h.empty(opts.empty || 'Sem dados pra dividir aqui.'); return; }
+      if (!segs.length || !(total > 0)) { h.empty(opts.empty || K.t('Sem dados pra dividir aqui.')); return; }
       const fmt = opts.format || ((v) => fmtNum(v, Math.abs(v) < 10 ? 1 : 0));
       const pctOf = (v) => (v / total) * 100;
       const pctTxt = (v) => { const p = pctOf(v); return (p > 0 && p < 1 ? '<1' : fmtNum(p, 0)) + '%'; };
@@ -1256,7 +1256,7 @@
         const on = () => {
           seg.classList.add('hot'); item.classList.add('hot');
           const r = seg.getBoundingClientRect();
-          const rows = [{ value: fmt(s.value), name: pctTxt(s.value) + ' do total', color: s.c }];
+          const rows = [{ value: fmt(s.value), name: pctTxt(s.value) + K.t(' do total'), color: s.c }];
           if (s.note) rows.push({ value: '', name: s.note });
           h.tip(r.left + r.width / 2, r.top, s.name, rows);
         };
@@ -1275,8 +1275,8 @@
       }
       if (opts.legend !== false) h.el.appendChild(legend);
       const model = opts.table ? () => ({
-        head: [opts.labelName || 'Parte', opts.valueName || 'Valor', '% do total'],
-        rows: segs.map((s) => [s.name, fmt(s.value), pctTxt(s.value)]).concat(total > sum ? [[opts.restName || 'Resto', fmt(total - sum), pctTxt(total - sum)]] : []),
+        head: [opts.labelName || K.t('Parte'), opts.valueName || K.t('Valor'), K.t('% do total')],
+        rows: segs.map((s) => [s.name, fmt(s.value), pctTxt(s.value)]).concat(total > sum ? [[opts.restName || K.t('Resto'), fmt(total - sum), pctTxt(total - sum)]] : []),
       }) : null;
       footer(h, null, model, st);
     };
@@ -1307,7 +1307,7 @@
       const rm = 50 - sw / 2 - 1.5 - th / 2;
       const circ = 2 * Math.PI * rm;
       const wrap = K.el('div', { class: 'kr' + (opts.busy ? ' busy' : ''), style: { width: size + 'px', height: size + 'px' } });
-      const svg = sv('svg', { class: 'kr-svg', viewBox: '0 0 100 100', role: 'img', 'aria-label': `${opts.label || 'Progresso'}: ${has ? Math.round(t * 100) + '%' : '—'}` });
+      const svg = sv('svg', { class: 'kr-svg', viewBox: '0 0 100 100', role: 'img', 'aria-label': `${opts.label || K.t('Progresso')}: ${has ? Math.round(t * 100) + '%' : '—'}` });
       const track = sv('circle', { cx: 50, cy: 50, r: rm, class: 'kr-track' }, svg);
       track.style.strokeWidth = th;
       const prog = sv('circle', { cx: 50, cy: 50, r: rm, class: 'kr-prog', transform: 'rotate(-90 50 50)' }, svg);

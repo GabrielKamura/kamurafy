@@ -15,22 +15,22 @@
 (function () {
   let uid = 0;
   const TONES = ['good', 'warn', 'serious', 'crit', 'none'];
-  const TONE_TXT = { good: 'saúde boa', warn: 'saúde pedindo atenção', serious: 'bateria gasta', crit: 'hora de trocar a bateria', none: 'saúde sem leitura agora' };
+  const TONE_TXT = { good: K.t('saúde boa'), warn: K.t('saúde pedindo atenção'), serious: K.t('bateria gasta'), crit: K.t('hora de trocar a bateria'), none: K.t('saúde sem leitura agora') };
 
   /* geometria (viewBox 0 0 260 200) */
   const BX = 24, BY = 40, BW = 176, BH = 128, BR = 38;
 
   function wave(amp, len, x0, x1) {
-    let d = `M${x0} 0`;
+    let d = K.t('M{0} 0', x0);
     const n = Math.ceil((x1 - x0) / len) * 2;
-    d += ` q${len / 4} ${-amp} ${len / 2} 0`;
-    for (let i = 1; i < n; i++) d += ` t${len / 2} 0`;
+    d += K.t(' q{0} {1} {2} 0', len / 4, -amp, len / 2);
+    for (let i = 1; i < n; i++) d += K.t(' t{0} 0', len / 2);
     return d;
   }
 
-  const DROP = 'M0 -8 C3 -3 6 0 6 4 A6 6 0 0 1 -6 4 C-6 0 -3 -3 0 -8 Z';
-  const STAR = 'M0 -16 C2 -5 5 -2 16 0 C5 2 2 5 0 16 C-2 5 -5 2 -16 0 C-5 -2 -2 -5 0 -16 Z';
-  const ZED = 'M0 0 h10 l-10 12 h10';
+  const DROP = K.t('M0 -8 C3 -3 6 0 6 4 A6 6 0 0 1 -6 4 C-6 0 -3 -3 0 -8 Z');
+  const STAR = K.t('M0 -16 C2 -5 5 -2 16 0 C5 2 2 5 0 16 C-2 5 -5 2 -16 0 C-5 -2 -2 -5 0 -16 Z');
+  const ZED = K.t('M0 0 h10 l-10 12 h10');
   const FACE = 1.2;   // rosto maior que no logo: mais expressivo
   const BOLT = 1.7;
 
@@ -152,7 +152,7 @@
 
   K.mascot = function (el, opts) {
     el = typeof el === 'string' ? document.querySelector(el) : el;
-    if (!el) throw new Error('K.mascot: elemento não encontrado');
+    if (!el) throw new Error(K.t('K.mascot: elemento não encontrado'));
     opts = opts || {};
     if (el._km && el._km.destroy) el._km.destroy();
     const id = ++uid;
@@ -232,13 +232,13 @@
       first = false;
 
       const bits = [];
-      bits.push(pct == null ? 'sem leitura de carga' : `bateria em ${Math.round(pct)}%`);
+      bits.push(pct == null ? K.t('sem leitura de carga') : K.t('bateria em {0}%', Math.round(pct)));
       if (s.charging) bits.push('carregando');
-      else if (s.plugged && pct != null && pct >= 99.5) bits.push('cheia na tomada');
-      else if (s.plugged) bits.push('na tomada');
-      if (face === 'hot') bits.push('com calor');
+      else if (s.plugged && pct != null && pct >= 99.5) bits.push(K.t('cheia na tomada'));
+      else if (s.plugged) bits.push(K.t('na tomada'));
+      if (face === 'hot') bits.push(K.t('com calor'));
       bits.push(TONE_TXT[tone]);
-      svg.setAttribute('aria-label', s.label || 'Mascote do Kamurafy: ' + bits.join(', '));
+      svg.setAttribute('aria-label', s.label || K.t('Mascote do Kamurafy: ') + bits.join(', '));
       return api;
     }
 

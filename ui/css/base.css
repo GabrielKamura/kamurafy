@@ -330,6 +330,8 @@ h3 { font-size: 19px; line-height: 1.15; }
     --slab: #12100d;           /* o que era bloco de tinta preta no claro (menu, barra de ação) */
     --on-slab: var(--cream);
     --on-gold: #1a1610;
+    --knob: var(--cream);      /* bolinha do interruptor */
+    --btn-danger: #c63d37;     /* botão vermelho com texto branco (5,4:1) */
 
     --gold-soft: #3d3418;
     --red: #ef4444;
@@ -366,7 +368,8 @@ h3 { font-size: 19px; line-height: 1.15; }
      o visual claro por dentro (texto, figurinhas, botões e mascote como no claro). A borda e a
      sombra de fora de cada uma ficam creme, no CSS da página. */
   .card.gold, .un-d-head, .kw-art, .aj-about-stage,
-  .bt-stage:not([data-state="battery"]):not([data-state="unknown"]) {
+  .bt-stage:not([data-state="battery"]):not([data-state="unknown"]),
+  html.mb-page {
     --ink: #000;
     --ink-2: #374151;
     --ink-3: #6b7280;
@@ -377,6 +380,8 @@ h3 { font-size: 19px; line-height: 1.15; }
     --slab: #000;
     --on-slab: #fff;
     --on-gold: #000;
+    --knob: #fff;
+    --btn-danger: #d03b3b;
     --gold-soft: #fff1b8;
     --red: #dc2626;
     --st-good: #0ca30c;
@@ -415,6 +420,9 @@ h3 { font-size: 19px; line-height: 1.15; }
     color: var(--ink);
   }
   .card.gold { border-color: var(--cream); box-shadow: 6px 6px 0 var(--cream); }
+  /* o balão da barra de menus (menubar.html) é sempre claro: o Swift força a aparência clara no
+     NSPopover, então a página inteira vira ilha de dia (a "tinta da noite" também volta a ser preta) */
+  html.mb-page { --cream: #000; color-scheme: light; }
 
   /* rabiscos do fundo: tinta clara bem fraquinha */
   .main::before { filter: invert(1); opacity: .035; }

@@ -43,34 +43,34 @@
   const PAL = (K.charts && K.charts.palette) || ['var(--s1)', 'var(--s2)', '#1baf7a', '#4a3aa7', '#e87ba4'];
   /* categorias da Sujeira, em ordem fixa (a cor segue K.charts.palette, nunca em ciclo) */
   const CATS = {
-    caches: { icon: 'apps', color: PAL[0], titulo: 'Caches de apps', short: 'os apps recriam sozinhos', doing: 'Abrindo os caches dos apps…' },
-    dev: { icon: 'fxCode', color: PAL[1], titulo: 'Caches de programação', short: 'npm, pip, Xcode e companhia', doing: 'Olhando npm, pip, Xcode…' },
-    logs: { icon: 'fxLogs', color: PAL[2], titulo: 'Registros (logs)', short: 'anotações e relatórios de travamento', doing: 'Lendo os registros…' },
-    sistema: { icon: 'fxMac', color: PAL[3], titulo: 'Caches do macOS', short: 'temporários dos apps da Apple', doing: 'Conferindo os caches do macOS…' },
-    downloads: { icon: 'fxDownload', color: PAL[4], titulo: 'Downloads esquecidos', short: 'parados há mais de 3 meses', doing: 'Olhando a pasta Downloads…' },
+    caches: { icon: 'apps', color: PAL[0], titulo: K.t('Caches de apps'), short: K.t('os apps recriam sozinhos'), doing: K.t('Abrindo os caches dos apps…') },
+    dev: { icon: 'fxCode', color: PAL[1], titulo: K.t('Caches de programação'), short: K.t('npm, pip, Xcode e companhia'), doing: K.t('Olhando npm, pip, Xcode…') },
+    logs: { icon: 'fxLogs', color: PAL[2], titulo: K.t('Registros (logs)'), short: K.t('anotações e relatórios de travamento'), doing: K.t('Lendo os registros…') },
+    sistema: { icon: 'fxMac', color: PAL[3], titulo: K.t('Caches do macOS'), short: K.t('temporários dos apps da Apple'), doing: K.t('Conferindo os caches do macOS…') },
+    downloads: { icon: 'fxDownload', color: PAL[4], titulo: K.t('Downloads esquecidos'), short: K.t('parados há mais de 3 meses'), doing: K.t('Olhando a pasta Downloads…') },
   };
   const CAT_ORDER = ['caches', 'dev', 'logs', 'sistema', 'downloads'];
 
   const TIPOS = {
-    video: { label: 'Vídeos', icon: 'fxFilm' },
-    instalador: { label: 'Instaladores', icon: 'box' },
-    compactado: { label: 'Compactados', icon: 'fxZip' },
-    imagem: { label: 'Imagens', icon: 'fxImage' },
-    audio: { label: 'Áudio', icon: 'fxMusic' },
-    documento: { label: 'Documentos', icon: 'fxDoc' },
-    pasta: { label: 'Pastas', icon: 'fxFolder' },
-    outro: { label: 'Outros', icon: 'fxFile' },
+    video: { label: K.t('Vídeos'), icon: 'fxFilm' },
+    instalador: { label: K.t('Instaladores'), icon: 'box' },
+    compactado: { label: K.t('Compactados'), icon: 'fxZip' },
+    imagem: { label: K.t('Imagens'), icon: 'fxImage' },
+    audio: { label: K.t('Áudio'), icon: 'fxMusic' },
+    documento: { label: K.t('Documentos'), icon: 'fxDoc' },
+    pasta: { label: K.t('Pastas'), icon: 'fxFolder' },
+    outro: { label: K.t('Outros'), icon: 'fxFile' },
   };
 
   const TABS = [
-    { id: 'sujeira', label: 'Sujeira', icon: 'broom' },
-    { id: 'grandes', label: 'Arquivos grandes', icon: 'fxBig' },
-    { id: 'duplicados', label: 'Duplicados', icon: 'fxCopy' },
-    { id: 'lixeira', label: 'Lixeira', icon: 'fxTrash' },
+    { id: 'sujeira', label: K.t('Sujeira'), icon: 'broom' },
+    { id: 'grandes', label: K.t('Arquivos grandes'), icon: 'fxBig' },
+    { id: 'duplicados', label: K.t('Duplicados'), icon: 'fxCopy' },
+    { id: 'lixeira', label: K.t('Lixeira'), icon: 'fxTrash' },
   ];
   const KIND = { sujeira: 'suj', grandes: 'gra', duplicados: 'dup' };
   const TAB_OF = { suj: 'sujeira', gra: 'grandes', dup: 'duplicados' };
-  const PERSONAL = ['Downloads', 'Mesa', 'Documentos', 'Filmes', 'Música', 'Imagens'];
+  const PERSONAL = [K.t('Downloads'), K.t('Mesa'), K.t('Documentos'), K.t('Filmes'), K.t('Música'), K.t('Imagens')];
 
   const STEP_MIN = 650;          // cada categoria fica pelo menos isso na tela
   const KEEP_S = 50 * 60;        // os IDs valem 1 h no Swift: depois disso a lista vence
@@ -111,10 +111,10 @@
   const selectable = (it) => !!it && !it.appAberto && !it.semAcesso;
   const plural = (n, um, varios) => `${K.fmt.num(n)} ${n === 1 ? um : varios}`;
   const mounted = () => !!host && document.body.contains(host);
-  const errMsg = (e) => (e && e.message ? String(e.message) : 'erro desconhecido');
+  const errMsg = (e) => (e && (e.original || e.message) ? String(e.original || e.message) : K.t('erro desconhecido'));
   const isDl = (it) => !!it && it.categoria === 'downloads';
   /** "É 1 item" / "São 2 itens" */
-  const isAre = (n) => (n === 1 ? 'É' : 'São');
+  const isAre = (n) => (n === 1 ? K.t('É') : K.t('São'));
 
   /* Nomes e caminhos vêm de fora. Um caractere que muda a direção do texto (U+202E e parecidos)
      faria "‮gpj.exe" aparecer como "exe.jpg" e inverteria o resto da frase em volta. Na tela
@@ -127,22 +127,22 @@
 
   /* motivos que o Swift manda (curtos, técnicos) → frase de gente; nunca mostra UUID */
   const WHY = [
-    [/^sobraria nenhuma cópia/i, 'a outra cópia já não está no lugar: procure de novo'],
-    [/^lugar original fora da pasta do usuário/i, 'não consegui conferir o lugar de onde saiu; continua na Lixeira, e dá pra devolver pelo Finder'],
-    [/^não está mais na lista/i, 'a lista venceu: procure de novo'],
-    [/^mudou desde a varredura/i, 'mudou desde a procura: procure de novo'],
-    [/^mudou de (lugar|nome)$/i, (g) => `${g[0]}: procure de novo`],
-    [/^saiu da pasta permitida/i, 'foi parar numa pasta onde eu não mexo'],
-    [/^pasta fora da pasta do usuário/i, 'fica fora da sua pasta de usuário: não mexo'],
-    [/^virou um link simbólico/i, 'virou um atalho (link simbólico): não mexo'],
-    [/^está em outro disco/i, 'está em outro disco: não mexo'],
-    [/^já existe outro no lugar original/i, 'já tem outro com esse nome no lugar de onde saiu'],
+    [/^sobraria nenhuma cópia/i, K.t('a outra cópia já não está no lugar: procure de novo')],
+    [/^lugar original fora da pasta do usuário/i, K.t('não consegui conferir o lugar de onde saiu; continua na Lixeira, e dá pra devolver pelo Finder')],
+    [/^não está mais na lista/i, K.t('a lista venceu: procure de novo')],
+    [/^mudou desde a varredura/i, K.t('mudou desde a procura: procure de novo')],
+    [/^mudou de (lugar|nome)$/i, (g) => K.t('{0}: procure de novo', g[0])],
+    [/^saiu da pasta permitida/i, K.t('foi parar numa pasta onde eu não mexo')],
+    [/^pasta fora da pasta do usuário/i, K.t('fica fora da sua pasta de usuário: não mexo')],
+    [/^virou um link simbólico/i, K.t('virou um atalho (link simbólico): não mexo')],
+    [/^está em outro disco/i, K.t('está em outro disco: não mexo')],
+    [/^já existe outro no lugar original/i, K.t('já tem outro com esse nome no lugar de onde saiu')],
   ];
   function why(m) {
     const s = vis(m || '').replace(/\s*\(grupo [^)]*\)/gi, '')
       .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim();
     for (const [re, to] of WHY) { const g = re.exec(s); if (g) return typeof to === 'function' ? to(g) : to; }
-    return s || 'motivo desconhecido';
+    return s ? K.t(s) : K.t('motivo desconhecido');
   }
   const failTxt = (list) => list.slice(0, 3).map((x) => `${inl(x.nome)} (${why(x.motivo)})`).join('; ');
 
@@ -152,13 +152,13 @@
   function noteFor(it) {
     if (!it || it.appAberto || it.semAcesso) return null;
     if (it.categoria === 'caches' && !it.app && it.selecionado && !suggested(it)) {
-      return 'Não sei de qual app é. Deixei desmarcado; se reconhecer, pode marcar.';
+      return K.t('Não sei de qual app é. Deixei desmarcado; se reconhecer, pode marcar.');
     }
     return it.nota || null;
   }
 
   function withTimeout(p, ms, msg) {
-    return Promise.race([p, K.sleep(ms).then(() => { throw new Error(msg || 'demorou demais pra responder'); })]);
+    return Promise.race([p, K.sleep(ms).then(() => { throw new Error(msg || K.t('demorou demais pra responder')); })]);
   }
 
   /** Unix → "hoje", "ontem", "em 12 mar", "em 12 mar 2024" */
@@ -171,7 +171,7 @@
     if (diff === 1) return 'ontem';
     const o = { day: 'numeric', month: 'short' };
     if (d.getFullYear() !== hoje.getFullYear()) o.year = 'numeric';
-    return 'em ' + d.toLocaleDateString('pt-BR', o).replace(/\./g, '').replace(/ de /g, ' ');
+    return 'em ' + d.toLocaleDateString(K.locale || 'pt-BR', o).replace(/\./g, '').replace(/ de /g, ' ');
   }
 
   function catInfo(id) {
@@ -215,7 +215,7 @@
   }
 
   function sparkles(n) {
-    const star = 'M12 1.5c.9 6 3.6 8.7 9.5 9.8v1.4c-5.9 1.1-8.6 3.8-9.5 9.8h-1c-.9-6-3.6-8.7-9.5-9.8v-1.4C7.4 10.2 10.1 7.5 11 1.5Z';
+    const star = K.t('M12 1.5c.9 6 3.6 8.7 9.5 9.8v1.4c-5.9 1.1-8.6 3.8-9.5 9.8h-1c-.9-6-3.6-8.7-9.5-9.8v-1.4C7.4 10.2 10.1 7.5 11 1.5Z');
     const out = [];
     for (let i = 0; i < n; i++) out.push(K.el('span', { class: `fx-spark s${i + 1}`, 'aria-hidden': 'true', html: `<svg viewBox="0 0 24 24"><path d="${star}"/></svg>` }));
     return out;
@@ -283,15 +283,15 @@
     host.innerHTML = '';
     host.dataset.tab = S.tab;
     V.sandbox = K.el('span', { class: 'sticker has-ic fx-sandbox', html: K.icon('fxFlask'),
-      title: 'Caixa de areia: pasta e Lixeira de mentira. Nada seu é tocado.' },
-      'modo de teste');
+      title: K.t('Caixa de areia: pasta e Lixeira de mentira. Nada seu é tocado.') },
+      K.t('modo de teste'));
     host.appendChild(K.el('header', { class: 'page-head fx-head', 'data-drag': true },
       K.el('div', { class: 'fx-head-text' },
-        K.el('h1', null, 'Espaço'),
-        K.el('p', null, 'O que ocupa o disco e o que dá pra tirar. Só vai pra Lixeira o que você marcar.')),
+        K.el('h1', null, K.t('Espaço')),
+        K.el('p', null, K.t('O que ocupa o disco e o que dá pra tirar. Só vai pra Lixeira o que você marcar.'))),
       K.el('div', { class: 'fx-head-side' }, V.sandbox)));
 
-    const nav = K.el('nav', { class: 'ktabs fx-tabs', role: 'tablist', 'aria-label': 'Partes do Espaço' });
+    const nav = K.el('nav', { class: 'ktabs fx-tabs', role: 'tablist', 'aria-label': K.t('Partes do Espaço') });
     V.tabs = {};
     for (const t of TABS) {
       const badge = K.el('span', { class: 'ktab-badge fx-tab-badge num' });
@@ -321,20 +321,20 @@
     if (id === 'lixeira') {
       const m = S.lix.moved;
       const n = m && Array.isArray(m.itens) ? m.itens.filter((x) => x.naLixeira).length : 0;
-      return n ? { text: K.fmt.num(n), title: `${plural(n, 'item que o Kamurafy mandou está', 'itens que o Kamurafy mandou estão')} na Lixeira` } : null;
+      return n ? { text: K.fmt.num(n), title: K.t('{0} na Lixeira', plural(n, K.t('item que o Kamurafy mandou está'), K.t('itens que o Kamurafy mandou estão'))) } : null;
     }
     const st = S[KIND[id]];
-    if (st.mode === 'scanning') return { text: '…', title: 'Procurando…' };
+    if (st.mode === 'scanning') return { text: '…', title: K.t('Procurando…') };
     if (st.mode !== 'result' && st.mode !== 'cleaning') return null;
     const sel = selBytes(st);
-    if (sel > 0) return { text: fmtB(sel), title: `${fmtB(sel)} marcados pra ir pra Lixeira` };
+    if (sel > 0) return { text: fmtB(sel), title: K.t('{0} marcados pra ir pra Lixeira', fmtB(sel)) };
     if (id === 'grandes' || id === 'sujeira') {
       const b = Array.from(st.items.values()).reduce((a, it) => a + (it.bytes || 0), 0);
-      return b > 0 ? { text: fmtB(b), title: `${fmtB(b)} ${id === 'grandes' ? 'em arquivos grandes' : 'achados'} (nada marcado ainda)` } : null;
+      return b > 0 ? { text: fmtB(b), title: K.t('{0} {1} (nada marcado ainda)', fmtB(b), id === 'grandes' ? K.t('em arquivos grandes') : 'achados') } : null;
     }
     if (id === 'duplicados') {
       const b = st.data && st.data.desperdicio > 0 ? st.data.desperdicio : 0;
-      return b > 0 ? { text: fmtB(b), title: `${fmtB(b)} em cópias repetidas (nada marcado ainda)` } : null;
+      return b > 0 ? { text: fmtB(b), title: K.t('{0} em cópias repetidas (nada marcado ainda)', fmtB(b)) } : null;
     }
     return null;
   }
@@ -385,12 +385,12 @@
   function barEl() {
     const count = K.el('b', { class: 'fx-bar-count num' });
     const sub = K.el('span', { class: 'fx-bar-sub' });
-    const clear = K.el('button', { class: 'btn small fx-bar-clear', type: 'button', onclick: () => { K.sound.tick(); clearSel(); } }, 'Desmarcar tudo');
-    const goT = K.el('span', { class: 'num' }, 'Limpar');
+    const clear = K.el('button', { class: 'btn small fx-bar-clear', type: 'button', onclick: () => { K.sound.tick(); clearSel(); } }, K.t('Desmarcar tudo'));
+    const goT = K.el('span', { class: 'num' }, K.t('Limpar'));
     const go = K.el('button', { class: 'btn gold fx-bar-go', type: 'button', html: K.icon('fxTrash'),
       onclick: () => { const k = KIND[S.tab]; if (k) cleanKind(k); } }, goT);
     const node = K.el('div', { class: 'fx-barwrap', hidden: true },
-      K.el('div', { class: 'fx-bar', role: 'region', 'aria-label': 'Limpar o que está marcado' },
+      K.el('div', { class: 'fx-bar', role: 'region', 'aria-label': K.t('Limpar o que está marcado') },
         K.el('span', { class: 'fx-bar-ic', html: K.icon('fxTrash') }),
         K.el('div', { class: 'fx-bar-text', role: 'status', 'aria-live': 'polite' }, count, sub),
         K.el('div', { class: 'fx-bar-act' }, clear, go)));
@@ -408,23 +408,23 @@
     const ids = selIds(st);
     const bytes = selBytes(st);
     const cleaning = st.mode === 'cleaning';
-    V.bar.count.textContent = ids.length ? plural(ids.length, 'item marcado', 'itens marcados') : 'Nada marcado ainda';
+    V.bar.count.textContent = ids.length ? plural(ids.length, K.t('item marcado'), K.t('itens marcados')) : K.t('Nada marcado ainda');
     let sub;
-    if (cleaning) sub = 'Levando pra Lixeira…';
-    else if (!ids.length) sub = kind === 'suj' ? 'Marque o que quer mandar pra Lixeira.' : 'Arquivos seus: nada vem marcado.';
+    if (cleaning) sub = K.t('Levando pra Lixeira…');
+    else if (!ids.length) sub = kind === 'suj' ? K.t('Marque o que quer mandar pra Lixeira.') : K.t('Arquivos seus: nada vem marcado.');
     else {
-      sub = 'Vai pra Lixeira · dá pra desfazer';
+      sub = K.t('Vai pra Lixeira · dá pra desfazer');
       if (kind === 'gra') {
         const hidden = hiddenByFilter(st, ids).length;
-        if (hidden) sub += ` · inclui ${plural(hidden, 'fora do filtro', 'fora do filtro')}`;
+        if (hidden) sub += K.t(' · inclui {0}', plural(hidden, K.t('fora do filtro'), K.t('fora do filtro')));
       }
       if (kind === 'suj') {
         const dl = ids.filter((id) => isDl(st.items.get(id))).length;
-        if (dl) sub += ` · inclui ${plural(dl, 'arquivo seu', 'arquivos seus')} de Downloads`;
+        if (dl) sub += K.t(' · inclui {0} de Downloads', plural(dl, K.t('arquivo seu'), K.t('arquivos seus')));
       }
     }
     V.bar.sub.textContent = sub;
-    V.bar.goT.textContent = cleaning ? 'Limpando…' : ids.length ? 'Limpar ' + fmtB(bytes) : 'Limpar';
+    V.bar.goT.textContent = cleaning ? K.t('Limpando…') : ids.length ? K.t('Limpar ') + fmtB(bytes) : K.t('Limpar');
     V.bar.go.disabled = cleaning || !ids.length;
     V.bar.go.classList.toggle('is-busy', cleaning);
     V.bar.clear.hidden = !ids.length || cleaning;
@@ -608,19 +608,19 @@
     const out = [];
     if (st.cleanErr) {
       out.push(K.el('div', { class: 'error-box fx-clean-err', role: 'alert' },
-        K.el('b', null, 'Não consegui mandar pra Lixeira. '), `O motivo: ${why(st.cleanErr)}. Nada foi mexido.`));
+        K.el('b', null, K.t('Não consegui mandar pra Lixeira. ')), K.t('O motivo: {0}. Nada foi mexido.', why(st.cleanErr))));
     }
     const s = st.stale;
     if (s) {
       const bits = [];
-      if (s.gone) bits.push(`${plural(s.gone, 'item daqui já foi', 'itens daqui já foram')} pra Lixeira`);
-      if (s.dissolved) bits.push(`${s.dissolved === 1 ? 'um grupo ficou' : `${K.fmt.num(s.dissolved)} grupos ficaram`} só com a última cópia`);
-      if (s.changed.size) bits.push(plural(s.changed.size, 'pasta mostra mais do que tem', 'pastas mostram mais do que têm'));
-      if (s.back) bits.push('algo voltou da Lixeira');
+      if (s.gone) bits.push(K.t('{0} pra Lixeira', plural(s.gone, K.t('item daqui já foi'), K.t('itens daqui já foram'))));
+      if (s.dissolved) bits.push(K.t('{0} só com a última cópia', s.dissolved === 1 ? K.t('um grupo ficou') : K.t('{0} grupos ficaram', K.fmt.num(s.dissolved))));
+      if (s.changed.size) bits.push(plural(s.changed.size, K.t('pasta mostra mais do que tem'), K.t('pastas mostram mais do que têm')));
+      if (s.back) bits.push(K.t('algo voltou da Lixeira'));
       const txt = bits.join('; ');
       out.push(K.el('div', { class: 'tip fx-note warn fx-stale', html: K.icon('cycle') },
-        K.el('p', null, K.el('b', null, 'A lista mudou. '), `${txt.charAt(0).toUpperCase()}${txt.slice(1)}.`),
-        K.el('button', { class: 'btn small', type: 'button', onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, 'Procurar de novo')));
+        K.el('p', null, K.el('b', null, K.t('A lista mudou. ')), `${txt.charAt(0).toUpperCase()}${txt.slice(1)}.`),
+        K.el('button', { class: 'btn small', type: 'button', onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, K.t('Procurar de novo'))));
     }
     return out;
   }
@@ -631,8 +631,8 @@
     if (!last.length) return null;
     const names = last.slice(0, 2).map((it) => `“${inl(it.nome)}”`).join(' e ');
     return K.el('div', { class: 'tip fx-note warn fx-cf-warn', html: K.icon('fxCopy') },
-      K.el('p', null, K.el('b', null, last.length === 1 ? 'É a última cópia. ' : 'São as últimas cópias. '),
-        `${names}${last.length > 2 ? ` e mais ${K.fmt.num(last.length - 2)}` : ''}: as outras já estão na Lixeira. Se mandar ${last.length === 1 ? 'esta' : 'estas'} também, não sobra nenhuma fora dela.`));
+      K.el('p', null, K.el('b', null, last.length === 1 ? K.t('É a última cópia. ') : K.t('São as últimas cópias. ')),
+        K.t('{0}{1}: as outras já estão na Lixeira. Se mandar {2} também, não sobra nenhuma fora dela.', names, last.length > 2 ? K.t(' e mais {0}', K.fmt.num(last.length - 2)) : '', last.length === 1 ? K.t('esta') : K.t('estas'))));
   }
 
   function selectAll() {
@@ -659,7 +659,7 @@
         if (gv) {
           const n = g.itens.length - left.length;
           const b = g.itens.filter((x) => st.sel.has(x.id)).reduce((a, x) => a + (x.bytes || 0), 0);
-          gv.sel.textContent = n ? `${plural(n, 'cópia marcada', 'cópias marcadas')} · ${fmtB(b)}` : 'nenhuma marcada';
+          gv.sel.textContent = n ? `${plural(n, K.t('cópia marcada'), K.t('cópias marcadas'))} · ${fmtB(b)}` : K.t('nenhuma marcada');
           gv.card.classList.toggle('has-sel', n > 0);
           if (left.length > 1) gv.msg.hidden = true;
         }
@@ -673,7 +673,7 @@
       r.row.classList.toggle('is-sel', on);
       if (r.keep) {
         r.keep.hidden = !keepers.has(id);
-        r.chk.title = locked.has(id) ? 'Pelo menos uma cópia fica: não dá pra marcar todas.' : '';
+        r.chk.title = locked.has(id) ? K.t('Pelo menos uma cópia fica: não dá pra marcar todas.') : '';
       }
     }
     if (kind === 'suj') {
@@ -683,7 +683,7 @@
         const n = ok.filter((it) => st.sel.has(it.id)).length;
         const b = ok.filter((it) => st.sel.has(it.id)).reduce((a, it) => a + (it.bytes || 0), 0);
         if (c.chk) c.chk.set(n === 0 ? false : n === ok.length ? true : 'mixed', !ok.length);
-        c.selTxt.textContent = n ? `${fmtB(b)} marcados` : 'nada marcado';
+        c.selTxt.textContent = n ? `${fmtB(b)} marcados` : K.t('nada marcado');
         c.card.classList.toggle('has-sel', n > 0);
       }
       paintHero(!V.heroCounting);
@@ -716,12 +716,12 @@
     const ui = V.stage = { steps: {} };
     const small = innerHeight < 760;
 
-    const go = K.el('button', { class: 'fx-go', type: 'button', 'aria-label': 'Procurar sujeira no Mac', onclick: () => { scanSujeira(); } },
+    const go = K.el('button', { class: 'fx-go', type: 'button', 'aria-label': K.t('Procurar sujeira no Mac'), onclick: () => { scanSujeira(); } },
       K.el('span', { class: 'fx-go-shine', 'aria-hidden': 'true', html: '<svg viewBox="0 0 100 100"><path d="M18 35 Q22 21 36 14"/><circle cx="14.5" cy="43" r="2.3"/></svg>' }),
       K.el('span', { class: 'fx-go-ic', html: K.icon('broom') }),
-      K.el('span', { class: 'fx-go-label' }, 'Procurar'),
-      K.el('span', { class: 'fx-go-label fx-go-label2' }, 'sujeira'),
-      K.el('span', { class: 'fx-go-sub' }, 'leva uns segundos'));
+      K.el('span', { class: 'fx-go-label' }, K.t('Procurar')),
+      K.el('span', { class: 'fx-go-label fx-go-label2' }, K.t('sujeira')),
+      K.el('span', { class: 'fx-go-sub' }, K.t('leva uns segundos')));
     ui.ringBox = K.el('div', { class: 'fx-ring' });
     ui.ringIc = K.el('span', { class: 'fx-ring-ic', html: K.icon('broom') });
     ui.ringPct = K.el('span', { class: 'fx-ring-pct num' }, '0%');
@@ -730,7 +730,7 @@
       K.el('span', { class: 'fx-orb-broom', 'aria-hidden': 'true', html: K.icon('broom') }));
     const mArt = K.el('div', { class: 'fx-orb-mascot-art' });
     mBox.prepend(mArt);
-    ui.bubble = K.el('div', { class: 'fx-bubble', hidden: scanning }, 'Bora achar o que\nsobra no seu Mac?');
+    ui.bubble = K.el('div', { class: 'fx-bubble', hidden: scanning }, K.t('Bora achar o que\nsobra no seu Mac?'));
     const orb = K.el('div', { class: 'fx-orb' },
       K.el('span', { class: 'fx-orbit', 'aria-hidden': 'true' }),
       K.el('span', { class: 'fx-halo', 'aria-hidden': 'true' }),
@@ -742,7 +742,7 @@
     go.addEventListener('mouseenter', () => { if (S.suj.mode === 'idle' && ui.mascot) ui.mascot.set({ face: 'joy' }); });
     go.addEventListener('mouseleave', () => { if (S.suj.mode === 'idle' && ui.mascot) ui.mascot.set({ face: null }); });
 
-    ui.listHead = K.el('b', null, scanning ? 'Procurando' : 'O que eu olho');
+    ui.listHead = K.el('b', null, scanning ? K.t('Procurando') : K.t('O que eu olho'));
     ui.count = K.el('span', { class: 'fx-count num' }, '');
     const ol = K.el('ol', { class: 'fx-steps' });
     stageCats().forEach((id, i) => {
@@ -758,7 +758,7 @@
         bub, text, right);
       if (id === 'downloads' && !scanning) {
         row.classList.add('is-opt');
-        const sw = K.el('button', { class: 'switch', type: 'button', role: 'switch', 'aria-checked': String(S.withDownloads), 'aria-label': 'Incluir Downloads esquecidos',
+        const sw = K.el('button', { class: 'switch', type: 'button', role: 'switch', 'aria-checked': String(S.withDownloads), 'aria-label': K.t('Incluir Downloads esquecidos'),
           onclick: () => {
             S.withDownloads = !S.withDownloads;
             sw.setAttribute('aria-checked', String(S.withDownloads));
@@ -776,27 +776,27 @@
       ui.steps[id] = { row, bub, desc, size, n };
     });
     const promise = K.el('ul', { class: 'fx-promise' },
-      K.el('li', { html: K.icon('fxEye') }, 'Mostro tudo antes'),
-      K.el('li', { html: K.icon('fxTrash') }, 'Só vai pra Lixeira'),
-      K.el('li', { html: K.icon('fxUndo') }, 'Dá pra desfazer'));
+      K.el('li', { html: K.icon('fxEye') }, K.t('Mostro tudo antes')),
+      K.el('li', { html: K.icon('fxTrash') }, K.t('Só vai pra Lixeira')),
+      K.el('li', { html: K.icon('fxUndo') }, K.t('Dá pra desfazer')));
     const list = K.el('div', { class: 'fx-list' }, K.el('div', { class: 'fx-list-head' }, ui.listHead, ui.count), ol, promise);
 
     const expired = st.expired ? K.el('div', { class: 'tip fx-expired', html: K.icon('clock') },
-      K.el('p', null, 'A lista venceu (vale uma hora). Procure de novo.')) : null;
+      K.el('p', null, K.t('A lista venceu (vale uma hora). Procure de novo.'))) : null;
     ui.stage = K.el('section', { class: 'fx-stage' + (scanning ? ' is-scanning' : ''), 'data-drag': true }, orb, list);
     V.panel.append(...[expired, ui.stage].filter(Boolean));
 
     if (scanning) {
       const size = small ? 196 : 220;
-      ui.ring = keepChart(K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Procurando sujeira', busy: true, size, thickness: 13 }));
+      ui.ring = keepChart(K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: K.t('Procurando sujeira'), busy: true, size, thickness: 13 }));
       st.steps.forEach((s, i) => paintStep(i));
     }
   }
 
   function dlNote() {
     return S.withDownloads
-      ? 'Ligado. Se o macOS pedir acesso a Downloads, é só permitir. Nada vem marcado.'
-      : 'Desligado. Ligando, o macOS pede permissão. Nada vem marcado.';
+      ? K.t('Ligado. Se o macOS pedir acesso a Downloads, é só permitir. Nada vem marcado.')
+      : K.t('Desligado. Ligando, o macOS pede permissão. Nada vem marcado.');
   }
 
   function paintStep(i) {
@@ -822,14 +822,14 @@
       const n = Array.isArray(res.itens) ? res.itens.length : 0;
       r.bub.innerHTML = K.icon(n ? 'check' : 'sparkle');
       r.bub.classList.add(n ? 't-good' : 't-clean', 'fx-bump');
-      if (n) { K.countUp(r.size, res.bytes || 0, fmtB, 700); r.n.textContent = plural(n, 'item', 'itens'); }
-      else { r.size.textContent = 'limpinho'; r.size.classList.add('is-clean'); r.n.textContent = 'nada aqui'; }
-      if (res.incompleto) r.n.textContent += ' · parei no meio';
+      if (n) { K.countUp(r.size, res.bytes || 0, fmtB, 700); r.n.textContent = plural(n, K.t('item'), K.t('itens')); }
+      else { r.size.textContent = 'limpinho'; r.size.classList.add('is-clean'); r.n.textContent = K.t('nada aqui'); }
+      if (res.incompleto) r.n.textContent += K.t(' · parei no meio');
     } else if (s.state === 'err') {
       r.desc.textContent = meta.short;
       r.bub.innerHTML = K.icon('info');
       r.bub.classList.add('t-none', 'fx-bump');
-      r.size.textContent = 'não deu pra ler';
+      r.size.textContent = K.t('não deu pra ler');
       r.size.classList.add('is-err');
       r.n.textContent = '';
     }
@@ -843,7 +843,7 @@
     if (done === st.steps.length) {
       if (ui.ring) ui.ring.update({ value: 100, busy: false, tone: 'good' });
       ui.ringIc.innerHTML = K.icon('check');
-      ui.now.textContent = found ? `Achei ${fmtB(found)}!` : 'Pronto!';
+      ui.now.textContent = found ? K.t('Achei {0}!', fmtB(found)) : 'Pronto!';
       if (ui.mascot) ui.mascot.set({ face: 'joy' });
     }
   }
@@ -918,8 +918,8 @@
       const b = (d.itens || []).filter((it) => st.sel.has(it.id) && selectable(it)).reduce((a, it) => a + (it.bytes || 0), 0);
       segs.push({ name: catInfo(s.id).titulo, value: b, color: CATS[s.id].color });
     }
-    return { segments: segs, total, restName: 'Não marcado (você decide)', restColor: 'var(--panel)', format: fmtB, height: 30,
-      ariaLabel: 'O que está marcado pra limpar, por tipo', empty: 'Nada pra dividir aqui.' };
+    return { segments: segs, total, restName: K.t('Não marcado (você decide)'), restColor: 'var(--panel)', format: fmtB, height: 30,
+      ariaLabel: K.t('O que está marcado pra limpar, por tipo'), empty: K.t('Nada pra dividir aqui.') };
   }
 
   function paintSujeiraResult() {
@@ -943,19 +943,19 @@
 
     /* herói */
     const art = K.el('div', { class: 'fx-sum-art' });
-    const again = K.el('button', { class: 'btn ink', type: 'button', html: K.icon('cycle'), onclick: () => { scanSujeira(); } }, errs.length ? 'Tentar de novo' : 'Procurar de novo');
-    const when = fresh ? `Feita agora, em ${K.fmt.num(Math.max(1, st.took), 0)} s` : `Feita às ${K.fmt.time(st.at)}`;
+    const again = K.el('button', { class: 'btn ink', type: 'button', html: K.icon('cycle'), onclick: () => { scanSujeira(); } }, errs.length ? K.t('Tentar de novo') : K.t('Procurar de novo'));
+    const when = fresh ? K.t('Feita agora, em {0} s', K.fmt.num(Math.max(1, st.took), 0)) : K.t('Feita às {0}', K.fmt.time(st.at));
     let heroBlock;
     if (clean) {
-      heroBlock = [K.el('h1', { class: 'fx-sum-title' }, 'Tudo limpinho por aqui'),
-        K.el('p', null, 'Nada que valha limpar agora. Volte daqui a umas semanas.')];
+      heroBlock = [K.el('h1', { class: 'fx-sum-title' }, K.t('Tudo limpinho por aqui')),
+        K.el('p', null, K.t('Nada que valha limpar agora. Volte daqui a umas semanas.'))];
     } else {
       V.hero = K.el('span', { class: 'fx-hero num' }, '');
-      V.heroLab = K.el('span', null, 'pra liberar');
+      V.heroLab = K.el('span', null, K.t('pra liberar'));
       V.heroP = K.el('p', null, '');
       heroBlock = [
         K.el('div', { class: 'fx-hero-row' }, V.hero,
-          K.el('span', { class: 'fx-hero-lab' }, V.heroLab, K.el('small', null, `de ${fmtB(total)} que achei`))),
+          K.el('span', { class: 'fx-hero-lab' }, V.heroLab, K.el('small', null, K.t('de {0} que achei', fmtB(total))))),
         V.heroP,
       ];
     }
@@ -967,7 +967,7 @@
         K.el('div', { class: 'fx-sum-act' }, again)));
     let stackBox = null;
     if (!clean && total > 0) {
-      stackBox = K.el('div', { class: 'fx-sum-stack' }, K.el('div', { class: 'fx-sum-stack-t' }, 'O que está marcado, por tipo'));
+      stackBox = K.el('div', { class: 'fx-sum-stack' }, K.el('div', { class: 'fx-sum-stack-t' }, K.t('O que está marcado, por tipo')));
       const box = K.el('div');
       stackBox.appendChild(box);
       sum.appendChild(stackBox);
@@ -981,19 +981,19 @@
     const notes = stateNotes('suj');
     if (errs.length || incompletos.length) {
       const bits = [];
-      if (errs.length) bits.push(`não consegui ler ${errs.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')}`);
-      if (incompletos.length) bits.push(`parei no meio em ${incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')}`);
+      if (errs.length) bits.push(K.t('não consegui ler {0}', errs.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')));
+      if (incompletos.length) bits.push(K.t('parei no meio em {0}', incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')));
       notes.push(K.el('div', { class: 'tip fx-note warn', html: K.icon('alert') },
-        K.el('p', null, K.el('b', null, 'Procura incompleta. '), `Nessa rodada ${bits.join(', e ')}. Pode ter mais.`),
-        K.el('button', { class: 'btn small', type: 'button', onclick: () => { scanSujeira(); } }, 'Tentar de novo')));
+        K.el('p', null, K.el('b', null, K.t('Procura incompleta. ')), K.t('Nessa rodada {0}. Pode ter mais.', bits.join(', e '))),
+        K.el('button', { class: 'btn small', type: 'button', onclick: () => { scanSujeira(); } }, K.t('Tentar de novo'))));
     }
     if (denied > 0) notes.push(permissionTip(denied));
     if (openApps.length) {
       const names = Array.from(new Set(openApps.map((it) => it.app || it.nome))).map(inl);
       const b = openApps.reduce((a, it) => a + (it.bytes || 0), 0);
-      const who = names.length <= 2 ? names.join(' e ') : `${names.slice(0, 2).join(', ')} e mais ${names.length - 2}`;
+      const who = names.length <= 2 ? names.join(' e ') : K.t('{0} e mais {1}', names.slice(0, 2).join(', '), names.length - 2);
       notes.push(K.el('div', { class: 'tip fx-note', html: K.icon('info') },
-        K.el('p', null, names.length === 1 ? `${who} está aberto: o cache (${fmtB(b)}) fica de fora. Feche e procure de novo pra incluir.` : `${who} estão abertos: o cache (${fmtB(b)}) fica de fora. Feche e procure de novo pra incluir.`)));
+        K.el('p', null, names.length === 1 ? K.t('{0} está aberto: o cache ({1}) fica de fora. Feche e procure de novo pra incluir.', who, fmtB(b)) : K.t('{0} estão abertos: o cache ({1}) fica de fora. Feche e procure de novo pra incluir.', who, fmtB(b)))));
     }
     if (notes.length) V.panel.appendChild(K.el('div', { class: 'fx-notes' }, notes));
 
@@ -1014,27 +1014,27 @@
     const n = ids.length;
     const dl = ids.filter((id) => isDl(st.items.get(id))).length;
     V.hero.classList.toggle('is-none', !n);
-    if (writeNum || !n) { V.hero._count = null; V.hero.textContent = n ? fmtB(selBytes(st)) : 'Nada'; }
-    V.heroLab.textContent = n ? 'pra liberar' : 'marcado agora';
+    if (writeNum || !n) { V.hero._count = null; V.hero.textContent = n ? fmtB(selBytes(st)) : K.t('Nada'); }
+    V.heroLab.textContent = n ? K.t('pra liberar') : K.t('marcado agora');
     let p;
     if (!st.touched) {
-      p = n ? `Já marquei o que é seguro: ${plural(n, 'item', 'itens')}. Abra cada tipo pra conferir.`
-        : 'Nada veio marcado: vale você olhar antes. Abra cada tipo pra escolher.';
+      p = n ? K.t('Já marquei o que é seguro: {0}. Abra cada tipo pra conferir.', plural(n, K.t('item'), K.t('itens')))
+        : K.t('Nada veio marcado: vale você olhar antes. Abra cada tipo pra escolher.');
     } else if (n) {
-      const mine = dl ? `, ${dl === 1 ? 'um deles é arquivo seu' : `${K.fmt.num(dl)} deles são arquivos seus`} da pasta Downloads` : '';
-      p = `${plural(n, 'item marcado', 'itens marcados')}${mine}.`;
+      const mine = dl ? K.t(', {0} da pasta Downloads', dl === 1 ? K.t('um deles é arquivo seu') : K.t('{0} deles são arquivos seus', K.fmt.num(dl))) : '';
+      p = `${plural(n, K.t('item marcado'), K.t('itens marcados'))}${mine}.`;
     } else {
-      p = 'Nada sai daqui sem você marcar.';
+      p = K.t('Nada sai daqui sem você marcar.');
     }
     V.heroP.textContent = p;
   }
 
   function permissionTip(n) {
     return K.el('div', { class: 'tip fx-note', html: K.icon('lock') },
-      K.el('p', null, K.el('b', null, 'O macOS não me deixou ler tudo. '),
-        `${n === 1 ? 'Uma pasta ficou' : `${K.fmt.num(n)} pastas ficaram`} de fora. Pra eu olhar tudo, dê Acesso Total ao Disco.`),
+      K.el('p', null, K.el('b', null, K.t('O macOS não me deixou ler tudo. ')),
+        K.t('{0} de fora. Pra eu olhar tudo, dê Acesso Total ao Disco.', n === 1 ? K.t('Uma pasta ficou') : K.t('{0} pastas ficaram', K.fmt.num(n)))),
       K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } },
-        'Abrir Ajustes', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
+        K.t('Abrir Ajustes'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
   }
 
   function catCard(id, i) {
@@ -1048,36 +1048,36 @@
     if (d.error) {
       card.classList.add('is-err');
       card.appendChild(K.el('div', { class: 'fx-cat-head' }, ic,
-        K.el('div', { class: 'fx-cat-text' }, K.el('h3', null, info.titulo, K.statusPill('none', 'Não deu pra ler', 'info')),
-          K.el('p', null, `Não consegui olhar agora (${why(d.error)}).`))));
+        K.el('div', { class: 'fx-cat-text' }, K.el('h3', null, info.titulo, K.statusPill('none', K.t('Não deu pra ler'), 'info')),
+          K.el('p', null, K.t('Não consegui olhar agora ({0}).', why(d.error))))));
       return card;
     }
     if (!items.length) {
       card.classList.add('is-empty');
       card.appendChild(K.el('div', { class: 'fx-cat-head' }, ic,
-        K.el('div', { class: 'fx-cat-text' }, K.el('h3', null, info.titulo, K.statusPill('good', d.incompleto ? 'Nada até onde olhei' : 'Limpinho', 'sparkle')),
+        K.el('div', { class: 'fx-cat-text' }, K.el('h3', null, info.titulo, K.statusPill('good', d.incompleto ? K.t('Nada até onde olhei') : K.t('Limpinho'), 'sparkle')),
           K.el('p', null, info.descricao))));
       return card;
     }
     /* Downloads esquecidos: sem "marcar tudo" (são arquivos da pessoa, um por um) */
     const bulk = id !== 'downloads';
-    const chk = bulk ? K.checkbox({ label: `Marcar tudo em ${info.titulo}`, onchange: () => toggleCat(id) })
-      : K.el('span', { class: 'fx-cat-solo', title: 'Arquivos seus: marque um por um.', 'aria-hidden': 'true', html: K.icon('fxFile') });
+    const chk = bulk ? K.checkbox({ label: K.t('Marcar tudo em {0}', info.titulo), onchange: () => toggleCat(id) })
+      : K.el('span', { class: 'fx-cat-solo', title: K.t('Arquivos seus: marque um por um.'), 'aria-hidden': 'true', html: K.icon('fxFile') });
     const open = st.open.has(id);
     const chev = K.el('span', { class: 'fx-chev', html: K.icon('fxChevron') });
     const openBtn = K.el('button', { class: 'btn small fx-open', type: 'button', 'aria-expanded': String(open), onclick: (e) => { e.stopPropagation(); toggleOpen(id); } },
-      K.el('span', { class: 'fx-open-t' }, open ? 'Esconder' : 'Ver itens'), chev);
+      K.el('span', { class: 'fx-open-t' }, open ? K.t('Esconder') : K.t('Ver itens')), chev);
     const selTxt = K.el('span', { class: 'fx-cat-sel' });
     const pills = [];
-    if (d.incompleto) pills.push(tag('warn', 'clock', 'parei no meio', 'Parei no meio: pode ter mais.'));
-    if (!bulk) pills.push(tag('plain', null, 'um por um', 'Arquivos seus: marque um por um.'));
+    if (d.incompleto) pills.push(tag('warn', 'clock', K.t('parei no meio'), K.t('Parei no meio: pode ter mais.')));
+    if (!bulk) pills.push(tag('plain', null, K.t('um por um'), K.t('Arquivos seus: marque um por um.')));
     const head = K.el('div', { class: 'fx-cat-head is-click' }, chk, ic,
       K.el('div', { class: 'fx-cat-text' },
         K.el('h3', null, info.titulo, ...pills),
-        K.el('p', null, bulk ? info.descricao : `${info.descricao} Não é cache: o que for pra Lixeira só volta se você devolver.`)),
+        K.el('p', null, bulk ? info.descricao : K.t('{0} Não é cache: o que for pra Lixeira só volta se você devolver.', info.descricao))),
       K.el('div', { class: 'fx-cat-num' },
         K.el('b', { class: 'num' }, fmtB(d.bytes)),
-        K.el('span', { class: 'fx-cat-count' }, plural(items.length, 'item', 'itens')),
+        K.el('span', { class: 'fx-cat-count' }, plural(items.length, K.t('item'), K.t('itens'))),
         selTxt),
       openBtn);
     head.addEventListener('click', (e) => { if (!e.target.closest('button')) toggleOpen(id); });
@@ -1098,7 +1098,7 @@
     c.list.hidden = !open;
     c.card.classList.toggle('is-open', open);
     c.openBtn.setAttribute('aria-expanded', String(open));
-    c.openBtn.querySelector('.fx-open-t').textContent = open ? 'Esconder' : 'Ver itens';
+    c.openBtn.querySelector('.fx-open-t').textContent = open ? K.t('Esconder') : K.t('Ver itens');
     if (open && !c.list.childElementCount) fillList(c.list, 'suj', c.items, 'cat:' + id);
     if (force == null) K.sound.tick();
     refreshSel('suj');
@@ -1120,7 +1120,7 @@
           st.shown[key] = shown + PAGE * 2;
           fillList(ul, kind, items, key, o);
           refreshSel(kind);
-        } }, `Mostrar mais ${K.fmt.num(Math.min(rest, PAGE * 2))}`, rest > PAGE * 2 ? K.el('span', { class: 'muted' }, ` de ${K.fmt.num(rest)}`) : null));
+        } }, K.t('Mostrar mais {0}', K.fmt.num(Math.min(rest, PAGE * 2))), rest > PAGE * 2 ? K.el('span', { class: 'muted' }, ` de ${K.fmt.num(rest)}`) : null));
       ul.appendChild(more);
     }
   }
@@ -1129,7 +1129,7 @@
     const bits = [];
     if (kind !== 'suj' || it.categoria === 'downloads') {
       const m = quando(it.modificado);
-      if (m) bits.push(`mexido pela última vez ${m}`);
+      if (m) bits.push(K.t('mexido pela última vez {0}', m));
       const u = quando(it.usado);
       if (u && (!isNum(it.modificado) || Math.abs(it.usado - it.modificado) > 86400)) bits.push(`aberto ${u}`);
     }
@@ -1147,23 +1147,23 @@
   function itemRow(kind, it, extra) {
     const ok = selectable(it);
     const nameTxt = rowName(kind, it);
-    const chk = K.checkbox({ label: 'Marcar ' + nameTxt, onchange: () => toggleItem(kind, it.id) });
+    const chk = K.checkbox({ label: K.t('Marcar ') + nameTxt, onchange: () => toggleItem(kind, it.id) });
     const tags = K.el('span', { class: 'fx-tags' });
     if (extra && extra.first) {
       tags.appendChild(extra.tie
-        ? tag('keep', 'fxKeep', 'parece o original', 'Mesma data: sugiro manter esta, pela pasta e pelo nome.')
-        : tag('keep', 'clock', 'a mais antiga', 'A mais antiga: sugiro manter esta.'));
+        ? tag('keep', 'fxKeep', K.t('parece o original'), K.t('Mesma data: sugiro manter esta, pela pasta e pelo nome.'))
+        : tag('keep', 'clock', K.t('a mais antiga'), K.t('A mais antiga: sugiro manter esta.')));
     }
     let keep = null;
     if (kind === 'dup') { keep = tag('good', 'fxKeep', 'fica'); keep.hidden = true; tags.appendChild(keep); }
-    if (it.appAberto) tags.appendChild(tag('warn', 'lock', 'aberto: feche antes', `${nameTxt} está aberto. Feche e procure de novo pra limpar.`));
-    if (it.semAcesso) tags.appendChild(tag('none', 'lock', 'sem acesso', 'O macOS não deixou ler esta pasta (falta Acesso Total ao Disco).'));
-    else if (it.parcial) tags.appendChild(tag('warn', 'lock', 'parte sem acesso', 'O macOS não deixou ler parte desta pasta: o tamanho é o mínimo.'));
+    if (it.appAberto) tags.appendChild(tag('warn', 'lock', K.t('aberto: feche antes'), K.t('{0} está aberto. Feche e procure de novo pra limpar.', nameTxt)));
+    if (it.semAcesso) tags.appendChild(tag('none', 'lock', K.t('sem acesso'), K.t('O macOS não deixou ler esta pasta (falta Acesso Total ao Disco).')));
+    else if (it.parcial) tags.appendChild(tag('warn', 'lock', K.t('parte sem acesso'), K.t('O macOS não deixou ler parte desta pasta: o tamanho é o mínimo.')));
     if (kind !== 'dup' && S.lastCopy.has(it.caminho)) {
-      tags.appendChild(tag('warn', 'fxCopy', 'última cópia', 'As outras cópias já estão na Lixeira. Esta é a que sobrou.'));
+      tags.appendChild(tag('warn', 'fxCopy', K.t('última cópia'), K.t('As outras cópias já estão na Lixeira. Esta é a que sobrou.')));
     }
     if (tricky(it.nome) || tricky(it.caminho)) {
-      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
+      tags.appendChild(tag('warn', 'alert', K.t('nome disfarçado'), K.t('O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.')));
     }
     const lines = [K.el('span', { class: 'fx-item-top' }, K.el('span', { class: 'fx-item-name' }, nameTxt), tags),
       K.el('span', { class: 'fx-item-path', title: vis(it.caminho) }, vis(it.caminho))];
@@ -1173,8 +1173,8 @@
     if (note) lines.push(K.el('span', { class: 'fx-item-note' }, note));
     const unread = it.semAcesso && !it.bytes;
     const size = K.el('span', { class: 'fx-item-size num' + (unread ? ' no-read' : '') },
-      unread ? 'sem leitura' : it.parcial ? K.el('small', null, 'pelo menos ') : null, unread ? null : fmtB(it.bytes));
-    const reveal = K.el('button', { class: 'fx-reveal', type: 'button', title: 'Mostrar no Finder', 'aria-label': `Mostrar ${nameTxt} no Finder`, html: K.icon('fxFinder'),
+      unread ? K.t('sem leitura') : it.parcial ? K.el('small', null, K.t('pelo menos ')) : null, unread ? null : fmtB(it.bytes));
+    const reveal = K.el('button', { class: 'fx-reveal', type: 'button', title: K.t('Mostrar no Finder'), 'aria-label': K.t('Mostrar {0} no Finder', nameTxt), html: K.icon('fxFinder'),
       onclick: (e) => { e.stopPropagation(); revealItem(it.id, row); } });
     const row = K.el('li', { class: 'fx-item' + (ok ? '' : ' is-off'), dataset: { id: it.id } },
       chk, iconEl(it), K.el('span', { class: 'fx-item-text' }, lines), size, reveal);
@@ -1190,7 +1190,7 @@
     K.sound.plop();
     try { await K.api('cleanup.reveal', { id }); } catch (e) {
       K.sound.oops();
-      if (row) flashRow(row, 'Não achei esse item no Finder: ele pode ter mudado de lugar.');
+      if (row) flashRow(row, K.t('Não achei esse item no Finder: ele pode ter mudado de lugar.'));
     }
   }
 
@@ -1216,16 +1216,16 @@
 
   const INTRO = {
     gra: {
-      icon: 'fxBig', title: 'Arquivos grandes esquecidos',
-      text: 'De 100 MB pra cima, nas suas pastas. Nada vem marcado: você escolhe um por um.',
-      btn: 'Procurar arquivos grandes', wait: 'Pode levar até 40 segundos.',
-      doing: 'Procurando arquivos de 100 MB ou mais…', bubble: 'Coisa grande\nescondida?',
+      icon: 'fxBig', title: K.t('Arquivos grandes esquecidos'),
+      text: K.t('De 100 MB pra cima, nas suas pastas. Nada vem marcado: você escolhe um por um.'),
+      btn: K.t('Procurar arquivos grandes'), wait: K.t('Pode levar até 40 segundos.'),
+      doing: K.t('Procurando arquivos de 100 MB ou mais…'), bubble: K.t('Coisa grande\nescondida?'),
     },
     dup: {
-      icon: 'fxCopy', title: 'Arquivos repetidos',
-      text: 'Conteúdo idêntico, de 1 MB pra cima. Em cada grupo, uma cópia sempre fica.',
-      btn: 'Procurar duplicados', wait: 'Pode levar até um minuto.',
-      doing: 'Comparando o conteúdo dos arquivos…', bubble: 'Tem coisa\nem dobro?',
+      icon: 'fxCopy', title: K.t('Arquivos repetidos'),
+      text: K.t('Conteúdo idêntico, de 1 MB pra cima. Em cada grupo, uma cópia sempre fica.'),
+      btn: K.t('Procurar duplicados'), wait: K.t('Pode levar até um minuto.'),
+      doing: K.t('Comparando o conteúdo dos arquivos…'), bubble: K.t('Tem coisa\nem dobro?'),
     },
   };
 
@@ -1237,16 +1237,16 @@
       K.el('span', { class: 'fx-intro-badge', html: K.icon(t.icon) }),
       K.el('div', { class: 'fx-bubble fx-intro-bubble' }, t.bubble));
     const expired = st.expired ? K.el('div', { class: 'tip fx-expired', html: K.icon('clock') },
-      K.el('p', null, 'A lista venceu (vale uma hora). Procure de novo.')) : null;
+      K.el('p', null, K.t('A lista venceu (vale uma hora). Procure de novo.'))) : null;
     const card = K.el('section', { class: 'card fx-intro pop-in' },
       art,
       K.el('div', { class: 'fx-intro-text' },
         K.el('h2', null, t.title),
         K.el('p', null, t.text),
-        K.el('div', { class: 'fx-folders' }, K.el('span', { class: 'fx-folders-t' }, 'Onde eu olho:'),
+        K.el('div', { class: 'fx-folders' }, K.el('span', { class: 'fx-folders-t' }, K.t('Onde eu olho:')),
           PERSONAL.map((f) => K.el('span', { class: 'fx-folder', html: K.icon('fxFolder') }, f))),
         K.el('div', { class: 'tip fx-perm', html: K.icon('lock') },
-          K.el('p', null, 'Se o macOS pedir acesso, é só permitir. Se negar, eu pulo a pasta.')),
+          K.el('p', null, K.t('Se o macOS pedir acesso, é só permitir. Se negar, eu pulo a pasta.'))),
         K.el('div', { class: 'fx-intro-act' },
           K.el('button', { class: 'btn gold fx-intro-go', type: 'button', html: K.icon('scan'), onclick: () => { search(kind); } }, t.btn),
           K.el('span', { class: 'muted fx-intro-wait' }, t.wait))));
@@ -1265,11 +1265,11 @@
     const card = K.el('section', { class: 'card fx-search pop-in', role: 'status', 'aria-live': 'polite' },
       ringBox,
       K.el('div', { class: 'fx-search-text' },
-        K.el('span', { class: 'sticker fx-when' }, 'Procurando… ', secs),
+        K.el('span', { class: 'sticker fx-when' }, K.t('Procurando… '), secs),
         K.el('h2', null, t.doing),
         K.el('p', null, t.wait),
         K.el('div', { class: 'fx-folders' }, PERSONAL.map((f) => K.el('span', { class: 'fx-folder', html: K.icon('fxFolder') }, f))),
-        K.el('p', { class: 'muted fx-search-hint' }, 'Pode trocar de aba enquanto isso.')));
+        K.el('p', { class: 'muted fx-search-hint' }, K.t('Pode trocar de aba enquanto isso.'))));
     V.panel.appendChild(card);
     V.after.push(() => keepChart(K.charts.ring(ringEl, { value: null, busy: true, tone: 'gold', text: '', size: 150, thickness: 13 })));
     if (!snap()) V.timers.push(setInterval(tick, 1000));
@@ -1279,7 +1279,7 @@
     const st = S[kind];
     const t = INTRO[kind];
     /* o mesmo cartão de erro das outras telas */
-    const c = K.errorCard({ title: 'Não consegui terminar a procura', reason: why(st.err), retry: () => { search(kind); }, retryHint: t.wait });
+    const c = K.errorCard({ title: K.t('Não consegui terminar a procura'), reason: why(st.err), retry: () => { search(kind); }, retryHint: t.wait });
     c.classList.add('pop-in');
     V.panel.appendChild(c);
   }
@@ -1293,7 +1293,7 @@
     K.sound.plop();
     if (S.tab === TAB_OF[kind]) paintTab(); else paintTabs();
     const cmd = kind === 'gra' ? ['cleanup.large', { minMB: 100 }, 120000] : ['cleanup.duplicates', { minMB: 1 }, 150000];
-    st.promise = withTimeout(K.api(cmd[0], cmd[1]), cmd[2], 'a procura passou do tempo').then((r) => {
+    st.promise = withTimeout(K.api(cmd[0], cmd[1]), cmd[2], K.t('a procura passou do tempo')).then((r) => {
       if (run !== st.run) return;
       st.data = r || {};
       if (kind === 'gra') {
@@ -1323,7 +1323,7 @@
 
   function summaryCard(kind, o) {
     const st = S[kind];
-    const again = K.el('button', { class: 'btn small', type: 'button', html: K.icon('cycle'), onclick: () => { search(kind); } }, 'Procurar de novo');
+    const again = K.el('button', { class: 'btn small', type: 'button', html: K.icon('cycle'), onclick: () => { search(kind); } }, K.t('Procurar de novo'));
     return K.el('section', { class: 'card fx-rsum pop-in' },
       K.el('span', { class: 'head-ic', html: K.icon(INTRO[kind].icon) }),
       K.el('div', { class: 'fx-rsum-text' },
@@ -1331,7 +1331,7 @@
         K.el('p', null, o.text),
         o.actions ? K.el('div', { class: 'fx-rsum-main' }, o.actions) : null),
       K.el('div', { class: 'fx-rsum-act' }, again),
-      K.el('span', { class: 'fx-rsum-when muted' }, `Procura feita às ${K.fmt.time(st.at)} em ${K.fmt.num(Math.max(1, st.took), 0)} s`));
+      K.el('span', { class: 'fx-rsum-when muted' }, K.t('Procura feita às {0} em {1} s', K.fmt.time(st.at), K.fmt.num(Math.max(1, st.took), 0))));
   }
 
   /** a procura não viu tudo: parou no meio ou o macOS negou alguma pasta */
@@ -1342,7 +1342,7 @@
     const out = stateNotes(kind);
     if (st.data && st.data.incompleto) {
       out.push(K.el('div', { class: 'tip fx-note warn', html: K.icon('clock') },
-        K.el('p', null, K.el('b', null, 'Procura incompleta. '), 'Parei antes de olhar tudo: pode ter mais.')));
+        K.el('p', null, K.el('b', null, K.t('Procura incompleta. ')), K.t('Parei antes de olhar tudo: pode ter mais.'))));
     }
     if (st.data && st.data.semAcesso > 0) out.push(permissionTip(st.data.semAcesso));
     return out.length ? K.el('div', { class: 'fx-notes' }, out) : null;
@@ -1356,18 +1356,18 @@
       /* procura incompleta: "tudo leve" seria mentira, é "nada até onde consegui olhar" */
       const part = partialSearch(st);
       V.panel.appendChild(summaryCard('gra', part
-        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'A procura não viu tudo: o aviso abaixo diz o quê.' }
-        : { big: 'Nenhum', label: 'arquivo grande', text: 'Tudo leve por aqui.' }));
+        ? { big: K.t('Nenhum'), label: K.t('até onde consegui olhar'), text: K.t('A procura não viu tudo: o aviso abaixo diz o quê.') }
+        : { big: K.t('Nenhum'), label: K.t('arquivo grande'), text: K.t('Tudo leve por aqui.') }));
       const n = searchNotes('gra');
       if (n) V.panel.appendChild(n);
       V.panel.appendChild(part
-        ? emptyBox('Nada até onde consegui olhar', 'Pode ter algo no que ficou de fora.', 'happy')
-        : emptyBox('Tudo leve por aqui', 'Nada de 100 MB ou mais nas suas pastas.'));
+        ? emptyBox(K.t('Nada até onde consegui olhar'), K.t('Pode ter algo no que ficou de fora.'), 'happy')
+        : emptyBox(K.t('Tudo leve por aqui'), K.t('Nada de 100 MB ou mais nas suas pastas.')));
       return;
     }
     V.panel.appendChild(summaryCard('gra', {
-      big: fmtB(total), label: `em ${plural(items.length, 'arquivo grande', 'arquivos grandes')}`,
-      text: 'Nada vem marcado: marque só o que não precisa mais.',
+      big: fmtB(total), label: `em ${plural(items.length, K.t('arquivo grande'), K.t('arquivos grandes'))}`,
+      text: K.t('Nada vem marcado: marque só o que não precisa mais.'),
     }));
     const n = searchNotes('gra');
     if (n) V.panel.appendChild(n);
@@ -1375,14 +1375,14 @@
     /* chips de filtro por tipo */
     const byType = {};
     for (const it of items) { const k = TIPOS[it.tipo] ? it.tipo : 'outro'; byType[k] = (byType[k] || 0) + 1; }
-    const chips = K.el('div', { class: 'fx-chips', role: 'group', 'aria-label': 'Filtrar por tipo' });
+    const chips = K.el('div', { class: 'fx-chips', role: 'group', 'aria-label': K.t('Filtrar por tipo') });
     const chip = (id, label, icon, count) => {
       const b = K.el('button', { class: 'fx-chip' + (st.filter === id ? ' on' : ''), type: 'button', 'aria-pressed': String(st.filter === id), html: icon ? K.icon(icon) : null,
         onclick: () => { if (st.filter === id) return; K.sound.tick(); st.filter = id; st.shown = {}; paintTab(); } },
       K.el('span', null, label), K.el('span', { class: 'fx-chip-n num' }, K.fmt.num(count)));
       chips.appendChild(b);
     };
-    chip('todos', 'Todos', null, items.length);
+    chip('todos', K.t('Todos'), null, items.length);
     for (const k of Object.keys(TIPOS)) if (byType[k]) chip(k, TIPOS[k].label, TIPOS[k].icon, byType[k]);
     if (st.filter !== 'todos' && !byType[st.filter]) st.filter = 'todos';
 
@@ -1419,19 +1419,19 @@
     if (!grupos.length) {
       const part = partialSearch(st);
       V.panel.appendChild(summaryCard('dup', part
-        ? { big: 'Nenhum', label: 'até onde consegui olhar', text: 'A procura não viu tudo: o aviso abaixo diz o quê.' }
-        : { big: 'Nenhum', label: 'repetido', text: 'Cada coisa no seu lugar.' }));
+        ? { big: K.t('Nenhum'), label: K.t('até onde consegui olhar'), text: K.t('A procura não viu tudo: o aviso abaixo diz o quê.') }
+        : { big: K.t('Nenhum'), label: K.t('repetido'), text: K.t('Cada coisa no seu lugar.') }));
       const n = searchNotes('dup');
       if (n) V.panel.appendChild(n);
       V.panel.appendChild(part
-        ? emptyBox('Nada até onde consegui olhar', 'Pode ter algo no que ficou de fora.', 'happy')
-        : emptyBox('Nada em dobro', 'Nenhum arquivo de 1 MB ou mais repetido nas suas pastas.'));
+        ? emptyBox(K.t('Nada até onde consegui olhar'), K.t('Pode ter algo no que ficou de fora.'), 'happy')
+        : emptyBox(K.t('Nada em dobro'), K.t('Nenhum arquivo de 1 MB ou mais repetido nas suas pastas.')));
       return;
     }
-    const mark = K.el('button', { class: 'btn small gold', type: 'button', html: K.icon('fxCopy'), onclick: () => { markCopies(); } }, 'Marcar as cópias (mantém a mais antiga)');
+    const mark = K.el('button', { class: 'btn small gold', type: 'button', html: K.icon('fxCopy'), onclick: () => { markCopies(); } }, K.t('Marcar as cópias (mantém a mais antiga)'));
     V.panel.appendChild(summaryCard('dup', {
-      big: fmtB(st.data.desperdicio), label: 'em cópias repetidas',
-      text: `${plural(grupos.length, 'grupo', 'grupos')} de arquivos iguais. Em cada grupo, uma cópia sempre fica.`,
+      big: fmtB(st.data.desperdicio), label: K.t('em cópias repetidas'),
+      text: K.t('{0} de arquivos iguais. Em cada grupo, uma cópia sempre fica.', plural(grupos.length, K.t('grupo'), K.t('grupos'))),
       actions: mark,
     }));
     const n = searchNotes('dup');
@@ -1445,7 +1445,7 @@
   function groupCard(g, i) {
     const first = g.itens[0] || {};
     const sel = K.el('span', { class: 'fx-group-sel' });
-    const msg = K.el('p', { class: 'fx-group-msg', role: 'status', hidden: true }, 'Pelo menos uma cópia fica: não dá pra marcar todas.');
+    const msg = K.el('p', { class: 'fx-group-msg', role: 'status', hidden: true }, K.t('Pelo menos uma cópia fica: não dá pra marcar todas.'));
     const ul = K.el('ul', { class: 'fx-items' });
     /* "X cada" só quando as linhas mostram o mesmo número; conteúdo igual pode ocupar um pouco
        mais ou menos no disco, e aí eu digo a faixa em vez de um "cada" que não bate com a linha */
@@ -1453,15 +1453,15 @@
     const lo = Math.min(...sizes), hi = Math.max(...sizes);
     const each = fmtB(lo) === fmtB(hi)
       ? K.el('span', null, `${fmtB(hi)} cada`)
-      : K.el('span', { title: 'Conteúdo idêntico; o espaço no disco pode variar um pouco.' }, `conteúdo igual, de ${fmtB(lo)} a ${fmtB(hi)} no disco`);
+      : K.el('span', { title: K.t('Conteúdo idêntico; o espaço no disco pode variar um pouco.') }, K.t('conteúdo igual, de {0} a {1} no disco', fmtB(lo), fmtB(hi)));
     const tie = g.itens.length > 1 && sameAge(g.itens[0], g.itens[1]);
     const card = K.el('article', { class: 'card fx-group pop-in', dataset: { grupo: g.id }, style: { animationDelay: 80 + Math.min(i, 8) * 60 + 'ms' } },
       K.el('div', { class: 'fx-group-head' },
         K.el('span', { class: 'head-ic', html: K.icon(typeIcon(first)) }),
         K.el('div', { class: 'fx-group-text' },
-          K.el('h3', null, vis(first.nome) || 'Arquivo repetido'),
-          K.el('p', null, `${plural(g.itens.length, 'cópia igual', 'cópias iguais')} · `, each)),
-        K.el('div', { class: 'fx-group-num' }, K.el('b', { class: 'num' }, fmtB(g.desperdicio)), K.el('span', null, 'sobrando'), sel)),
+          K.el('h3', null, vis(first.nome) || K.t('Arquivo repetido')),
+          K.el('p', null, `${plural(g.itens.length, K.t('cópia igual'), K.t('cópias iguais'))} · `, each)),
+        K.el('div', { class: 'fx-group-num' }, K.el('b', { class: 'num' }, fmtB(g.desperdicio)), K.el('span', null, K.t('sobrando')), sel)),
       msg, ul);
     V.groups.set(g.id, { card, sel, msg });
     fillList(ul, 'dup', g.itens, 'g:' + g.id, { extra: (it, idx) => ({ first: idx === 0, tie: idx === 0 && tie }) });
@@ -1477,10 +1477,10 @@
     const rows = top.slice(0, max).map((it) => K.el('li', null,
       K.el('span', { class: 'fx-cf-ic', html: K.icon(typeIcon(it)) }),
       K.el('span', { class: 'fx-cf-name', title: vis(it.caminho) || null }, vis(it.nome)),
-      K.el('b', { class: 'num' }, it.parcial ? 'pelo menos ' : '', fmtB(it.bytes))));
+      K.el('b', { class: 'num' }, it.parcial ? K.t('pelo menos ') : '', fmtB(it.bytes))));
     if (top.length > max) {
       const rest = top.slice(max);
-      rows.push(K.el('li', { class: 'fx-cf-rest' }, K.el('span', { class: 'fx-cf-name' }, `e mais ${plural(rest.length, 'arquivo', 'arquivos')}`),
+      rows.push(K.el('li', { class: 'fx-cf-rest' }, K.el('span', { class: 'fx-cf-name' }, K.t('e mais {0}', plural(rest.length, K.t('arquivo'), K.t('arquivos')))),
         K.el('b', { class: 'num' }, fmtB(rest.reduce((a, it) => a + (it.bytes || 0), 0)))));
     }
     return K.el('ul', { class: 'fx-cf' }, rows);
@@ -1498,14 +1498,14 @@
         rows.push(K.el('li', null,
           K.el('i', { class: 'fx-swatch', style: { background: CATS[s.id].color } }),
           K.el('span', { class: 'fx-cf-name' }, catInfo(s.id).titulo),
-          K.el('span', { class: 'fx-cf-n' }, plural(mine.length, 'item', 'itens')),
+          K.el('span', { class: 'fx-cf-n' }, plural(mine.length, K.t('item'), K.t('itens'))),
           K.el('b', { class: 'num' }, fmtB(mine.reduce((a, it) => a + (it.bytes || 0), 0)))));
       }
       out.push(K.el('ul', { class: 'fx-cf' }, rows));
       /* Downloads esquecidos são arquivos da pessoa: vão com nome, não só com o total */
       const dl = items.filter(isDl);
       if (dl.length) {
-        out.push(K.el('p', { class: 'fx-cf-t' }, dl.length === 1 ? 'O arquivo seu que vai junto:' : 'Seus arquivos da pasta Downloads que vão junto:'), fileList(dl));
+        out.push(K.el('p', { class: 'fx-cf-t' }, dl.length === 1 ? K.t('O arquivo seu que vai junto:') : K.t('Seus arquivos da pasta Downloads que vão junto:')), fileList(dl));
       }
     } else {
       /* Arquivos grandes com filtro: o que está marcado mas escondido pelo filtro vem à parte */
@@ -1514,7 +1514,7 @@
       if (shown.length) out.push(fileList(shown));
       if (hidden.length) {
         const f = TIPOS[st.filter] ? TIPOS[st.filter].label : st.filter;
-        out.push(K.el('p', { class: 'fx-cf-t' }, `E ${hidden.length === 1 ? 'mais 1 marcado' : `mais ${K.fmt.num(hidden.length)} marcados`} fora do filtro “${f}”:`),
+        out.push(K.el('p', { class: 'fx-cf-t' }, K.t('E {0} fora do filtro “{1}”:', hidden.length === 1 ? K.t('mais 1 marcado') : K.t('mais {0} marcados', K.fmt.num(hidden.length)), f)),
           fileList(hidden));
       }
     }
@@ -1526,14 +1526,14 @@
   /** texto do modal de limpar: diz com honestidade o que volta sozinho e o que não volta */
   function confirmText(kind, items) {
     const n = items.length;
-    if (kind === 'gra') return `${isAre(n)} ${plural(n, 'arquivo seu', 'arquivos seus')}, ${n === 1 ? 'escolhido' : 'escolhidos'} por você.`;
-    if (kind === 'dup') return `${isAre(n)} ${plural(n, 'cópia repetida', 'cópias repetidas')}. Em cada grupo, uma cópia fica.`;
+    if (kind === 'gra') return K.t('{0} {1}, {2} por você.', isAre(n), plural(n, K.t('arquivo seu'), K.t('arquivos seus')), n === 1 ? K.t('escolhido') : K.t('escolhidos'));
+    if (kind === 'dup') return K.t('{0} {1}. Em cada grupo, uma cópia fica.', isAre(n), plural(n, K.t('cópia repetida'), K.t('cópias repetidas')));
     const dl = items.filter(isDl).length;
-    if (!dl) return `${isAre(n)} ${plural(n, 'item', 'itens')} de cache e registro. Os apps recriam o que precisarem.`;
+    if (!dl) return K.t('{0} {1} de cache e registro. Os apps recriam o que precisarem.', isAre(n), plural(n, K.t('item'), K.t('itens')));
     if (dl === n) {
-      return `${isAre(n)} ${plural(n, 'arquivo seu', 'arquivos seus')} de Downloads. Não é cache: se a Lixeira for esvaziada, ${n === 1 ? 'ele não volta' : 'eles não voltam'}.`;
+      return K.t('{0} {1} de Downloads. Não é cache: se a Lixeira for esvaziada, {2}.', isAre(n), plural(n, K.t('arquivo seu'), K.t('arquivos seus')), n === 1 ? K.t('ele não volta') : K.t('eles não voltam'));
     }
-    return `${isAre(n)} ${plural(n, 'item', 'itens')}. Inclui ${plural(dl, 'arquivo seu', 'arquivos seus')} de Downloads, que não ${dl === 1 ? 'volta' : 'voltam'} se a Lixeira for esvaziada.`;
+    return K.t('{0} {1}. Inclui {2} de Downloads, que não {3} se a Lixeira for esvaziada.', isAre(n), plural(n, K.t('item'), K.t('itens')), plural(dl, K.t('arquivo seu'), K.t('arquivos seus')), dl === 1 ? K.t('volta') : K.t('voltam'));
   }
 
   /** os IDs do Swift valem 1 h: lista velha não limpa nada, então pede uma procura nova */
@@ -1565,13 +1565,13 @@
       K.sound.plop();
       const mine = items.some((it) => kind !== 'suj' || isDl(it));
       const ok = await K.confirm({
-        title: `Mandar ${items.some((it) => it.parcial) ? 'pelo menos ' : ''}${fmtB(bytes)} pra Lixeira?`,
+        title: K.t('Mandar {0}{1} pra Lixeira?', items.some((it) => it.parcial) ? K.t('pelo menos ') : '', fmtB(bytes)),
         text: confirmText(kind, items),
         body: confirmBody(kind, ids),
         note: mine
-          ? { icon: 'fxUndo', tone: 'good', text: 'Dá pra desfazer: fica na Lixeira, e dá pra devolver pela aba Lixeira.' }
-          : { icon: 'fxUndo', tone: 'good', text: 'Dá pra desfazer: fica tudo na Lixeira até você esvaziar.' },
-        ok: 'Mandar pra Lixeira', cancel: 'Agora não', icon: 'fxTrash', mascot: 'happy',
+          ? { icon: 'fxUndo', tone: 'good', text: K.t('Dá pra desfazer: fica na Lixeira, e dá pra devolver pela aba Lixeira.') }
+          : { icon: 'fxUndo', tone: 'good', text: K.t('Dá pra desfazer: fica tudo na Lixeira até você esvaziar.') },
+        ok: K.t('Mandar pra Lixeira'), cancel: K.t('Agora não'), icon: 'fxTrash', mascot: 'happy',
       });
       if (!ok || st.mode !== 'result') return;
       /* o modal pode ter ficado aberto muito tempo: confere a idade da lista de novo */
@@ -1639,31 +1639,31 @@
     let title, sub, face = 'joy';
     if (d.purge && d.purge.res) {
       const p = d.purge.res;
-      title = p.ok ? `Apagado de vez: ${fmtB(p.bytes)} livres` : 'Não consegui apagar de vez';
-      sub = p.ok ? 'O espaço voltou pro disco.' : 'Continua tudo na Lixeira. O motivo está abaixo.';
+      title = p.ok ? K.t('Apagado de vez: {0} livres', fmtB(p.bytes)) : K.t('Não consegui apagar de vez');
+      sub = p.ok ? K.t('O espaço voltou pro disco.') : K.t('Continua tudo na Lixeira. O motivo está abaixo.');
       if (!p.ok) face = 'worried';
     } else if (d.undo && d.undo.res) {
       const u = d.undo.res;
       const total = lixIds.length;
-      if (u.ok === total) { title = 'Voltou tudo pro lugar'; sub = 'Nada foi apagado.'; face = 'happy'; }
-      else if (u.ok > 0) { title = `Voltaram ${K.fmt.num(u.ok)} de ${K.fmt.num(total)}`; sub = 'O resto continua na Lixeira. O motivo está abaixo.'; face = 'worried'; }
-      else { title = 'Não consegui devolver'; sub = 'Continua tudo na Lixeira. O motivo está abaixo.'; face = 'worried'; }
+      if (u.ok === total) { title = K.t('Voltou tudo pro lugar'); sub = K.t('Nada foi apagado.'); face = 'happy'; }
+      else if (u.ok > 0) { title = K.t('Voltaram {0} de {1}', K.fmt.num(u.ok), K.fmt.num(total)); sub = K.t('O resto continua na Lixeira. O motivo está abaixo.'); face = 'worried'; }
+      else { title = K.t('Não consegui devolver'); sub = K.t('Continua tudo na Lixeira. O motivo está abaixo.'); face = 'worried'; }
     } else if (!moved.length) {
-      title = 'Não consegui mandar nada pra Lixeira';
-      sub = 'Nada foi mexido. O motivo está abaixo.';
+      title = K.t('Não consegui mandar nada pra Lixeira');
+      sub = K.t('Nada foi mexido. O motivo está abaixo.');
       face = 'worried';
     } else {
-      title = `Pronto! ${fmtB(bytes)} ${moved.length === 1 ? 'foi' : 'foram'} pra Lixeira`;
+      title = K.t('Pronto! {0} {1} pra Lixeira', fmtB(bytes), moved.length === 1 ? K.t('foi') : K.t('foram'));
       let what = '';
-      if (kind === 'dup') what = 'Em cada grupo, uma cópia continua no lugar.';
+      if (kind === 'dup') what = K.t('Em cada grupo, uma cópia continua no lugar.');
       else if (kind === 'suj') {
         const caches = info.length - dlMoved.length;
-        what = !dlMoved.length ? 'Os apps recriam o que precisarem.'
-          : !caches ? `${dlMoved.length === 1 ? 'É arquivo seu: só volta' : 'São arquivos seus: só voltam'} se você devolver.`
-            : `${dlMoved.length === 1 ? 'O arquivo de Downloads só volta' : 'Os arquivos de Downloads só voltam'} se você devolver.`;
+        what = !dlMoved.length ? K.t('Os apps recriam o que precisarem.')
+          : !caches ? K.t('{0} se você devolver.', dlMoved.length === 1 ? K.t('É arquivo seu: só volta') : K.t('São arquivos seus: só voltam'))
+            : K.t('{0} se você devolver.', dlMoved.length === 1 ? K.t('O arquivo de Downloads só volta') : K.t('Os arquivos de Downloads só voltam'));
       }
-      const left = fails.length ? `${plural(fails.length, 'item ficou', 'itens ficaram')} de fora: o motivo está abaixo. ` : '';
-      sub = `${left}${what ? what + ' ' : ''}Até esvaziar a Lixeira, dá pra desfazer.`;
+      const left = fails.length ? K.t('{0} de fora: o motivo está abaixo. ', plural(fails.length, K.t('item ficou'), K.t('itens ficaram'))) : '';
+      sub = K.t('{0}{1}Até esvaziar a Lixeira, dá pra desfazer.', left, what ? what + ' ' : '');
     }
 
     const art = K.el('div', { class: 'fx-sum-art' });
@@ -1671,14 +1671,14 @@
     const busy = d.busy;
     if (moved.length && !d.undo && !(d.purge && d.purge.res && d.purge.res.ok)) {
       acts.appendChild(K.el('button', { class: 'btn', type: 'button', html: K.icon('fxUndo'), disabled: !!busy, onclick: () => { undoKind(kind); } },
-        busy === 'undo' ? 'Devolvendo…' : 'Desfazer'));
+        busy === 'undo' ? K.t('Devolvendo…') : K.t('Desfazer')));
     }
     /* no momento do alívio, nada de "apagar de vez" em destaque: isso fica na aba Lixeira, com
        confirmação. Mesma ordem do Desinstalar: Desfazer · Ver na Lixeira · Procurar de novo */
-    acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('fxTrash'), disabled: !!busy, onclick: () => { K.sound.plop(); setTab('lixeira'); } }, 'Ver na Lixeira'));
+    acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('fxTrash'), disabled: !!busy, onclick: () => { K.sound.plop(); setTab('lixeira'); } }, K.t('Ver na Lixeira')));
     acts.appendChild(K.el('button', { class: 'btn ghost', type: 'button', html: K.icon('cycle'), disabled: !!busy,
-      onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, 'Procurar de novo'));
-    const sticker = (S.sandbox || r.caixaDeAreia ? 'modo de teste · Lixeira de mentira · ' : '') + `feito às ${K.fmt.time(d.at)}`;
+      onclick: () => { if (kind === 'suj') scanSujeira(); else search(kind); } }, K.t('Procurar de novo')));
+    const sticker = (S.sandbox || r.caixaDeAreia ? K.t('modo de teste · Lixeira de mentira · ') : '') + K.t('feito às {0}', K.fmt.time(d.at));
     const sum = K.el('section', { class: 'card gold fx-sum fx-done pop-in' + (face === 'worried' ? ' is-sad' : '') },
       ...(face === 'joy' ? sparkles(4) : []), art,
       K.el('div', { class: 'fx-sum-text' },
@@ -1692,8 +1692,8 @@
     /* o que foi, por tipo (Sujeira, com os nomes dos arquivos de Downloads) ou a lista (arquivos) */
     if (moved.length && !d.undo) {
       const box = K.el('section', { class: 'card fx-moved pop-in', style: { animationDelay: '90ms' } },
-        K.el('div', { class: 'fx-moved-head' }, K.el('h3', null, d.purge && d.purge.res && d.purge.res.ok ? 'O que foi apagado' : 'O que foi pra Lixeira'),
-          K.el('span', { class: 'muted' }, plural(moved.length, 'item', 'itens'))));
+        K.el('div', { class: 'fx-moved-head' }, K.el('h3', null, d.purge && d.purge.res && d.purge.res.ok ? K.t('O que foi apagado') : K.t('O que foi pra Lixeira')),
+          K.el('span', { class: 'muted' }, plural(moved.length, K.t('item'), K.t('itens')))));
       if (kind === 'suj') {
         const ul = K.el('ul', { class: 'fx-cf' });
         for (const id of CAT_ORDER) {
@@ -1702,7 +1702,7 @@
             K.el('span', { class: 'fx-cf-name' }, catInfo(id).titulo), K.el('b', { class: 'num' }, fmtB(d.byCat[id]))));
         }
         box.appendChild(ul);
-        if (dlMoved.length) box.append(K.el('p', { class: 'fx-cf-t' }, 'Seus arquivos de Downloads:'), fileList(dlMoved, 8));
+        if (dlMoved.length) box.append(K.el('p', { class: 'fx-cf-t' }, K.t('Seus arquivos de Downloads:')), fileList(dlMoved, 8));
       } else {
         box.appendChild(fileList(info, 8));
       }
@@ -1711,15 +1711,15 @@
 
     /* falhas, sempre com o motivo */
     const failBlocks = [];
-    if (fails.length) failBlocks.push(failList(`${plural(fails.length, 'item não foi', 'itens não foram')} pra Lixeira`, fails));
-    if (d.undo && d.undo.res && d.undo.res.falhas && d.undo.res.falhas.length) failBlocks.push(failList('Não voltou pro lugar', d.undo.res.falhas));
-    if (d.undo && d.undo.err) failBlocks.push(errLine('Não consegui desfazer', d.undo.err));
-    if (d.purge && d.purge.res && d.purge.res.falhas && d.purge.res.falhas.length) failBlocks.push(failList('Não foi apagado', d.purge.res.falhas));
-    if (d.purge && d.purge.err) failBlocks.push(errLine('Não consegui apagar de vez', d.purge.err));
+    if (fails.length) failBlocks.push(failList(K.t('{0} pra Lixeira', plural(fails.length, K.t('item não foi'), K.t('itens não foram'))), fails));
+    if (d.undo && d.undo.res && d.undo.res.falhas && d.undo.res.falhas.length) failBlocks.push(failList(K.t('Não voltou pro lugar'), d.undo.res.falhas));
+    if (d.undo && d.undo.err) failBlocks.push(errLine(K.t('Não consegui desfazer'), d.undo.err));
+    if (d.purge && d.purge.res && d.purge.res.falhas && d.purge.res.falhas.length) failBlocks.push(failList(K.t('Não foi apagado'), d.purge.res.falhas));
+    if (d.purge && d.purge.err) failBlocks.push(errLine(K.t('Não consegui apagar de vez'), d.purge.err));
     for (const f of failBlocks) V.panel.appendChild(f);
     if ((files || dlMoved.length) && moved.length && !d.undo && !d.purge) {
       V.panel.appendChild(K.el('div', { class: 'tip fx-note', html: K.icon('info') },
-        K.el('p', null, 'Mudou de ideia? Na aba Lixeira dá pra devolver cada item pro lugar.')));
+        K.el('p', null, K.t('Mudou de ideia? Na aba Lixeira dá pra devolver cada item pro lugar.'))));
     }
   }
 
@@ -1727,14 +1727,14 @@
     const ul = K.el('ul', { class: 'fx-fails' });
     fails.slice(0, 12).forEach((f) => ul.appendChild(K.el('li', null,
       K.el('span', { class: 'fx-fail-ic', html: K.icon('info') }),
-      K.el('span', { class: 'fx-fail-name' }, vis(f.nome) || 'Item'),
+      K.el('span', { class: 'fx-fail-name' }, vis(f.nome) || K.t('Item')),
       K.el('span', { class: 'fx-fail-why' }, why(f.motivo)))));
-    if (fails.length > 12) ul.appendChild(K.el('li', { class: 'muted' }, `e mais ${plural(fails.length - 12, 'item', 'itens')}`));
+    if (fails.length > 12) ul.appendChild(K.el('li', { class: 'muted' }, K.t('e mais {0}', plural(fails.length - 12, K.t('item'), K.t('itens')))));
     return K.el('section', { class: 'card fx-failcard pop-in' }, K.el('h3', null, title), ul);
   }
 
   function errLine(title, msg) {
-    return K.el('div', { class: 'error-box fx-clean-err', role: 'alert' }, K.el('b', null, title + '. '), 'O motivo: ' + why(msg) + '.');
+    return K.el('div', { class: 'error-box fx-clean-err', role: 'alert' }, K.el('b', null, title + '. '), K.t('O motivo: ') + why(msg) + '.');
   }
 
   async function undoKind(kind) {
@@ -1778,19 +1778,19 @@
       const files = kind !== 'suj' || dl.length > 0;
       const n = ids.length;
       let text;
-      if (kind !== 'suj') text = `Isso tira da Lixeira ${n === 1 ? 'o arquivo' : `os ${K.fmt.num(n)} arquivos`} que você acabou de mandar. Depois disso, só um backup (como o Time Machine) traz de volta.`;
-      else if (!dl.length) text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que eu acabei de mandar. São caches e registros: os apps recriam o que precisarem.`;
+      if (kind !== 'suj') text = K.t('Isso tira da Lixeira {0} que você acabou de mandar. Depois disso, só um backup (como o Time Machine) traz de volta.', n === 1 ? K.t('o arquivo') : K.t('os {0} arquivos', K.fmt.num(n)));
+      else if (!dl.length) text = K.t('Isso tira da Lixeira {0} que eu acabei de mandar. São caches e registros: os apps recriam o que precisarem.', n === 1 ? K.t('o item') : K.t('os {0} itens', K.fmt.num(n)));
       else {
-        const mine = dl.length === n ? (n === 1 ? 'É um arquivo seu' : 'São arquivos seus') : `${dl.length === 1 ? 'Um deles é arquivo seu' : `${K.fmt.num(dl.length)} deles são arquivos seus`}`;
-        text = `Isso tira da Lixeira ${n === 1 ? 'o item' : `os ${K.fmt.num(n)} itens`} que eu acabei de mandar. ${mine} de Downloads: depois disso, só um backup (como o Time Machine) traz de volta.`;
+        const mine = dl.length === n ? (n === 1 ? K.t('É um arquivo seu') : K.t('São arquivos seus')) : `${dl.length === 1 ? K.t('Um deles é arquivo seu') : K.t('{0} deles são arquivos seus', K.fmt.num(dl.length))}`;
+        text = K.t('Isso tira da Lixeira {0} que eu acabei de mandar. {1} de Downloads: depois disso, só um backup (como o Time Machine) traz de volta.', n === 1 ? K.t('o item') : K.t('os {0} itens', K.fmt.num(n)), mine);
       }
       const ok = await K.confirm({
-        title: `Apagar de vez ${fmtB(bytes)}?`,
+        title: K.t('Apagar de vez {0}?', fmtB(bytes)),
         text,
-        body: dl.length ? [K.el('p', { class: 'fx-cf-t' }, dl.length === 1 ? 'O arquivo seu que some de vez:' : 'Seus arquivos que somem de vez:'), fileList(dl)] : null,
-        note: { tone: 'crit', icon: 'alert', text: 'Não dá pra desfazer. O resto da sua Lixeira fica como está.' },
-        ok: 'Apagar de vez', cancel: 'Deixar na Lixeira', tone: 'danger', icon: 'flame',
-        ack: files ? 'Entendi: não dá pra desfazer' : null,
+        body: dl.length ? [K.el('p', { class: 'fx-cf-t' }, dl.length === 1 ? K.t('O arquivo seu que some de vez:') : K.t('Seus arquivos que somem de vez:')), fileList(dl)] : null,
+        note: { tone: 'crit', icon: 'alert', text: K.t('Não dá pra desfazer. O resto da sua Lixeira fica como está.') },
+        ok: K.t('Apagar de vez'), cancel: K.t('Deixar na Lixeira'), tone: 'danger', icon: 'flame',
+        ack: files ? K.t('Entendi: não dá pra desfazer') : null,
       });
       if (!ok) return;
     }
@@ -1818,7 +1818,7 @@
     L.again = false;
     if (mounted() && S.tab === 'lixeira' && !L.info && !L.moved) paintTab();
     L.promise = Promise.allSettled([
-      withTimeout(K.api('cleanup.trashInfo'), 25000, 'a Lixeira demorou demais pra responder'),
+      withTimeout(K.api('cleanup.trashInfo'), 25000, K.t('a Lixeira demorou demais pra responder')),
       withTimeout(K.api('cleanup.moved'), 10000),
     ]).then(([a, b]) => {
       L.info = a.status === 'fulfilled' ? a.value : null;
@@ -1840,7 +1840,7 @@
   function paintLixeira() {
     const L = S.lix;
     if (!L.info && !L.moved && (L.loading || !L.at)) {
-      V.panel.appendChild(K.el('div', { class: 'loading' }, 'Olhando a Lixeira…'));
+      V.panel.appendChild(K.el('div', { class: 'loading' }, K.t('Olhando a Lixeira…')));
       return;
     }
     const info = L.info;
@@ -1858,15 +1858,15 @@
     const reading = !info && !L.infoErr;
     const total = K.el('div', { class: 'fx-lix-num' });
     if (reading) {
-      total.append(K.el('span', { class: 'loading fx-lix-reading' }, 'Medindo a Lixeira…'));
+      total.append(K.el('span', { class: 'loading fx-lix-reading' }, K.t('Medindo a Lixeira…')));
     } else if (legivel && info.itens) {
       total.append(K.el('span', { class: 'fx-lix-big num' }, fmtB(info.bytes)),
-        K.el('span', { class: 'fx-lix-lab' }, `na Lixeira, em ${plural(info.itens, 'item', 'itens')}`));
+        K.el('span', { class: 'fx-lix-lab' }, K.t('na Lixeira, em {0}', plural(info.itens, K.t('item'), K.t('itens')))));
     } else if (legivel) {
-      total.append(K.el('span', { class: 'fx-lix-big' }, 'Vazia'), K.el('span', { class: 'fx-lix-lab' }, 'nada esperando pra ser apagado'));
+      total.append(K.el('span', { class: 'fx-lix-big' }, K.t('Vazia')), K.el('span', { class: 'fx-lix-lab' }, K.t('nada esperando pra ser apagado')));
     } else {
-      total.append(K.el('span', { class: 'fx-lix-big no-read' }, 'sem leitura'),
-        K.el('span', { class: 'fx-lix-lab' }, 'o tamanho da Lixeira toda'));
+      total.append(K.el('span', { class: 'fx-lix-big no-read' }, K.t('sem leitura')),
+        K.el('span', { class: 'fx-lix-lab' }, K.t('o tamanho da Lixeira toda')));
     }
     /* Lixeira vazia: o mascote tira um cochilo no lugar da lata */
     const lixArt = K.el('div', { class: 'fx-lix-art' + (legivel && !info.itens ? ' is-sleep' : '') },
@@ -1874,57 +1874,57 @@
     const nowCard = K.el('section', { class: 'card fx-lix-now pop-in' },
       lixArt,
       K.el('div', { class: 'fx-lix-text' },
-        K.el('h2', null, 'Na Lixeira agora'),
+        K.el('h2', null, K.t('Na Lixeira agora')),
         total,
         K.el('ul', { class: 'fx-lix-facts' },
-          K.el('li', { html: K.icon('broom') }, still.length ? `${fmtB(fromFax)} disso veio do Kamurafy (${plural(still.length, 'item', 'itens')})` : 'Nada ali veio do Kamurafy'),
-          !legivel || info.itens ? K.el('li', { html: K.icon('info') }, 'Na Lixeira, ainda ocupa espaço no disco.') : null),
+          K.el('li', { html: K.icon('broom') }, still.length ? K.t('{0} disso veio do Kamurafy ({1})', fmtB(fromFax), plural(still.length, K.t('item'), K.t('itens'))) : K.t('Nada ali veio do Kamurafy')),
+          !legivel || info.itens ? K.el('li', { html: K.icon('info') }, K.t('Na Lixeira, ainda ocupa espaço no disco.')) : null),
         !legivel && !reading ? K.el('div', { class: 'tip fx-perm', html: K.icon('lock') },
-          K.el('p', null, L.infoErr ? `Não consegui olhar a Lixeira toda: ${String(L.infoErr).replace(/[.!\s]+$/, '')}. O que eu mandei, eu sei.`
-            : 'Pra ver a Lixeira toda, preciso de Acesso Total ao Disco. O que eu mandei, eu sei.'),
-          K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, 'Abrir Ajustes')) : null));
+          K.el('p', null, L.infoErr ? K.t('Não consegui olhar a Lixeira toda: {0}. O que eu mandei, eu sei.', String(L.infoErr).replace(/[.!\s]+$/, ''))
+            : K.t('Pra ver a Lixeira toda, preciso de Acesso Total ao Disco. O que eu mandei, eu sei.')),
+          K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, K.t('Abrir Ajustes'))) : null));
     const emptyNow = legivel && !info.itens;
     const busyEmpty = L.busy === 'empty';
     const dangerCard = K.el('section', { class: 'card fx-lix-danger pop-in', style: { animationDelay: '70ms' } },
-      K.el('div', { class: 'fx-lix-danger-head' }, K.el('span', { class: 'head-ic crit', html: K.icon('alert') }), K.el('h3', null, 'Esvaziar a Lixeira toda')),
-      K.el('p', null, 'Apaga de vez tudo, tenha vindo do Kamurafy ou não, inclusive de discos externos. Não dá pra desfazer.'),
+      K.el('div', { class: 'fx-lix-danger-head' }, K.el('span', { class: 'head-ic crit', html: K.icon('alert') }), K.el('h3', null, K.t('Esvaziar a Lixeira toda'))),
+      K.el('p', null, K.t('Apaga de vez tudo, tenha vindo do Kamurafy ou não, inclusive de discos externos. Não dá pra desfazer.')),
       K.el('button', { class: 'btn danger', type: 'button', html: K.icon('flame'), disabled: emptyNow || !!L.busy, onclick: () => { emptyTrash(); } },
-        busyEmpty ? 'Esvaziando…' : emptyNow ? 'A Lixeira já está vazia' : 'Esvaziar a Lixeira toda'),
-      K.el('span', { class: 'fx-lix-danger-note muted' }, 'Na primeira vez, o macOS pode pedir permissão.'));
+        busyEmpty ? K.t('Esvaziando…') : emptyNow ? K.t('A Lixeira já está vazia') : K.t('Esvaziar a Lixeira toda')),
+      K.el('span', { class: 'fx-lix-danger-note muted' }, K.t('Na primeira vez, o macOS pode pedir permissão.')));
     V.panel.appendChild(K.el('div', { class: 'fx-lix-top' }, nowCard, dangerCard));
     if (lixArt.classList.contains('is-sleep')) addMascot(lixArt, 112, { face: 'sleep', pct: 100 });
 
     /* o que o Kamurafy mandou (Faxina e Desinstalar): "Lixeira" sozinha é só a do macOS */
     const head = K.el('div', { class: 'fx-lix-list-head' },
-      K.el('div', null, K.el('h2', null, 'O que o Kamurafy mandou'),
-        K.el('p', null, 'Fica aqui até a Lixeira ser esvaziada. Dá pra devolver cada item pro lugar.')));
+      K.el('div', null, K.el('h2', null, K.t('O que o Kamurafy mandou')),
+        K.el('p', null, K.t('Fica aqui até a Lixeira ser esvaziada. Dá pra devolver cada item pro lugar.'))));
     if (still.length) {
       head.appendChild(K.el('div', { class: 'fx-lix-list-act' },
         K.el('button', { class: 'btn small', type: 'button', html: K.icon('fxUndo'), disabled: !!L.busy, onclick: () => { restoreMoved(still.map((m) => m.id)); } },
-          still.length === 1 ? 'Devolver' : 'Devolver tudo'),
+          still.length === 1 ? K.t('Devolver') : K.t('Devolver tudo')),
         K.el('button', { class: 'btn small danger', type: 'button', html: K.icon('flame'), disabled: !!L.busy, onclick: () => { purgeMoved(still.map((m) => m.id)); } },
-          'Apagar de vez tudo isso')));
+          K.t('Apagar de vez tudo isso'))));
     }
     const listCard = K.el('section', { class: 'card fx-lix-list pop-in', style: { animationDelay: '120ms' } }, head);
-    if (L.movedErr && !L.moved) listCard.appendChild(K.errorCard({ compact: true, title: 'Não consegui ler a lista', reason: L.movedErr, retry: () => { L.moved = null; L.movedErr = null; loadLixeira(); paintTab(); } }));
-    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, 'Nada que eu mandei pra Lixeira ainda.'));
+    if (L.movedErr && !L.moved) listCard.appendChild(K.errorCard({ compact: true, title: K.t('Não consegui ler a lista'), reason: L.movedErr, retry: () => { L.moved = null; L.movedErr = null; loadLixeira(); paintTab(); } }));
+    else if (!moved.length) listCard.appendChild(K.el('div', { class: 'empty' }, K.t('Nada que eu mandei pra Lixeira ainda.')));
     else {
       /* o que ainda está na Lixeira vem primeiro; o que já saiu fica recolhido (é só histórico) */
       const gone = moved.filter((m) => !m.naLixeira);
       const rows = still.concat(L.showGone ? gone : []);
-      if (!still.length) listCard.appendChild(K.el('div', { class: 'empty fx-lix-none' }, 'Nada do que eu mandei continua na Lixeira agora.'));
+      if (!still.length) listCard.appendChild(K.el('div', { class: 'empty fx-lix-none' }, K.t('Nada do que eu mandei continua na Lixeira agora.')));
       const ul = K.el('ul', { class: 'fx-items fx-lix-items' });
       rows.slice(0, L.shown).forEach((m) => ul.appendChild(movedRow(m)));
       if (rows.length > L.shown) {
         ul.appendChild(K.el('li', { class: 'fx-more' }, K.el('button', { class: 'btn small', type: 'button',
-          onclick: () => { K.sound.tick(); L.shown += PAGE * 2; paintTab(); } }, `Mostrar mais ${K.fmt.num(Math.min(rows.length - L.shown, PAGE * 2))}`)));
+          onclick: () => { K.sound.tick(); L.shown += PAGE * 2; paintTab(); } }, K.t('Mostrar mais {0}', K.fmt.num(Math.min(rows.length - L.shown, PAGE * 2))))));
       }
       if (rows.length) listCard.appendChild(ul);
       if (gone.length) {
         listCard.appendChild(K.el('div', { class: 'fx-lix-gone' },
           K.el('button', { class: 'btn small ghost', type: 'button', html: K.icon(L.showGone ? 'fxChevron' : 'clock'), 'aria-expanded': String(!!L.showGone),
             onclick: () => { K.sound.tick(); L.showGone = !L.showGone; paintTab(); } },
-          L.showGone ? 'Esconder o que já saiu da Lixeira' : `Ver o que já saiu da Lixeira (${K.fmt.num(gone.length)})`)));
+          L.showGone ? K.t('Esconder o que já saiu da Lixeira') : K.t('Ver o que já saiu da Lixeira ({0})', K.fmt.num(gone.length)))));
       }
     }
     V.panel.appendChild(listCard);
@@ -1932,15 +1932,15 @@
 
   function movedRow(m) {
     const L = S.lix;
-    const cat = CATS[m.categoria] ? catInfo(m.categoria).titulo : m.categoria === 'grandes' ? 'Arquivo grande' : m.categoria === 'duplicados' ? 'Cópia repetida' : 'Espaço';
+    const cat = CATS[m.categoria] ? catInfo(m.categoria).titulo : m.categoria === 'grandes' ? K.t('Arquivo grande') : m.categoria === 'duplicados' ? K.t('Cópia repetida') : K.t('Espaço');
     const tags = K.el('span', { class: 'fx-tags' }, tag('plain', null, cat));
-    if (!m.naLixeira) tags.appendChild(tag('none', 'info', 'já saiu da Lixeira', 'Foi devolvido, apagado ou a Lixeira foi esvaziada.'));
+    if (!m.naLixeira) tags.appendChild(tag('none', 'info', K.t('já saiu da Lixeira'), K.t('Foi devolvido, apagado ou a Lixeira foi esvaziada.')));
     if (tricky(m.nome) || tricky(m.original)) {
-      tags.appendChild(tag('warn', 'alert', 'nome disfarçado', 'O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.'));
+      tags.appendChild(tag('warn', 'alert', K.t('nome disfarçado'), K.t('O nome tem um caractere invisível que troca a ordem das letras. Mostro um � no lugar.')));
     }
     const lines = [K.el('span', { class: 'fx-item-top' }, K.el('span', { class: 'fx-item-name' }, vis(m.nome)), tags),
       K.el('span', { class: 'fx-item-path', title: vis(m.original) }, vis(m.original)),
-      K.el('span', { class: 'fx-item-meta' }, `mandado ${quando(m.t) || ''}${isNum(m.t) ? ', às ' + K.fmt.time(m.t) : ''}`)];
+      K.el('span', { class: 'fx-item-meta' }, `mandado ${quando(m.t) || ''}${isNum(m.t) ? K.t(', às ') + K.fmt.time(m.t) : ''}`)];
     const acts = K.el('span', { class: 'fx-row-acts' });
     const row = K.el('li', { class: 'fx-item fx-moved-row' + (m.naLixeira ? '' : ' is-gone') },
       K.el('span', { class: 'fx-item-ic', 'aria-hidden': 'true', html: K.icon(typeIcon(m)) }),
@@ -1949,9 +1949,9 @@
       acts);
     if (m.naLixeira) {
       acts.append(
-        K.el('button', { class: 'btn small', type: 'button', html: K.icon('fxUndo'), disabled: !!L.busy, title: 'Devolver pro lugar de onde saiu', onclick: () => { restoreMoved([m.id]); } }, 'Devolver'),
-        K.el('button', { class: 'fx-reveal danger', type: 'button', html: K.icon('flame'), disabled: !!L.busy, title: 'Apagar de vez', 'aria-label': `Apagar ${vis(m.nome)} de vez`, onclick: () => { purgeMoved([m.id]); } }),
-        K.el('button', { class: 'fx-reveal', type: 'button', html: K.icon('fxFinder'), title: 'Mostrar no Finder', 'aria-label': `Mostrar ${vis(m.nome)} no Finder`, onclick: () => { revealItem(m.id, row); } }));
+        K.el('button', { class: 'btn small', type: 'button', html: K.icon('fxUndo'), disabled: !!L.busy, title: K.t('Devolver pro lugar de onde saiu'), onclick: () => { restoreMoved([m.id]); } }, K.t('Devolver')),
+        K.el('button', { class: 'fx-reveal danger', type: 'button', html: K.icon('flame'), disabled: !!L.busy, title: K.t('Apagar de vez'), 'aria-label': K.t('Apagar {0} de vez', vis(m.nome)), onclick: () => { purgeMoved([m.id]); } }),
+        K.el('button', { class: 'fx-reveal', type: 'button', html: K.icon('fxFinder'), title: K.t('Mostrar no Finder'), 'aria-label': K.t('Mostrar {0} no Finder', vis(m.nome)), onclick: () => { revealItem(m.id, row); } }));
     }
     return row;
   }
@@ -1972,12 +1972,12 @@
       const failed = new Set(f.map((x) => x.id));
       const back = ((L.moved && L.moved.itens) || []).filter((m) => ids.includes(m.id) && !failed.has(m.id)).map((m) => m.original);
       if (r.ok) afterRestore(back);
-      if (r.ok && !f.length) { K.sound.tada(); lixMsg('good', 'fxUndo', `${r.ok === 1 ? 'Devolvi 1 item' : `Devolvi ${K.fmt.num(r.ok)} itens`} pro lugar (${fmtB(r.bytes)}).`); }
-      else if (r.ok) { K.sound.tick(); lixMsg('warn', 'alert', `Devolvi ${K.fmt.num(r.ok)}, mas ${plural(f.length, 'não voltou', 'não voltaram')}: ${failTxt(f)}.`); }
-      else { K.sound.oops(); lixMsg('crit', 'alert', `Não consegui devolver: ${failTxt(f) || 'o item já não estava na Lixeira'}.`); }
+      if (r.ok && !f.length) { K.sound.tada(); lixMsg('good', 'fxUndo', K.t('{0} pro lugar ({1}).', r.ok === 1 ? K.t('Devolvi 1 item') : K.t('Devolvi {0} itens', K.fmt.num(r.ok)), fmtB(r.bytes))); }
+      else if (r.ok) { K.sound.tick(); lixMsg('warn', 'alert', K.t('Devolvi {0}, mas {1}: {2}.', K.fmt.num(r.ok), plural(f.length, K.t('não voltou'), K.t('não voltaram')), failTxt(f))); }
+      else { K.sound.oops(); lixMsg('crit', 'alert', K.t('Não consegui devolver: {0}.', failTxt(f) || K.t('o item já não estava na Lixeira'))); }
     } catch (e) {
       K.sound.oops();
-      lixMsg('crit', 'alert', `Não consegui devolver: ${why(errMsg(e))}.`);
+      lixMsg('crit', 'alert', K.t('Não consegui devolver: {0}.', why(errMsg(e))));
     }
     L.busy = null;
     await loadLixeira();
@@ -1993,11 +1993,11 @@
       K.sound.plop();
       const one = items.length === 1 ? items[0] : null;
       const ok = await K.confirm({
-        title: one ? 'Apagar de vez?' : `Apagar de vez ${fmtB(bytes)}?`,
-        text: one ? `“${inl(one.nome)}” (${fmtB(one.bytes)}) sai da Lixeira pra sempre.` : `${plural(items.length, 'item sai', 'itens saem')} da Lixeira pra sempre. O resto dela fica como está.`,
-        note: { tone: 'crit', icon: 'alert', text: 'Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.' },
-        ok: 'Apagar de vez', cancel: 'Deixar na Lixeira', tone: 'danger', icon: 'flame',
-        ack: items.some((m) => !CATS[m.categoria] || m.categoria === 'downloads') ? 'Entendi: não dá pra desfazer' : null,
+        title: one ? K.t('Apagar de vez?') : K.t('Apagar de vez {0}?', fmtB(bytes)),
+        text: one ? K.t('“{0}” ({1}) sai da Lixeira pra sempre.', inl(one.nome), fmtB(one.bytes)) : K.t('{0} da Lixeira pra sempre. O resto dela fica como está.', plural(items.length, K.t('item sai'), K.t('itens saem'))),
+        note: { tone: 'crit', icon: 'alert', text: K.t('Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.') },
+        ok: K.t('Apagar de vez'), cancel: K.t('Deixar na Lixeira'), tone: 'danger', icon: 'flame',
+        ack: items.some((m) => !CATS[m.categoria] || m.categoria === 'downloads') ? K.t('Entendi: não dá pra desfazer') : null,
       });
       if (!ok) return;
     }
@@ -2006,13 +2006,13 @@
     try {
       const r = await K.api('cleanup.purge', { ids, confirmado: true });
       const f = (r && r.falhas) || [];
-      if (r.ok && !f.length) { K.sound.tada(); lixMsg('good', 'check', `Apagado de vez: ${fmtB(r.bytes)} livres no disco.`); }
-      else if (r.ok) { K.sound.tick(); lixMsg('warn', 'alert', `Apaguei ${K.fmt.num(r.ok)}, mas ${plural(f.length, 'ficou', 'ficaram')}: ${failTxt(f)}.`); }
-      else if (f.length) { K.sound.oops(); lixMsg('crit', 'alert', `Não consegui apagar: ${failTxt(f)}.`); }
-      else lixMsg('', 'info', 'Isso já não estava mais na Lixeira.');
+      if (r.ok && !f.length) { K.sound.tada(); lixMsg('good', 'check', K.t('Apagado de vez: {0} livres no disco.', fmtB(r.bytes))); }
+      else if (r.ok) { K.sound.tick(); lixMsg('warn', 'alert', K.t('Apaguei {0}, mas {1}: {2}.', K.fmt.num(r.ok), plural(f.length, K.t('ficou'), K.t('ficaram')), failTxt(f))); }
+      else if (f.length) { K.sound.oops(); lixMsg('crit', 'alert', K.t('Não consegui apagar: {0}.', failTxt(f))); }
+      else lixMsg('', 'info', K.t('Isso já não estava mais na Lixeira.'));
     } catch (e) {
       K.sound.oops();
-      lixMsg('crit', 'alert', `Não consegui apagar: ${why(errMsg(e))}.`);
+      lixMsg('crit', 'alert', K.t('Não consegui apagar: {0}.', why(errMsg(e))));
     }
     L.busy = null;
     await loadLixeira();
@@ -2025,13 +2025,13 @@
     const info = L.info;
     if (!opts.semConfirmar) {
       K.sound.plop();
-      const size = info && info.legivel ? ` (${fmtB(info.bytes)}, ${plural(info.itens || 0, 'item', 'itens')})` : '';
+      const size = info && info.legivel ? ` (${fmtB(info.bytes)}, ${plural(info.itens || 0, K.t('item'), K.t('itens'))})` : '';
       const ok = await K.confirm({
-        title: 'Esvaziar a Lixeira toda?',
-        text: `Isso apaga de vez TUDO que está na Lixeira${size}, tenha vindo do Kamurafy ou não, inclusive de discos externos.`,
-        note: { tone: 'crit', icon: 'alert', text: 'Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.' },
-        ok: 'Esvaziar tudo', cancel: 'Agora não', tone: 'danger', icon: 'fxTrash', mascot: 'worried',
-        ack: 'Entendi: apaga tudo e não tem volta',
+        title: K.t('Esvaziar a Lixeira toda?'),
+        text: K.t('Isso apaga de vez TUDO que está na Lixeira{0}, tenha vindo do Kamurafy ou não, inclusive de discos externos.', size),
+        note: { tone: 'crit', icon: 'alert', text: K.t('Não dá pra desfazer. Depois disso, só um backup (como o Time Machine) traz de volta.') },
+        ok: K.t('Esvaziar tudo'), cancel: K.t('Agora não'), tone: 'danger', icon: 'fxTrash', mascot: 'worried',
+        ack: K.t('Entendi: apaga tudo e não tem volta'),
       });
       if (!ok) return;
     }
@@ -2040,10 +2040,10 @@
     try {
       await K.api('cleanup.emptyTrash', { confirmado: true });
       K.sound.tada();
-      lixMsg('good', 'sparkle', 'Lixeira vazia! O espaço voltou pro disco.');
+      lixMsg('good', 'sparkle', K.t('Lixeira vazia! O espaço voltou pro disco.'));
     } catch (e) {
       K.sound.oops();
-      lixMsg('crit', 'alert', `A Lixeira não foi esvaziada: ${errMsg(e)}`);
+      lixMsg('crit', 'alert', K.t('A Lixeira não foi esvaziada: {0}', errMsg(e)));
     }
     L.busy = null;
     await loadLixeira();
@@ -2076,11 +2076,11 @@
   window.addEventListener('kamurafy:limpou', (e) => {
     const d = (e && e.detail) || {};
     if (d.origem === 'faxina' || !Array.isArray(d.caminhos)) return;
-    pruneOthers(null, d.caminhos.map(String).filter(Boolean), 'Varredura');
+    pruneOthers(null, d.caminhos.map(String).filter(Boolean), K.t('Varredura'));
   });
 
   K.pages.faxina = {
-    title: 'Espaço',
+    title: K.t('Espaço'),
     async render(el) {
       host = el;
       V = {};

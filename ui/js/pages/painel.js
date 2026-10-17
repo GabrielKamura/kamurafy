@@ -24,9 +24,9 @@
 
   /* processador alto um instante não é defeito: nunca vermelho, no máximo "a todo vapor" */
   const CPU_ZONES = [
-    { to: 60, tone: 'good', label: 'Tranquilo' },
-    { to: 90, tone: 'warn', label: 'Trabalhando' },
-    { to: 100, tone: 'serious', label: 'A todo vapor' },
+    { to: 60, tone: 'good', label: K.t('Tranquilo') },
+    { to: 90, tone: 'warn', label: K.t('Trabalhando') },
+    { to: 100, tone: 'serious', label: K.t('A todo vapor') },
   ];
   const DIRT_WAIT = 2500;    // a olhada na sujeira começa depois das leituras rápidas do começo
   const DIRT_AGE = 120000;   // reaproveita a olhada (da Varredura ou daqui) por 2 min
@@ -36,26 +36,26 @@
 
   const THERMAL_ORDER = ['normal', 'morno', 'quente', 'critico'];
   const THERMAL = {
-    normal: { label: 'Fresco', tone: 'good', icon: 'snow',
-      text: 'Nada está segurando o desempenho.' },
-    morno: { label: 'Morno', tone: 'warn', icon: 'thermo',
-      text: 'Comum com o Mac trabalhando ou carregando.' },
-    quente: { label: 'Quente', tone: 'serious', icon: 'flame',
-      text: 'O macOS já segura o processador pra esfriar. Deixe as saídas de ar livres.' },
-    critico: { label: 'Crítico', tone: 'crit', icon: 'flame',
-      text: 'O Mac fica bem mais lento pra se proteger. Feche o que estiver pesado.' },
+    normal: { label: K.t('Fresco'), tone: 'good', icon: 'snow',
+      text: K.t('Nada está segurando o desempenho.') },
+    morno: { label: K.t('Morno'), tone: 'warn', icon: 'thermo',
+      text: K.t('Comum com o Mac trabalhando ou carregando.') },
+    quente: { label: K.t('Quente'), tone: 'serious', icon: 'flame',
+      text: K.t('O macOS já segura o processador pra esfriar. Deixe as saídas de ar livres.') },
+    critico: { label: K.t('Crítico'), tone: 'crit', icon: 'flame',
+      text: K.t('O Mac fica bem mais lento pra se proteger. Feche o que estiver pesado.') },
   };
 
   const PRESSURE = {
-    normal: { label: 'Pressão normal', tone: 'good', icon: 'check',
-      text: 'Tem memória de sobra.' },
-    atencao: { label: 'Pressão alta', tone: 'warn', icon: 'eye',
-      text: 'O macOS já usa o disco pra dar conta. Fechar abas e apps pesados alivia.' },
-    critica: { label: 'Pressão crítica', tone: 'crit', icon: 'alert',
-      text: 'Falta memória. Feche o que não estiver usando.' },
+    normal: { label: K.t('Pressão normal'), tone: 'good', icon: 'check',
+      text: K.t('Tem memória de sobra.') },
+    atencao: { label: K.t('Pressão alta'), tone: 'warn', icon: 'eye',
+      text: K.t('O macOS já usa o disco pra dar conta. Fechar abas e apps pesados alivia.') },
+    critica: { label: K.t('Pressão crítica'), tone: 'crit', icon: 'alert',
+      text: K.t('Falta memória. Feche o que não estiver usando.') },
   };
 
-  const MAC_NAMES = { 11: 'Big Sur', 12: 'Monterey', 13: 'Ventura', 14: 'Sonoma', 15: 'Sequoia', 26: 'Tahoe' };
+  const MAC_NAMES = { 11: K.t('Big Sur'), 12: K.t('Monterey'), 13: K.t('Ventura'), 14: K.t('Sonoma'), 15: K.t('Sequoia'), 26: K.t('Tahoe') };
 
   /* ---------- formatação ---------- */
 
@@ -63,13 +63,13 @@
       telas (K.fmt.mem). Disco usa K.fmt.bytes (base 10). */
   const mem = (v, casas) => K.fmt.mem(v, casas);
   /* começa assim, apagado, até a primeira leitura (nunca um travessão preto) */
-  const WAIT = 'medindo…';
+  const WAIT = K.t('medindo…');
   const pctTxt = (v) => (isNum(v) ? K.fmt.pct(v, v > 0 && v < 10 ? 1 : 0) : '—');
   const pct0 = (v) => (isNum(v) ? K.fmt.pct(v, 0) : '—');
 
   /** "MacBook Pro (16-inch, 2019)" → "MacBook Pro 16″ (2019)" (o mesmo formato das outras telas) */
   function niceModel(m, id) {
-    if (!m) return id || 'Mac';
+    if (!m) return id || K.t('Mac');
     return K.fmt.model(m);
   }
   function macOSName(v) {
@@ -80,9 +80,9 @@
   function ago(sec) {
     sec = Math.round(sec);
     if (sec <= 1) return 'agora';
-    if (sec < 60) return `há ${sec} s`;
+    if (sec < 60) return K.t('há {0} s', sec);
     const m = Math.floor(sec / 60), s = sec % 60;
-    return s ? `há ${m} min ${s} s` : `há ${m} min`;
+    return s ? K.t('há {0} min {1} s', m, s) : K.t('há {0} min', m);
   }
 
   /* ---------- estado da página ---------- */
@@ -187,13 +187,13 @@
   function build(el, R) {
     /* cabeçalho */
     R.live = K.el('span', { class: 'live-badge', role: 'status' },
-      K.el('i', { class: 'live-dot' }), R.liveText = K.el('span', null, 'Ao vivo'));
+      K.el('i', { class: 'live-dot' }), R.liveText = K.el('span', null, K.t('Ao vivo')));
     R.pauseBtn = K.el('button', { class: 'btn small pn-pause', type: 'button', onclick: togglePause });
     paintPause(R);
     el.appendChild(K.el('header', { class: 'page-head', 'data-drag': true },
       K.el('div', null,
-        K.el('h1', null, 'Ao vivo'),
-        K.el('p', null, 'O seu Mac agora, a cada 2 segundos.')),
+        K.el('h1', null, K.t('Ao vivo')),
+        K.el('p', null, K.t('O seu Mac agora, a cada 2 segundos.'))),
       K.el('div', { class: 'pn-head-right' }, R.live, R.pauseBtn)));
 
     /* erro de leitura: o mesmo cartão das outras telas, na versão compacta (a página tenta de novo sozinha) */
@@ -204,8 +204,8 @@
     el.appendChild(grid);
 
     /* ----- processador ----- */
-    R.cpuSub = K.el('div', { class: 'card-sub no-read-sub' }, 'lendo o chip…');
-    const cpu = card('cpu', 'cpu', 'Processador', R.cpuSub, 0);
+    R.cpuSub = K.el('div', { class: 'card-sub no-read-sub' }, K.t('lendo o chip…'));
+    const cpu = card('cpu', 'cpu', K.t('Processador'), R.cpuSub, 0);
     R.cores = K.el('span', { class: 'sticker pn-cores', hidden: true });
     cpu.side.appendChild(R.cores);
 
@@ -220,45 +220,45 @@
         K.el('div', { class: 'pn-sn-note' }, note)));
     R.peak = K.el('span', { class: 'pn-mini-note num' }, '');
     const side = K.el('div', { class: 'pn-cpu-side' },
-      K.el('div', { class: 'pn-mini-head' }, K.el('span', { class: 'pn-mini-title' }, 'Últimos 2 minutos')),
+      K.el('div', { class: 'pn-mini-head' }, K.el('span', { class: 'pn-mini-title' }, K.t('Últimos 2 minutos'))),
       R.sparkEl,
-      K.el('div', { class: 'pn-axis' }, K.el('span', null, '−2 min'), R.peak, K.el('span', null, 'agora')),
-      K.el('div', { class: 'pn-mini-head pn-mt' }, K.el('span', { class: 'pn-mini-title' }, 'Quem está usando')),
+      K.el('div', { class: 'pn-axis' }, K.el('span', null, K.t('−2 min')), R.peak, K.el('span', null, K.t('agora'))),
+      K.el('div', { class: 'pn-mini-head pn-mt' }, K.el('span', { class: 'pn-mini-title' }, K.t('Quem está usando'))),
       R.splitEl,
       R.splitNums = K.el('div', { class: 'pn-split-nums', hidden: true },
-        splitNum('s1', 'user', 'Apps', 'seus programas'),
-        splitNum('s2', 'sys', 'Sistema', 'o próprio macOS'),
-        splitNum('idle', 'idle', 'Parado', 'folga pra usar')));
+        splitNum('s1', 'user', K.t('Apps'), K.t('seus programas')),
+        splitNum('s2', 'sys', K.t('Sistema'), K.t('o próprio macOS')),
+        splitNum('idle', 'idle', K.t('Parado'), K.t('folga pra usar'))));
     cpu.c.appendChild(K.el('div', { class: 'pn-cpu-body' },
-      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, 'Média do chip todo: 100% é todos os núcleos no máximo.')),
+      K.el('div', { class: 'pn-gauge-col' }, R.gaugeEl, R.cpuNote = K.el('p', { class: 'pn-note' }, K.t('Média do chip todo: 100% é todos os núcleos no máximo.'))),
       side));
 
     /* temperatura (estado térmico do macOS) */
     R.thermSteps = {};
-    const scale = K.el('div', { class: 'pn-therm-scale', role: 'list', 'aria-label': 'Escala de temperatura do macOS' });
+    const scale = K.el('div', { class: 'pn-therm-scale', role: 'list', 'aria-label': K.t('Escala de temperatura do macOS') });
     for (const k of THERMAL_ORDER) {
       const t = THERMAL[k];
       const s = K.el('span', { class: `pn-step ${t.tone}`, role: 'listitem', html: K.icon(t.icon) }, K.el('span', null, t.label));
       R.thermSteps[k] = s;
       scale.appendChild(s);
     }
-    R.thermText = K.el('p', { class: 'pn-therm-text' }, 'Perguntando ao macOS…');
+    R.thermText = K.el('p', { class: 'pn-therm-text' }, K.t('Perguntando ao macOS…'));
     cpu.c.appendChild(K.el('div', { class: 'pn-therm' },
       K.el('div', { class: 'pn-therm-head' },
         K.el('span', { class: 'pn-therm-ico', html: K.icon('thermo') }),
         K.el('div', { class: 'pn-therm-t' },
-          K.el('h3', null, 'Temperatura do Mac'),
+          K.el('h3', null, K.t('Temperatura do Mac')),
           R.thermText)),
       scale));
     grid.appendChild(cpu.c);
 
     /* ----- bateria (resumo): a saúde é o número grande; a carga vai numa linha menor ----- */
-    const bat = card('bat', 'battery', 'Bateria', null, 70);
+    const bat = card('bat', 'battery', K.t('Bateria'), null, 70);
     R.mascotEl = K.el('div', { class: 'pn-bat-m' });
     R.batHealthBig = K.el('div', { class: 'pn-big num no-read' }, WAIT);
-    R.batHealthLab = K.el('div', { class: 'stat-label' }, 'de saúde');
+    R.batHealthLab = K.el('div', { class: 'stat-label' }, K.t('de saúde'));
     R.batPill = K.el('div', { class: 'pn-pill' });
-    R.batState = K.el('div', { class: 'pn-bat-state' }, 'Lendo a bateria…');
+    R.batState = K.el('div', { class: 'pn-bat-state' }, K.t('Lendo a bateria…'));
     R.batSub = K.el('div', { class: 'pn-bat-sub' }, '');
     R.batCycles = K.el('div', { class: 'pn-kv-v num no-read' }, WAIT);
     R.batCyclesSub = K.el('div', { class: 'pn-kv-sub' }, '');
@@ -266,22 +266,22 @@
     R.batTempSub = K.el('div', { class: 'pn-kv-sub' }, '');
     R.batRows = K.el('div', { class: 'pn-bat-rows' },
       K.el('div', { class: 'pn-kv2' },
-        K.el('div', { class: 'pn-kv' }, K.el('div', { class: 'pn-kv-k' }, 'Ciclos'), R.batCycles, R.batCyclesSub),
-        K.el('div', { class: 'pn-kv' }, K.el('div', { class: 'pn-kv-k' }, 'Temperatura'), R.batTemp, R.batTempSub)));
+        K.el('div', { class: 'pn-kv' }, K.el('div', { class: 'pn-kv-k' }, K.t('Ciclos')), R.batCycles, R.batCyclesSub),
+        K.el('div', { class: 'pn-kv' }, K.el('div', { class: 'pn-kv-k' }, K.t('Temperatura')), R.batTemp, R.batTempSub)));
     R.batLink = K.el('button', {
       class: 'btn gold small pn-bat-link', type: 'button', html: K.icon('arrow'),
       onclick: () => { K.sound.plop(); location.hash = '#/bateria'; },
     });
-    R.batLink.insertBefore(K.el('span', null, 'Ver tudo da bateria'), R.batLink.firstChild);
+    R.batLink.insertBefore(K.el('span', null, K.t('Ver tudo da bateria')), R.batLink.firstChild);
     R.batRetry = K.el('button', {
       class: 'btn small gold pn-bat-retry', type: 'button', html: K.icon('cycle'), hidden: true,
-      onclick: () => { K.sound.plop(); txt(R.batState, 'Tentando de novo…'); if (S) pollBattery(S, true); },
-    }, 'Tentar de novo');
+      onclick: () => { K.sound.plop(); txt(R.batState, K.t('Tentando de novo…')); if (S) pollBattery(S, true); },
+    }, K.t('Tentar de novo'));
     /* a carga das últimas 24 h enche o cartão (sem vão amarelo embaixo de Ciclos e Temperatura) */
-    R.batChartEl = K.el('div', { class: 'pn-bat-chart' }, K.el('div', { class: 'loading pn-bat-chart-wait' }, 'Juntando a carga do dia…'));
+    R.batChartEl = K.el('div', { class: 'pn-bat-chart' }, K.el('div', { class: 'loading pn-bat-chart-wait' }, K.t('Juntando a carga do dia…')));
     R.batChart = K.el('div', { class: 'pn-bat-24' },
-      K.el('div', { class: 'pn-mini-head' }, K.el('span', { class: 'pn-mini-title' }, 'Carga em 24 h'),
-        K.el('span', { class: 'pn-bat-key' }, K.el('i', { 'aria-hidden': 'true' }), 'na tomada')),
+      K.el('div', { class: 'pn-mini-head' }, K.el('span', { class: 'pn-mini-title' }, K.t('Carga em 24 h')),
+        K.el('span', { class: 'pn-bat-key' }, K.el('i', { 'aria-hidden': 'true' }), K.t('na tomada'))),
       R.batChartEl);
     bat.c.appendChild(K.el('div', { class: 'pn-bat-body' },
       K.el('div', { class: 'pn-bat-hero' },
@@ -294,8 +294,8 @@
     grid.appendChild(bat.c);
 
     /* ----- memória ----- */
-    R.memSub = K.el('div', { class: 'card-sub' }, 'Lendo…');
-    const mm = card('mem', 'memory', 'Memória', R.memSub, 140);
+    R.memSub = K.el('div', { class: 'card-sub' }, K.t('Lendo…'));
+    const mm = card('mem', 'memory', K.t('Memória'), R.memSub, 140);
     R.memPill = K.el('div', { class: 'pn-pill' });
     mm.side.appendChild(R.memPill);
     R.memUsed = K.el('span', { class: 'pn-big num no-read' }, WAIT);
@@ -306,27 +306,27 @@
     R.swapText = K.el('div', { class: 'pn-kpi-sub' }, '');
     mm.c.appendChild(K.el('div', { class: 'pn-mem-top' },
       K.el('div', { class: 'pn-mem-used' },
-        K.el('div', { class: 'stat-label' }, 'Em uso agora'),
+        K.el('div', { class: 'stat-label' }, K.t('Em uso agora')),
         K.el('div', { class: 'pn-bigline' }, R.memUsed, R.memOf),
         R.pressText),
       K.el('div', { class: 'pn-kpis' },
         K.el('div', { class: 'pn-kpi' },
-          K.el('div', { class: 'pn-kpi-k', html: K.icon('sparkle') }, K.el('span', null, 'Pronta pra usar')),
+          K.el('div', { class: 'pn-kpi-k', html: K.icon('sparkle') }, K.el('span', null, K.t('Pronta pra usar'))),
           R.memReady,
-          K.el('div', { class: 'pn-kpi-sub' }, 'livre + cache que o macOS devolve')),
+          K.el('div', { class: 'pn-kpi-sub' }, K.t('livre + cache que o macOS devolve'))),
         K.el('div', { class: 'pn-kpi' },
-          K.el('div', { class: 'pn-kpi-k', html: K.icon('swap') }, K.el('span', null, 'Swap no disco')),
+          K.el('div', { class: 'pn-kpi-k', html: K.icon('swap') }, K.el('span', null, K.t('Swap no disco'))),
           R.swap,
           R.swapText))));
     R.memStackEl = K.el('div', { class: 'pn-memstack' });
     mm.c.appendChild(R.memStackEl);
     mm.c.appendChild(K.el('div', { class: 'tip pn-tip', html: K.icon('info') },
-      K.el('p', null, 'Não precisa “liberar RAM”: o macOS devolve o cache sozinho. Pouca memória livre é normal.')));
+      K.el('p', null, K.t('Não precisa “liberar RAM”: o macOS devolve o cache sozinho. Pouca memória livre é normal.'))));
     grid.appendChild(mm.c);
 
     /* ----- disco ----- */
-    R.diskName = K.el('div', { class: 'card-sub' }, 'Lendo…');
-    const dk = card('disk', 'disk', 'Disco', R.diskName, 210);
+    R.diskName = K.el('div', { class: 'card-sub' }, K.t('Lendo…'));
+    const dk = card('disk', 'disk', K.t('Disco'), R.diskName, 210);
     R.diskPill = K.el('div', { class: 'pn-pill' });
     dk.side.appendChild(R.diskPill);
     R.ringEl = K.el('div', { class: 'pn-ring' });
@@ -336,21 +336,21 @@
     dk.c.appendChild(K.el('div', { class: 'pn-disk-body' },
       R.ringEl,
       K.el('div', { class: 'pn-disk-stats' },
-        K.el('div', { class: 'stat-label' }, 'Livre pra usar'),
+        K.el('div', { class: 'stat-label' }, K.t('Livre pra usar')),
         K.el('div', { class: 'pn-bigline' }, R.diskFree),
         R.diskPurge,
         R.diskAvail)));
     /* ponte pra Faxina: uma estimativa que só lê (cleanup.scan), sem segurar o painel */
-    R.faxText = K.el('span', { class: 'pn-fax-sub' }, 'Vendo quanto dá pra liberar…');
+    R.faxText = K.el('span', { class: 'pn-fax-sub' }, K.t('Vendo quanto dá pra liberar…'));
     R.faxBtn = K.el('button', {
       class: 'btn small pn-fax-btn', type: 'button', html: K.icon('arrow'),
       onclick: () => { K.sound.plop(); location.hash = '#/faxina'; },
     });
-    R.faxBtnText = K.el('span', null, 'Abrir o Espaço');
+    R.faxBtnText = K.el('span', null, K.t('Abrir o Espaço'));
     R.faxBtn.insertBefore(R.faxBtnText, R.faxBtn.firstChild);
     R.fax = K.el('div', { class: 'pn-fax', dataset: { state: 'wait' } },
       K.el('span', { class: 'pn-fax-ic', html: K.icon('broom') }),
-      K.el('div', { class: 'pn-fax-t' }, K.el('b', null, 'Espaço'), R.faxText),
+      K.el('div', { class: 'pn-fax-t' }, K.el('b', null, K.t('Espaço')), R.faxText),
       R.faxBtn);
     dk.c.appendChild(R.fax);
     R.diskTip = K.el('p', null, '');
@@ -358,32 +358,32 @@
     grid.appendChild(dk.c);
 
     /* ----- sistema ----- */
-    const sy = card('sys', 'laptop', 'Este Mac', K.el('div', { class: 'card-sub' }, 'o que tem por baixo do capô'), 280);
+    const sy = card('sys', 'laptop', K.t('Este Mac'), K.el('div', { class: 'card-sub' }, K.t('o que tem por baixo do capô')), 280);
     const row = (icon, k, ref, subRef) => K.el('div', { class: 'pn-sys-row' },
       K.el('span', { class: 'pn-sys-ico', html: K.icon(icon) }),
       K.el('div', { class: 'pn-sys-t' },
         K.el('div', { class: 'pn-sys-k' }, k),
-        R[ref] = K.el('div', { class: 'pn-sys-v selectable no-read' }, 'lendo…'),
+        R[ref] = K.el('div', { class: 'pn-sys-v selectable no-read' }, K.t('lendo…')),
         subRef ? (R[subRef] = K.el('div', { class: 'pn-sys-sub selectable' }, '')) : null));
     sy.c.appendChild(K.el('div', { class: 'pn-sys-list' },
-      row('laptop', 'Modelo', 'model', 'modelId'),
-      row('cpu', 'Processador', 'chip', 'chipSub'),
-      row('memory', 'Memória', 'ram', null),
-      row('disk', 'Armazenamento', 'storage', 'storageSub'),
-      row('window', 'Sistema', 'os', null),
-      row('clock', 'Ligado há', 'uptime', 'uptimeSub')));
+      row('laptop', K.t('Modelo'), 'model', 'modelId'),
+      row('cpu', K.t('Processador'), 'chip', 'chipSub'),
+      row('memory', K.t('Memória'), 'ram', null),
+      row('disk', K.t('Armazenamento'), 'storage', 'storageSub'),
+      row('window', K.t('Sistema'), 'os', null),
+      row('clock', K.t('Ligado há'), 'uptime', 'uptimeSub')));
     R.upTip = K.el('div', { class: 'tip pn-tip pn-uptip', html: K.icon('moon'), hidden: true },
-      K.el('p', null, 'Mais de uma semana sem reiniciar. Reiniciar fecha processos esquecidos.'));
+      K.el('p', null, K.t('Mais de uma semana sem reiniciar. Reiniciar fecha processos esquecidos.')));
     sy.c.appendChild(R.upTip);
     grid.appendChild(sy.c);
   }
 
   /** leitura falhou: cartão de erro compacto (o mesmo desenho das outras telas), sem parênteses dentro de parênteses */
   function showError(R, msg) {
-    const m = String(msg == null ? '' : msg).trim().replace(/[.!\s]+$/, '') || 'o macOS não respondeu';
-    const text = `Não deu pra ler o Mac agora: ${m}. Tento de novo sozinho em instantes.`;
+    const m = String(msg == null ? '' : msg).trim().replace(/[.!\s]+$/, '') || K.t('o macOS não respondeu');
+    const text = K.t('Não deu pra ler o Mac agora: {0}. Tento de novo sozinho em instantes.', m);
     if (!R.errCard) {
-      R.errCard = K.errorCard({ compact: true, title: 'Sem leitura agora', text, retryLabel: 'Tentar agora',
+      R.errCard = K.errorCard({ compact: true, title: K.t('Sem leitura agora'), text, retryLabel: K.t('Tentar agora'),
         retry: () => { if (S && !S.dead) for (const j of S.jobs) j.kick(); } });
       R.error.appendChild(R.errCard);
     } else txt(R.errCard.querySelector('.kerr-text p'), text);
@@ -393,9 +393,9 @@
     const b = R.pauseBtn;
     const p = S && S.paused;
     b.innerHTML = K.icon(p ? 'play' : 'pause');
-    b.appendChild(K.el('span', null, p ? 'Continuar' : 'Pausar'));
+    b.appendChild(K.el('span', null, p ? K.t('Continuar') : K.t('Pausar')));
     b.setAttribute('aria-pressed', String(!!p));
-    b.title = p ? 'Voltar a ler o Mac ao vivo' : 'Congelar os números pra olhar com calma';
+    b.title = p ? K.t('Voltar a ler o Mac ao vivo') : K.t('Congelar os números pra olhar com calma');
   }
 
   function paintLive() {
@@ -403,7 +403,7 @@
     const mode = S.paused ? 'paused' : S.failing ? 'stale' : 'live';
     R.live.classList.toggle('paused', mode === 'paused');
     R.live.classList.toggle('stale', mode === 'stale');
-    txt(R.liveText, mode === 'paused' ? 'Pausado' : mode === 'stale' ? 'Sem leitura, tentando de novo' : 'Ao vivo');
+    txt(R.liveText, mode === 'paused' ? K.t('Pausado') : mode === 'stale' ? K.t('Sem leitura, tentando de novo') : K.t('Ao vivo'));
   }
 
   function togglePause() {
@@ -481,8 +481,8 @@
     const idle = usage != null ? Math.max(0, 100 - usage) : null;
     S.split.set((ch) => ch.update({
       segments: [
-        { name: 'Apps', value: user, color: 'var(--s1)', note: 'o que os seus programas pedem' },
-        { name: 'Sistema', value: sys, color: 'var(--s2)', note: 'o próprio macOS' },
+        { name: K.t('Apps'), value: user, color: 'var(--s1)', note: K.t('o que os seus programas pedem') },
+        { name: K.t('Sistema'), value: sys, color: 'var(--s2)', note: K.t('o próprio macOS') },
       ],
     }));
     R.splitNums.hidden = usage == null;   /* sem leitura: a barra vazia já diz; três "sem leitura" seguidos só poluem */
@@ -493,16 +493,16 @@
     const coresTxt = K.fmt.cores(c);
     const chip = c.chip || null;
     R.cpuSub.classList.remove('no-read-sub');
-    txt(R.cpuSub, chip || 'Chip não identificado');
+    txt(R.cpuSub, chip || K.t('Chip não identificado'));
     R.cores.hidden = !coresTxt;
     if (coresTxt) {
       /* o mesmo texto do "Este Mac" e da Varredura: núcleos de verdade, e as linhas de execução entre parênteses */
       txt(R.cores, coresTxt);
       R.cores.title = isNum(c.physicalCores) && isNum(c.cores) && c.cores > c.physicalCores
-        ? `Com Hyper-Threading, cada núcleo roda duas linhas: o Monitor de Atividade conta ${c.cores}.` : '';
+        ? K.t('Com Hyper-Threading, cada núcleo roda duas linhas: o Monitor de Atividade conta {0}.', c.cores) : '';
     }
-    if (usage != null && usage > 90) txt(R.cpuNote, 'Normal enquanto algo pesado roda.');
-    else txt(R.cpuNote, 'Média do chip todo: 100% é todos os núcleos no máximo.');
+    if (usage != null && usage > 90) txt(R.cpuNote, K.t('Normal enquanto algo pesado roda.'));
+    else txt(R.cpuNote, K.t('Média do chip todo: 100% é todos os núcleos no máximo.'));
   }
 
   function paintSpark() {
@@ -521,9 +521,9 @@
     if (ok.length >= SPARK_MIN) {
       const peak = Math.max(...ok.map((p) => p.v));
       const avg = ok.reduce((a, p) => a + p.v, 0) / ok.length;
-      txt(R.peak, `média ${pct0(avg)} · pico ${pct0(peak)}`);
+      txt(R.peak, K.t('média {0} · pico {1}', pct0(avg), pct0(peak)));
     } else {
-      txt(R.peak, ok.length ? 'juntando pontos…' : '');
+      txt(R.peak, ok.length ? K.t('juntando pontos…') : '');
     }
     S.spark.set((ch) => ch.update(values, { labels }));
   }
@@ -539,7 +539,7 @@
       if (on) R.thermSteps[k].setAttribute('aria-current', 'true');
       else R.thermSteps[k].removeAttribute('aria-current');
     }
-    txt(R.thermText, t ? t.text : 'O macOS não informou a temperatura agora.');
+    txt(R.thermText, t ? t.text : K.t('O macOS não informou a temperatura agora.'));
   }
 
   /* ---------- memória ---------- */
@@ -547,17 +547,17 @@
   function applyMemory(m) {
     const R = S.R;
     if (!m || !isNum(m.totalBytes)) {
-      txt(R.memSub, 'Não deu pra ler a memória');
+      txt(R.memSub, K.t('Não deu pra ler a memória'));
       tween(R.memUsed, null); txt(R.memOf, '');
       tween(R.memReady, null); tween(R.swap, null); txt(R.swapText, '');
       txt(R.pressText, '');
       pill(R.memPill, null, '');
-      S.memStack.set((ch) => ch.update({ segments: [], total: null, empty: 'O macOS não informou a memória agora. Tentando de novo…' }));
+      S.memStack.set((ch) => ch.update({ segments: [], total: null, empty: K.t('O macOS não informou a memória agora. Tentando de novo…') }));
       return;
     }
     const parts = [m.appBytes, m.wiredBytes, m.compressedBytes].filter(isNum);
     const used = isNum(m.usedBytes) ? m.usedBytes : parts.length ? parts.reduce((a, b) => a + b, 0) : null;
-    txt(R.memSub, `${mem(m.totalBytes, 0)} no total`);
+    txt(R.memSub, K.t('{0} no total', mem(m.totalBytes, 0)));
     tween(R.memUsed, used, (v) => mem(v));
     txt(R.memOf, `de ${mem(m.totalBytes, 0)}`);
 
@@ -568,24 +568,24 @@
     tween(R.swap, swap, (v) => (v === 0 ? 'nada' : mem(v)));
     const pr = m.pressure;
     const swapBig = swap != null && swap > 2 * 1024 ** 3;
-    txt(R.swapText, swap == null ? 'o macOS não informou'
-      : swap === 0 ? 'nada foi pro disco'
-        : swapBig && pr && pr !== 'normal' ? 'bastante: memória curta'
-          : 'um pouco é normal');
+    txt(R.swapText, swap == null ? K.t('o macOS não informou')
+      : swap === 0 ? K.t('nada foi pro disco')
+        : swapBig && pr && pr !== 'normal' ? K.t('bastante: memória curta')
+          : K.t('um pouco é normal'));
 
     const p = PRESSURE[pr];
     if (p) pill(R.memPill, p.tone, p.label, p.icon);
-    else pill(R.memPill, null, 'Pressão sem leitura', 'info');
-    txt(R.pressText, p ? p.text : 'O macOS não informou a pressão de memória agora.');
+    else pill(R.memPill, null, K.t('Pressão sem leitura'), 'info');
+    txt(R.pressText, p ? p.text : K.t('O macOS não informou a pressão de memória agora.'));
 
     S.memStack.set((ch) => ch.update({
       segments: [
         /* só cores da casa (verde é de status): cache é azul lavado porque é memória devolvível */
-        { name: 'Apps', value: m.appBytes, color: 'var(--s1)', note: 'o que os programas estão usando' },
-        { name: 'Fixa', value: m.wiredBytes, color: 'var(--ink-2)', note: 'o sistema não solta' },
-        { name: 'Comprimida', value: m.compressedBytes, color: 'var(--s2)', note: 'espremida pra caber mais' },
-        { name: 'Cache de arquivos', value: m.cachedBytes, color: 'var(--s1-wash)', note: 'o macOS devolve sozinho' },
-        { name: 'Livre', value: m.freeBytes, color: 'var(--panel)' },
+        { name: K.t('Apps'), value: m.appBytes, color: 'var(--s1)', note: K.t('o que os programas estão usando') },
+        { name: K.t('Fixa'), value: m.wiredBytes, color: 'var(--ink-2)', note: K.t('o sistema não solta') },
+        { name: K.t('Comprimida'), value: m.compressedBytes, color: 'var(--s2)', note: K.t('espremida pra caber mais') },
+        { name: K.t('Cache de arquivos'), value: m.cachedBytes, color: 'var(--s1-wash)', note: K.t('o macOS devolve sozinho') },
+        { name: K.t('Livre'), value: m.freeBytes, color: 'var(--panel)' },
       ],
       total: m.totalBytes,
     }));
@@ -596,8 +596,8 @@
   function applyDisk(d) {
     const R = S.R;
     if (!d || !isNum(d.totalBytes) || d.totalBytes <= 0) {
-      txt(R.diskName, 'Não deu pra ler o disco');
-      tween(R.diskFree, null); txt(R.diskPurge, ''); txt(R.diskAvail, ''); txt(R.diskTip, 'O macOS gosta de ter de 10 a 20% livres.');
+      txt(R.diskName, K.t('Não deu pra ler o disco'));
+      tween(R.diskFree, null); txt(R.diskPurge, ''); txt(R.diskAvail, ''); txt(R.diskTip, K.t('O macOS gosta de ter de 10 a 20% livres.'));
       pill(R.diskPill, null, '');
       S.ring.set((ch) => ch.update({ value: null, sub: '' }));
       return;
@@ -607,7 +607,7 @@
     const avail = isNum(d.availableBytes) ? d.availableBytes : free;
     const used = isNum(d.usedBytes) ? d.usedBytes : avail != null ? total - avail : null;
     const purge = free != null && avail != null ? Math.max(0, avail - free) : null;
-    txt(R.diskName, d.name || `Disco de ${K.fmt.bytes(total)}`);
+    txt(R.diskName, d.name || K.t('Disco de {0}', K.fmt.bytes(total)));
     R.diskName.title = d.name ? `${d.name} · ${K.fmt.bytes(total)}` : '';
 
     const key = [used, total].join('|');
@@ -615,23 +615,23 @@
       S.diskKey = key;
       S.ring.set((ch) => ch.update({
         value: used, max: total,
-        sub: used != null ? `${K.fmt.bytes(used)} de ${K.fmt.bytes(total)} ocupados` : '',
+        sub: used != null ? K.t('{0} de {1} ocupados', K.fmt.bytes(used), K.fmt.bytes(total)) : '',
       }));
     }
     /* o número principal é o mesmo da Varredura: o que dá pra usar (inclui o que o macOS libera) */
     tween(R.diskFree, avail, (v) => K.fmt.bytes(v));
-    txt(R.diskPurge, purge != null && purge >= 1e8 ? `Inclui ${K.fmt.bytes(purge)} que o macOS libera sozinho.` : '');
+    txt(R.diskPurge, purge != null && purge >= 1e8 ? K.t('Inclui {0} que o macOS libera sozinho.', K.fmt.bytes(purge)) : '');
     txt(R.diskAvail, '');
 
     const share = avail != null ? avail / total : null;
     if (share == null) pill(R.diskPill, null, '');
-    else if (share < 0.05) pill(R.diskPill, 'crit', 'Quase cheio', 'alert');
-    else if (share < 0.1) pill(R.diskPill, 'serious', 'Pouco espaço', 'alert');
-    else if (share < 0.2) pill(R.diskPill, 'warn', 'Enchendo', 'eye');
-    else pill(R.diskPill, 'good', 'Espaço de sobra', 'check');
-    R.diskPill.title = 'O macOS gosta de ter pelo menos 10% livres.';
-    txt(R.diskTip, share == null ? 'O macOS gosta de ter de 10 a 20% livres.'
-      : `O macOS gosta de ter de 10 a 20% livres. Aqui são ${K.fmt.num(share * 100, 0)}%.`);
+    else if (share < 0.05) pill(R.diskPill, 'crit', K.t('Quase cheio'), 'alert');
+    else if (share < 0.1) pill(R.diskPill, 'serious', K.t('Pouco espaço'), 'alert');
+    else if (share < 0.2) pill(R.diskPill, 'warn', K.t('Enchendo'), 'eye');
+    else pill(R.diskPill, 'good', K.t('Espaço de sobra'), 'check');
+    R.diskPill.title = K.t('O macOS gosta de ter pelo menos 10% livres.');
+    txt(R.diskTip, share == null ? K.t('O macOS gosta de ter de 10 a 20% livres.')
+      : K.t('O macOS gosta de ter de 10 a 20% livres. Aqui são {0}%.', K.fmt.num(share * 100, 0)));
   }
 
   /** estimativa da Faxina: caches, programação e registros (só lê; K.dirt mora na Varredura) */
@@ -655,21 +655,21 @@
     let state, text;
     if (sel == null) {
       state = 'none';
-      text = 'Você vê tudo antes e decide o que sai.';
+      text = K.t('Você vê tudo antes e decide o que sai.');
     } else if (sel >= 1e9) {
       state = 'tip';
-      text = partial ? `Dá pra liberar pelo menos ${gb} com segurança.` : `Dá pra liberar ${gb} com segurança.`;
+      text = partial ? K.t('Dá pra liberar pelo menos {0} com segurança.', gb) : K.t('Dá pra liberar {0} com segurança.', gb);
     } else if (sel >= 1e8) {
       state = 'ok';
-      text = `Só ${gb}: nada que pese no disco.`;
+      text = K.t('Só {0}: nada que pese no disco.', gb);
     } else {
       state = 'ok';
-      text = 'Quase nada sobrando agora.';
+      text = K.t('Quase nada sobrando agora.');
     }
     R.fax.dataset.state = state;
     txt(R.faxText, text);
     R.faxBtn.classList.toggle('gold', state === 'tip');
-    txt(R.faxBtnText, state === 'tip' ? 'Ver e limpar' : 'Abrir o Espaço');
+    txt(R.faxBtnText, state === 'tip' ? K.t('Ver e limpar') : K.t('Abrir o Espaço'));
   }
 
   /* ---------- sistema ---------- */
@@ -684,7 +684,7 @@
     const m = s.memory || {}, d = s.disk || {};
     K.readOr(R.ram, num(m.totalBytes), (v) => mem(v, 0));
     K.readOr(R.storage, num(d.totalBytes), (v) => K.fmt.bytes(v));
-    txt(R.storageSub, d.name ? `disco “${d.name}”` : '');
+    txt(R.storageSub, d.name ? K.t('disco “{0}”', d.name) : '');
     K.readOr(R.os, s.macOS || null, macOSName);
     const up = num(s.uptimeSec);
     K.readOr(R.uptime, up, (v) => K.fmt.duration(v));
@@ -704,23 +704,23 @@
   /* ---------- bateria ---------- */
 
   function batWords(b) {
-    if (b.isCharging == null && b.pluggedIn == null) return ['Tomada sem leitura', 'O Mac não informou agora.'];
-    if (K.batTopping(b)) return ['Terminando de encher', 'Entrando devagar até completar.'];
+    if (b.isCharging == null && b.pluggedIn == null) return [K.t('Tomada sem leitura'), K.t('O Mac não informou agora.')];
+    if (K.batTopping(b)) return [K.t('Terminando de encher'), K.t('Entrando devagar até completar.')];
     if (!b.isCharging && b.pluggedIn && (b.fullyCharged || b.percent >= 99)) {
-      return ['Cheia na tomada', 'O Mac usa o carregador direto.'];
+      return [K.t('Cheia na tomada'), K.t('O Mac usa o carregador direto.')];
     }
     if (b.isCharging) {
-      if (b.finishingCharge) return ['Terminando a carga', 'Devagar no fim, pra poupar a bateria.'];
-      return ['Carregando', isNum(b.minutesToFull) && b.minutesToFull > 0 ? `Cheia em uns ${K.fmt.mins(b.minutesToFull)}.` : 'Calculando quanto falta…'];
+      if (b.finishingCharge) return [K.t('Terminando a carga'), K.t('Devagar no fim, pra poupar a bateria.')];
+      return [K.t('Carregando'), isNum(b.minutesToFull) && b.minutesToFull > 0 ? K.t('Cheia em uns {0}.', K.fmt.mins(b.minutesToFull)) : K.t('Calculando quanto falta…')];
     }
     if (b.pluggedIn) {
-      return ['Na tomada, sem carregar', b.optimizedChargingEngaged
-        ? 'O macOS segurou a carga pra poupar a bateria.'
-        : 'O macOS pausou a carga por enquanto.'];
+      return [K.t('Na tomada, sem carregar'), b.optimizedChargingEngaged
+        ? K.t('O macOS segurou a carga pra poupar a bateria.')
+        : K.t('O macOS pausou a carga por enquanto.')];
     }
-    return ['Na bateria', isNum(b.minutesToEmpty) && b.minutesToEmpty > 0
-      ? `Dá uns ${K.fmt.mins(b.minutesToEmpty)} no ritmo de agora.`
-      : 'Calculando quanto dura…'];
+    return [K.t('Na bateria'), isNum(b.minutesToEmpty) && b.minutesToEmpty > 0
+      ? K.t('Dá uns {0} no ritmo de agora.', K.fmt.mins(b.minutesToEmpty))
+      : K.t('Calculando quanto dura…')];
   }
 
   function applyBattery(b, err) {
@@ -732,8 +732,8 @@
       /* não leu: mascote preocupado, cartão enxuto e um jeito de tentar de novo */
       S.mascot.set({ pct: null, tone: 'none', face: 'worried', charging: false, plugged: false, full: false, hot: false });
       txt(R.batHealthBig, '');
-      txt(R.batState, 'Não deu pra ler a bateria');
-      txt(R.batSub, err ? `O motivo: ${String(err.message || err).trim().replace(/[.!\s]+$/, '')}.` : 'Às vezes o macOS demora logo depois de acordar.');
+      txt(R.batState, K.t('Não deu pra ler a bateria'));
+      txt(R.batSub, err ? K.t('O motivo: {0}.', String(err.message || err).trim().replace(/[.!\s]+$/, '')) : K.t('Às vezes o macOS demora logo depois de acordar.'));
       pill(R.batPill, null, '');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
@@ -744,9 +744,9 @@
       S.mascot.set({ pct: null, tone: 'good', face: null, charging: false, plugged: true, full: false, hot: false });
       R.bat.classList.add('pn-nobat');
       txt(R.batHealthBig, '');
-      txt(R.batState, 'Este Mac não tem bateria');
-      txt(R.batSub, 'Ele vive na tomada: não há bateria pra cuidar.');
-      pill(R.batPill, null, 'Sem bateria', 'plug');
+      txt(R.batState, K.t('Este Mac não tem bateria'));
+      txt(R.batSub, K.t('Ele vive na tomada: não há bateria pra cuidar.'));
+      pill(R.batPill, null, K.t('Sem bateria'), 'plug');
       R.batRows.hidden = true;
       R.batLink.hidden = true;
       R.batChart.hidden = true;
@@ -766,21 +766,21 @@
       hot: isNum(b.temperatureC) && b.temperatureC >= 40,
     });
     R.batHealthBig.classList.toggle('pn-none', h == null);
-    if (h == null) { R.batHealthBig._v = null; R.batHealthBig.classList.remove('no-read'); txt(R.batHealthBig, 'Sem leitura'); }
+    if (h == null) { R.batHealthBig._v = null; R.batHealthBig.classList.remove('no-read'); txt(R.batHealthBig, K.t('Sem leitura')); }
     else tween(R.batHealthBig, h, (v) => K.fmt.pct(v, 1), 700);
-    txt(R.batHealthLab, h == null ? 'de saúde agora' : 'de saúde');
+    txt(R.batHealthLab, h == null ? K.t('de saúde agora') : K.t('de saúde'));
     if (h != null || K.batStatusKey(b) === 'trocar') pill(R.batPill, st.tone, st.label, st.icon);
     else pill(R.batPill, null, '');
     const [state, sub] = batWords(b);
     txt(R.batState, (pct != null ? pct0(pct) + ' · ' : '') + state);
     txt(R.batSub, sub);
-    txt(R.batCycles, isNum(b.cycles) ? K.fmt.num(b.cycles) : 'sem leitura');
+    txt(R.batCycles, isNum(b.cycles) ? K.fmt.num(b.cycles) : K.t('sem leitura'));
     R.batCycles.classList.toggle('no-read', !isNum(b.cycles));
-    txt(R.batCyclesSub, isNum(b.designCycles) ? `de ${K.fmt.num(b.designCycles)} previstos` : 'cargas completas');
+    txt(R.batCyclesSub, isNum(b.designCycles) ? K.t('de {0} previstos', K.fmt.num(b.designCycles)) : K.t('cargas completas'));
     const tc = num(b.temperatureC);
-    txt(R.batTemp, tc != null ? K.fmt.temp(tc) : 'sem leitura');
+    txt(R.batTemp, tc != null ? K.fmt.temp(tc) : K.t('sem leitura'));
     R.batTemp.classList.toggle('no-read', tc == null);
-    txt(R.batTempSub, tc == null ? '' : tc >= 40 ? 'quente: deixe esfriar' : tc >= 35 ? 'morna, tudo bem' : 'tranquila');
+    txt(R.batTempSub, tc == null ? '' : tc >= 40 ? K.t('quente: deixe esfriar') : tc >= 35 ? K.t('morna, tudo bem') : 'tranquila');
     if (!S.sys || !S.sys.thermalState) applyThermal(b.thermalState || null);
   }
 
@@ -796,18 +796,18 @@
     const pts = ((h && h.carga) || []).filter((p) => p && isNum(p.t) && p.t >= now - 86400 - 7200);
     R.batChartEl.textContent = '';
     const ch = K.charts.area(R.batChartEl, {
-      name: 'Carga',
+      name: K.t('Carga'),
       points: pts.map((p) => ({ x: p.t, y: isNum(p.pct) ? p.pct : null, plugged: p.plugged })),
       yMin: 0, yMax: 100, yTicks: 1,
       yFormat: (v) => K.fmt.pct(v, 0),
       xMin: now - 86400, xMax: now,
-      bands: K.charts.runs(pts, (p) => p.plugged, { label: 'Na tomada' }),
+      bands: K.charts.runs(pts, (p) => p.plugged, { label: K.t('Na tomada') }),
       bandStyle: 'track',
       legend: false,
       height: 84,
       table: false,
-      empty: h ? 'O macOS ainda não anotou a carga das últimas 24 horas.' : 'Não consegui ler o histórico agora.',
-      ariaLabel: 'Carga da bateria nas últimas 24 horas',
+      empty: h ? K.t('O macOS ainda não anotou a carga das últimas 24 horas.') : K.t('Não consegui ler o histórico agora.'),
+      ariaLabel: K.t('Carga da bateria nas últimas 24 horas'),
     });
     me.charts.push(ch);
   }
@@ -817,7 +817,7 @@
      ========================================================= */
 
   K.pages.painel = {
-    title: 'Ao vivo',
+    title: K.t('Ao vivo'),
 
     async render(el) {
       if (S) K.pages.painel.destroy();
@@ -828,11 +828,11 @@
       R.bat = el.querySelector('.pn-bat');
 
       /* gráficos montados vazios; a primeira leitura preenche */
-      S.gauge = live(K.charts.gauge(R.gaugeEl, { value: null, zones: CPU_ZONES, label: 'uso de CPU', size: 250, empty: 'Medindo…' }));
-      S.spark = live(K.charts.spark(R.sparkEl, [], { min: 0, max: 100, height: 64, format: pctTxt, name: 'uso de CPU', color: 'var(--s1)', empty: 'medindo…', ariaLabel: 'Uso de CPU nos últimos 2 minutos' }));
-      S.split = live(K.charts.stack(R.splitEl, { segments: [], total: 100, restName: 'Parado', format: pctTxt, legend: false, inside: false, height: 20, empty: 'medindo…', ariaLabel: 'Divisão do uso de CPU' }));
-      S.memStack = live(K.charts.stack(R.memStackEl, { segments: [], total: null, restName: 'Outros', format: (v) => mem(v), height: 36, empty: 'Lendo a memória…' }));
-      S.ring = live(K.charts.ring(R.ringEl, { value: null, max: 100, tone: 's1', label: 'ocupado', size: 150, sub: '' }));
+      S.gauge = live(K.charts.gauge(R.gaugeEl, { value: null, zones: CPU_ZONES, label: K.t('uso de CPU'), size: 250, empty: K.t('Medindo…') }));
+      S.spark = live(K.charts.spark(R.sparkEl, [], { min: 0, max: 100, height: 64, format: pctTxt, name: K.t('uso de CPU'), color: 'var(--s1)', empty: K.t('medindo…'), ariaLabel: K.t('Uso de CPU nos últimos 2 minutos') }));
+      S.split = live(K.charts.stack(R.splitEl, { segments: [], total: 100, restName: K.t('Parado'), format: pctTxt, legend: false, inside: false, height: 20, empty: K.t('medindo…'), ariaLabel: K.t('Divisão do uso de CPU') }));
+      S.memStack = live(K.charts.stack(R.memStackEl, { segments: [], total: null, restName: K.t('Outros'), format: (v) => mem(v), height: 36, empty: K.t('Lendo a memória…') }));
+      S.ring = live(K.charts.ring(R.ringEl, { value: null, max: 100, tone: 's1', label: K.t('ocupado'), size: 150, sub: '' }));
       S.mascot = K.mascot(R.mascotEl, { size: 96, state: { pct: null, tone: 'good' } });
 
       const [s, b] = await Promise.allSettled([K.api('system.now'), K.cached('battery.now', null, 4000)]);

@@ -580,11 +580,11 @@
 
   /* o que era bloco de tinta preta vira bloco mais escuro que o papel */
   .card.ink, .btn.ink { background: var(--slab); color: var(--on-slab); }
-  .btn.danger { background: #c63d37; color: #fff; }
+  .btn.danger { background: var(--btn-danger); color: #fff; }
   .btn.danger:disabled { background: var(--st-crit-soft); color: var(--ink-2); }
 
   /* interruptor: bolinha creme; no ouro ganha contorno escuro pra não sumir */
-  .switch::after { background: var(--ink); }
+  .switch::after { background: var(--knob); }
   .switch[aria-checked="true"]::after { border-color: var(--on-gold); }
 
   .ktab-badge { background: var(--ink); color: var(--paper); }

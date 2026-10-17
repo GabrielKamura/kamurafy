@@ -59,24 +59,24 @@
     const pct = b.percent;
     let r;
     if (b.isCharging == null && b.pluggedIn == null) {
-      r = { key: 'unknown', icon: 'info', title: 'Tomada sem leitura', sub: 'o Mac não informou' };
+      r = { key: 'unknown', icon: 'info', title: K.t('Tomada sem leitura'), sub: K.t('o Mac não informou') };
     } else if (b.isCharging) {
       let t;
-      if (b.optimizedChargingEngaged) t = 'no ritmo otimizado';
-      else if (isNum(b.minutesToFull) && b.minutesToFull > 0) t = `cheia em ${K.fmt.mins(b.minutesToFull)}`;
-      else if (b.finishingCharge) t = 'terminando devagar';
-      else t = 'calculando o tempo…';
-      r = { key: 'charging', icon: 'bolt', title: 'Carregando', sub: t };
+      if (b.optimizedChargingEngaged) t = K.t('no ritmo otimizado');
+      else if (isNum(b.minutesToFull) && b.minutesToFull > 0) t = K.t('cheia em {0}', K.fmt.mins(b.minutesToFull));
+      else if (b.finishingCharge) t = K.t('terminando devagar');
+      else t = K.t('calculando o tempo…');
+      r = { key: 'charging', icon: 'bolt', title: K.t('Carregando'), sub: t };
     } else if (b.pluggedIn) {
-      if (K.batTopping(b)) r = { key: 'topping', icon: 'bolt', title: 'Na tomada', sub: 'terminando de encher' };
-      else if (b.fullyCharged || (isNum(pct) && pct >= 99)) r = { key: 'full', icon: 'moon', title: 'Cheia na tomada', sub: 'descansando' };
-      else if (b.optimizedChargingEngaged) r = { key: 'held', icon: 'plug', title: 'Na tomada', sub: 'o macOS segurou a carga' };
-      else r = { key: 'plugged', icon: 'plug', title: 'Na tomada', sub: 'sem carregar agora' };
+      if (K.batTopping(b)) r = { key: 'topping', icon: 'bolt', title: K.t('Na tomada'), sub: K.t('terminando de encher') };
+      else if (b.fullyCharged || (isNum(pct) && pct >= 99)) r = { key: 'full', icon: 'moon', title: K.t('Cheia na tomada'), sub: K.t('descansando') };
+      else if (b.optimizedChargingEngaged) r = { key: 'held', icon: 'plug', title: K.t('Na tomada'), sub: K.t('o macOS segurou a carga') };
+      else r = { key: 'plugged', icon: 'plug', title: K.t('Na tomada'), sub: K.t('sem carregar agora') };
     } else {
       const m = isNum(b.minutesToEmpty) && b.minutesToEmpty > 0 && b.minutesToEmpty < 48 * 60 ? b.minutesToEmpty : null;
       const low = isNum(pct) && pct <= 20;
-      r = { key: low ? 'low' : 'battery', icon: low ? 'alert' : 'battery', title: low ? 'Carga baixa' : 'Na bateria',
-        sub: m ? `dura mais ${K.fmt.mins(m)}` : 'calculando quanto dura…' };
+      r = { key: low ? 'low' : 'battery', icon: low ? 'alert' : 'battery', title: low ? K.t('Carga baixa') : K.t('Na bateria'),
+        sub: m ? K.t('dura mais {0}', K.fmt.mins(m)) : K.t('calculando quanto dura…') };
     }
     /* calor não entra aqui: o minicartão da temperatura e o rosto do mascote já contam */
     r.text = r.title + ' · ' + r.sub;
@@ -86,21 +86,21 @@
   /* temperatura da bateria (as mesmas faixas da tela Bateria) */
   const TEMP = [
     { to: 35, tone: 'good', word: null },
-    { to: 40, tone: 'warn', word: 'morna' },
-    { to: 45, tone: 'serious', word: 'quente' },
-    { to: Infinity, tone: 'crit', word: 'muito quente' },
+    { to: 40, tone: 'warn', word: K.t('morna') },
+    { to: 45, tone: 'serious', word: K.t('quente') },
+    { to: Infinity, tone: 'crit', word: K.t('muito quente') },
   ];
   /* calor do Mac todo (Mac de mesa, sem sensor de bateria) */
   const THERMAL = {
-    normal: { word: 'Fresco', tone: 'good' },
-    morno: { word: 'Morno', tone: 'good' },
-    quente: { word: 'Quente', tone: 'serious' },
-    critico: { word: 'Crítico', tone: 'crit' },
+    normal: { word: K.t('Fresco'), tone: 'good' },
+    morno: { word: K.t('Morno'), tone: 'good' },
+    quente: { word: K.t('Quente'), tone: 'serious' },
+    critico: { word: K.t('Crítico'), tone: 'crit' },
   };
   const PRESSURE = {
-    normal: { word: 'Folgada', tone: 'good', txt: 'Tem memória de sobra.' },
-    atencao: { word: 'Apertada', tone: 'warn', txt: 'O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.' },
-    critica: { word: 'No limite', tone: 'serious', txt: 'Falta memória e tudo fica lento.' },
+    normal: { word: K.t('Folgada'), tone: 'good', txt: K.t('Tem memória de sobra.') },
+    atencao: { word: K.t('Apertada'), tone: 'warn', txt: K.t('O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.') },
+    critica: { word: K.t('No limite'), tone: 'serious', txt: K.t('Falta memória e tudo fica lento.') },
   };
 
   /** memória em base 2, como o Monitor de Atividade ("16 GB"): a mesma função das outras telas */
@@ -161,10 +161,10 @@
     m.mode = 'wait';
     m.hero.textContent = '';
     m.hero.className = 'card mb-hero pop-in is-wait';
-    m.hero.setAttribute('aria-label', 'Lendo a bateria');
+    m.hero.setAttribute('aria-label', K.t('Lendo a bateria'));
     const box = K.el('div', { class: 'mb-mascot', 'aria-hidden': 'true' });
     m.hero.append(box, K.el('div', { class: 'mb-hero-tx' },
-      K.el('div', { class: 'loading mb-wait' }, 'Lendo a bateria…')));
+      K.el('div', { class: 'loading mb-wait' }, K.t('Lendo a bateria…'))));
     m.mascot = K.mascot(box, { size: 94, state: { pct: null, tone: 'none', face: 'happy' } });
   }
 
@@ -188,22 +188,22 @@
       m.h.hl = K.el('span', { class: 'mb-health-l' });
       m.h.pill = K.el('span', { class: 'mb-health-p' });
       h.append(box, K.el('div', { class: 'mb-hero-tx' },
-        K.el('div', { class: 'mb-charge' }, m.h.n, m.h.u, K.el('span', { class: 'mb-charge-l' }, 'de carga')),
+        K.el('div', { class: 'mb-charge' }, m.h.n, m.h.u, K.el('span', { class: 'mb-charge-l' }, K.t('de carga'))),
         m.h.state,
         K.el('div', { class: 'mb-health' }, m.h.hl, m.h.pill)));
       m.mascot = K.mascot(box, { size: 94, state: { pct: null } });
       m.h.last = {};
     } else {
       const txt = {
-        desk: ['Mac de mesa', 'Sem bateria por aqui: ele vive na tomada.'],
-        noread: ['Bateria sem leitura', 'O Mac não informou agora. Tento de novo em 5 segundos.'],
-        err: ['Sem leitura agora', 'Não consegui falar com a bateria. Tento de novo em 5 segundos.'],
+        desk: [K.t('Mac de mesa'), K.t('Sem bateria por aqui: ele vive na tomada.')],
+        noread: [K.t('Bateria sem leitura'), K.t('O Mac não informou agora. Tento de novo em 5 segundos.')],
+        err: [K.t('Sem leitura agora'), K.t('Não consegui falar com a bateria. Tento de novo em 5 segundos.')],
       }[mode];
       h.append(box, K.el('div', { class: 'mb-hero-tx' },
         K.el('div', { class: 'mb-hero-title' }, txt[0]),
         K.el('p', { class: 'mb-hero-sub' }, txt[1])));
       m.mascot = K.mascot(box, { size: 72, state: { pct: null, tone: 'none', plugged: mode === 'desk', face: mode === 'desk' ? 'happy' : 'worried' } });
-      h.setAttribute('aria-label', txt[0] + '. ' + txt[1] + (mode === 'desk' ? ' Abrir o Kamurafy.' : ' Ver a bateria no Kamurafy.'));
+      h.setAttribute('aria-label', txt[0] + '. ' + txt[1] + (mode === 'desk' ? K.t(' Abrir o Kamurafy.') : K.t(' Ver a bateria no Kamurafy.')));
     }
   }
 
@@ -246,13 +246,13 @@
     const hk = st.label + '|' + h;
     if (L.hk !== hk) {
       L.hk = hk;
-      setText(m.h.hl, isNum(h) ? `Saúde ${K.fmt.pct(h)}` : 'Saúde');
+      setText(m.h.hl, isNum(h) ? K.t('Saúde {0}', K.fmt.pct(h)) : K.t('Saúde'));
       m.h.pill.textContent = '';
       m.h.pill.appendChild(K.statusPill(st.tone, st.label, st.icon));
     }
     m.hero.setAttribute('aria-label',
-      `${pct != null ? K.fmt.pct(pct, 0) + ' de carga' : 'Carga sem leitura'}. ${s.text}. ` +
-      `${isNum(h) ? 'Saúde ' + K.fmt.pct(h) : 'Saúde sem leitura'}, ${st.label}. Ver a bateria no Kamurafy.`);
+      `${pct != null ? K.fmt.pct(pct, 0) + K.t(' de carga') : K.t('Carga sem leitura')}. ${s.text}. ` +
+      K.t('{0}, {1}. Ver a bateria no Kamurafy.', isNum(h) ? K.t('Saúde ') + K.fmt.pct(h) : K.t('Saúde sem leitura'), st.label));
   }
 
   /* ---------- minicartões ---------- */
@@ -290,23 +290,23 @@
     paintMini(m.mini.cpu, {
       tone: cpu == null ? 'none' : busy ? 'warn' : 'good',
       value: cpu == null ? null : K.fmt.pct(cpu, 0),
-      label: busy ? 'a todo vapor' : 'CPU',
+      label: busy ? K.t('a todo vapor') : 'CPU',
       title: cpu == null
-        ? 'Processador: o macOS não informou agora.'
-        : `Processador em ${K.fmt.pct(cpu, 0)} agora. Alto por um instante é normal.`,
+        ? K.t('Processador: o macOS não informou agora.')
+        : K.t('Processador em {0} agora. Alto por um instante é normal.', K.fmt.pct(cpu, 0)),
     });
 
     const m0 = s && s.memory;
     const pr = m0 ? PRESSURE[m0.pressure] : null;
     const used = m0 && isNum(m0.usedBytes) && isNum(m0.totalBytes)
-      ? ` Em uso: ${mem(m0.usedBytes)} de ${mem(m0.totalBytes)}.` : '';
+      ? K.t(' Em uso: {0} de {1}.', mem(m0.usedBytes), mem(m0.totalBytes)) : '';
     paintMini(m.mini.mem, {
       tone: pr ? pr.tone : 'none',
       value: pr ? pr.word : null,
-      label: 'memória',
+      label: K.t('memória'),
       title: pr
-        ? `Memória ${pr.word.toLowerCase()}. ${pr.txt}${used}`
-        : 'Memória: o macOS não informou agora.',
+        ? K.t('Memória {0}. {1}{2}', pr.word.toLowerCase(), pr.txt, used)
+        : K.t('Memória: o macOS não informou agora.'),
     });
 
     const d = s && s.disk;
@@ -317,10 +317,10 @@
     paintMini(m.mini.disk, {
       tone: dt,
       value: avail == null ? null : K.fmt.bytes(avail),
-      label: dt === 'crit' ? 'quase cheio' : dt === 'warn' ? 'enchendo' : 'livres',
+      label: dt === 'crit' ? K.t('quase cheio') : dt === 'warn' ? 'enchendo' : 'livres',
       title: avail == null
-        ? 'Disco: o macOS não informou agora.'
-        : `${K.fmt.bytes(avail)} livres de ${K.fmt.bytes(total)} (${K.fmt.num(freePct, 0)}%). O ideal é ter de 10 a 20% livres.`,
+        ? K.t('Disco: o macOS não informou agora.')
+        : K.t('{0} livres de {1} ({2}%). O ideal é ter de 10 a 20% livres.', K.fmt.bytes(avail), K.fmt.bytes(total), K.fmt.num(freePct, 0)),
     });
 
     if (m.mode === 'bat') {
@@ -331,8 +331,8 @@
         value: t == null ? null : K.fmt.temp(t),
         label: z && z.word ? z.word : 'bateria',
         title: t == null
-          ? 'Temperatura da bateria: o Mac não informou agora.'
-          : `Bateria a ${K.fmt.temp(t)}. O ideal é abaixo de 35 °C.`,
+          ? K.t('Temperatura da bateria: o Mac não informou agora.')
+          : K.t('Bateria a {0}. O ideal é abaixo de 35 °C.', K.fmt.temp(t)),
       });
     } else {
       /* sem sensor de bateria: mostra o calor do Mac todo */
@@ -340,8 +340,8 @@
       paintMini(m.mini.temp, {
         tone: th ? th.tone : 'none',
         value: th ? th.word : null,
-        label: 'calor',
-        title: th ? `Calor do Mac: ${th.word.toLowerCase()}. Leitura geral do macOS, sem graus.` : 'Calor do Mac: o macOS não informou agora.',
+        label: K.t('calor'),
+        title: th ? K.t('Calor do Mac: {0}. Leitura geral do macOS, sem graus.', th.word.toLowerCase()) : K.t('Calor do Mac: o macOS não informou agora.'),
       });
     }
   }
@@ -350,16 +350,16 @@
 
   function appsCard(m) {
     m.appsList = K.el('div', { class: 'mb-apps-list', 'aria-live': 'polite' },
-      K.el('div', { class: 'loading mb-apps-wait' }, 'Medindo quem gasta…'));
+      K.el('div', { class: 'loading mb-apps-wait' }, K.t('Medindo quem gasta…')));
     const more = K.el('button', { class: 'mb-link', type: 'button', onclick: () => show('bateria') },
-      'ver mais', K.el('span', { html: K.icon('mbGo') }));
+      K.t('ver mais'), K.el('span', { html: K.icon('mbGo') }));
     const c = K.el('section', { class: 'card mb-apps pop-in', 'aria-labelledby': 'mb-apps-t' },
       K.el('div', { class: 'mb-apps-head' },
-        K.el('h2', { id: 'mb-apps-t' }, 'Quem mais gasta agora'),
+        K.el('h2', { id: 'mb-apps-t' }, K.t('Quem mais gasta agora')),
         more),
       m.appsList,
-      K.el('p', { class: 'mb-apps-note', title: 'O mesmo número do Monitor de Atividade: serve só pra comparar um app com outro.' },
-        'Impacto energético do macOS (não é watt).'));
+      K.el('p', { class: 'mb-apps-note', title: K.t('O mesmo número do Monitor de Atividade: serve só pra comparar um app com outro.') },
+        K.t('Impacto energético do macOS (não é watt).')));
     c.style.animationDelay = '180ms';
     return c;
   }
@@ -370,9 +370,9 @@
       if (m.appsShown) return;      // já tem uma lista na tela: fica com ela até a próxima medida
       box.textContent = '';
       box.appendChild(K.el('div', { class: 'mb-apps-err' },
-        K.el('span', null, 'Não deu pra medir agora.'),
+        K.el('span', null, K.t('Não deu pra medir agora.')),
         K.el('button', { class: 'mb-link', type: 'button', onclick: () => { K.sound.plop(); loadApps(m, true); } },
-          K.el('span', { class: 'mb-link-ic', html: K.icon('cycle') }), 'Tentar de novo')));
+          K.el('span', { class: 'mb-link-ic', html: K.icon('cycle') }), K.t('Tentar de novo'))));
       m.resize();
       return;
     }
@@ -382,7 +382,7 @@
     if (!items.length) {
       box.appendChild(K.el('div', { class: 'mb-apps-empty' },
         K.el('span', { class: 'mb-h-ic good', html: K.icon('leaf') }),
-        K.el('span', null, 'Tudo calmo: nenhum app gastando agora.')));
+        K.el('span', null, K.t('Tudo calmo: nenhum app gastando agora.'))));
       return;
     }
     /* escala com piso: num Mac calmo o primeiro não aparece com a barra cheia */
@@ -400,10 +400,10 @@
         ic,
         K.el('span', { class: 'mb-app-name' },
           K.el('span', { class: 'mb-app-n' }, short),
-          it.note ? K.el('span', { class: 'mb-app-note' }, it.note) : null),
+          it.note ? K.el('span', { class: 'mb-app-note' }, K.t(it.note)) : null),
         K.el('span', { class: 'mb-bar', 'aria-hidden': 'true' }, fill),
         K.el('span', { class: 'mb-app-v num' }, K.fmt.num(it.value, it.value < 10 ? 1 : 0)));
-      row.title = `${it.label}${it.note ? ' (' + it.note + ')' : ''}: impacto ${K.fmt.num(it.value, 1)}`;
+      row.title = K.t('{0}{1}: impacto {2}', it.label, it.note ? ' (' + K.t(it.note) + ')' : '', K.fmt.num(it.value, 1));
       box.appendChild(row);
     }
     /* nome comprido não perde espaço pra etiqueta: se não couber, a etiqueta sai (ela continua na dica) */
@@ -418,10 +418,10 @@
 
   function actions(m) {
     const logo = K.el('span', { class: 'mb-logo', html: K.logo().replace(/#fff/g, '#000') });
-    const c = K.el('nav', { class: 'mb-actions pop-in', 'aria-label': 'Atalhos' },
-      K.el('button', { class: 'btn gold mb-open', type: 'button', onclick: () => show(null) }, logo, 'Abrir o Kamurafy'),
-      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('scan'), title: 'Abre o Início, pra olhar o Mac inteiro', onclick: () => show('inicio') }, 'Escanear'),
-      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('broom'), title: 'Abre o Espaço: você escolhe o que vai pra Lixeira', onclick: () => show('faxina') }, 'Espaço'));
+    const c = K.el('nav', { class: 'mb-actions pop-in', 'aria-label': K.t('Atalhos') },
+      K.el('button', { class: 'btn gold mb-open', type: 'button', onclick: () => show(null) }, logo, K.t('Abrir o Kamurafy')),
+      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('scan'), title: K.t('Abre o Início, pra olhar o Mac inteiro'), onclick: () => show('inicio') }, K.t('Escanear')),
+      K.el('button', { class: 'btn mb-act', type: 'button', html: K.icon('broom'), title: K.t('Abre o Espaço: você escolhe o que vai pra Lixeira'), onclick: () => show('faxina') }, K.t('Espaço')));
     c.style.animationDelay = '230ms';
     return c;
   }
@@ -446,7 +446,7 @@
 
   /** linha extra embaixo do texto: aviso (erro) ou um botão pros Ajustes do Sistema */
   function optExtra(opt, kind, text, withSettings) {
-    const linkText = typeof withSettings === 'string' ? withSettings : 'Abrir os Ajustes do Sistema';
+    const linkText = typeof withSettings === 'string' ? withSettings : K.t('Abrir os Ajustes do Sistema');
     opt.extra.textContent = '';
     opt.extra.hidden = !text && !withSettings;
     opt.extra.className = 'mb-opt-extra' + (kind ? ' ' + kind : '');
@@ -464,7 +464,7 @@
   function why(e) {
     let t = String((e && e.message) || e || '').trim();
     if (t.length > 90) t = t.slice(0, 88).replace(/\s+\S*$/, '') + '…';
-    return t ? 'Não deu pra mudar agora. ' + t : 'Não deu pra mudar agora.';
+    return t ? K.t('Não deu pra mudar agora. ') + t : K.t('Não deu pra mudar agora.');
   }
 
   function settingsCard(m) {
@@ -486,15 +486,15 @@
       } finally { delete opt.sw.dataset.busy; if (alive(m)) paintSum(m); }
     };
 
-    m.optPct = option({ title: 'Mostrar a % na barra', sub: 'A carga ao lado do ícone, lá em cima.',
+    m.optPct = option({ title: K.t('Mostrar a % na barra'), sub: K.t('A carga ao lado do ícone, lá em cima.'),
       onflip: (on) => m.optPct.flip(on) });
     m.optPct.flip = flipSetting(m.optPct, 'porcentagemNaBarra');
 
-    m.optBar = option({ title: 'Ficar só na barra', sub: 'Ao fechar a janela, ele sai do Dock.',
+    m.optBar = option({ title: K.t('Ficar só na barra'), sub: K.t('Ao fechar a janela, ele sai do Dock.'),
       onflip: (on) => m.optBar.flip(on) });
     m.optBar.flip = flipSetting(m.optBar, 'soNaBarra');
 
-    m.optLogin = option({ title: 'Abrir junto com o Mac', sub: 'Liga sozinho quando você entra na conta.',
+    m.optLogin = option({ title: K.t('Abrir junto com o Mac'), sub: K.t('Liga sozinho quando você entra na conta.'),
       onflip: (on) => flipLogin(m, on) });
 
     for (const o of [m.optPct, m.optBar, m.optLogin]) setSwitch(o, false, true);
@@ -502,12 +502,12 @@
     /* fechado por padrão: o balão é pra olhar rápido; abrir aumenta a altura (menubar.resize) */
     m.setSum = K.el('span', { class: 'mb-set-sum' });
     const all = K.el('button', { class: 'mb-link mb-set-all', type: 'button', onclick: () => show('ajustes') },
-      'Todos os ajustes (avisos, som…)', K.el('span', { html: K.icon('mbGo') }));
+      K.t('Todos os ajustes (avisos, som…)'), K.el('span', { html: K.icon('mbGo') }));
     m.setBody = K.el('div', { class: 'mb-set-body', id: 'mb-set-body' }, m.optPct.row, m.optBar.row, m.optLogin.row, all);
     m.setHead = K.el('button', { class: 'mb-set-head', type: 'button', 'aria-controls': 'mb-set-body',
       onclick: () => { K.sound.plop(); setOpen(m, !setOpenPref, true); } },
       K.el('span', { class: 'mb-set-ic', html: K.icon('mbSliders') }),
-      K.el('span', { class: 'mb-set-t', id: 'mb-set-t' }, 'Ajustes rápidos'),
+      K.el('span', { class: 'mb-set-t', id: 'mb-set-t' }, K.t('Ajustes rápidos')),
       m.setSum,
       K.el('span', { class: 'mb-set-chev', html: K.icon('mbGo') }));
     m.setCard = K.el('section', { class: 'card mb-set pop-in', 'aria-labelledby': 'mb-set-t' }, m.setHead, m.setBody);
@@ -535,15 +535,15 @@
     const sum = m.setSum;
     sum.textContent = '';
     sum.className = 'mb-set-sum';
-    if (m.statusErr) { sum.append('sem leitura'); return; }
+    if (m.statusErr) { sum.append(K.t('sem leitura')); return; }
     if (m.loginState === 'precisa-aprovar') {
       sum.classList.add('warn');
-      sum.append(K.el('span', { class: 'mb-opt-eic', html: K.icon('eye') }), 'falta aprovar');
+      sum.append(K.el('span', { class: 'mb-opt-eic', html: K.icon('eye') }), K.t('falta aprovar'));
       return;
     }
     const rows = [m.optPct, m.optBar, m.optLogin].filter((o) => !o.row.hidden);
     const on = rows.filter((o) => o.sw.getAttribute('aria-checked') === 'true').length;
-    sum.append(`${on} de ${rows.length} ${on === 1 ? 'ligado' : 'ligados'}`);
+    sum.append(`${on} de ${rows.length} ${on === 1 ? K.t('ligado') : K.t('ligados')}`);
   }
 
   function paintLogin(m, estado) {
@@ -554,11 +554,11 @@
     else if (estado === 'precisa-aprovar') {
       setSwitch(o, true);
       setText(o.sub, o.base);
-      optExtra(o, 'warn', 'Falta você aprovar lá no macOS.', 'Aprovar nos Ajustes do Sistema');
+      optExtra(o, 'warn', K.t('Falta você aprovar lá no macOS.'), K.t('Aprovar nos Ajustes do Sistema'));
     } else {
       setSwitch(o, false, true);
-      setText(o.sub, 'O macOS não deixou ligar por aqui.');
-      optExtra(o, null, '', 'Ligar nos Ajustes do Sistema');
+      setText(o.sub, K.t('O macOS não deixou ligar por aqui.'));
+      optExtra(o, null, '', K.t('Ligar nos Ajustes do Sistema'));
     }
   }
 
@@ -593,7 +593,7 @@
   function paintStatusError(m, e) {
     m.statusErr = true;
     for (const o of [m.optPct, m.optBar, m.optLogin]) setSwitch(o, false, true);
-    optExtra(m.optLogin, 'err', 'Não consegui ler os ajustes agora. ' + ((e && e.message) || ''));
+    optExtra(m.optLogin, 'err', K.t('Não consegui ler os ajustes agora. ') + ((e && e.message) || ''));
     paintSum(m);
   }
 
@@ -606,17 +606,17 @@
   /* ---------- rodapé ---------- */
 
   function footer(m) {
-    m.ver = K.el('span', { class: 'mb-ver' }, 'Kamurafy');
+    m.ver = K.el('span', { class: 'mb-ver' }, K.t('Kamurafy'));
     return K.el('footer', { class: 'mb-foot' },
       K.el('span', { class: 'mb-foot-brand' }, K.el('span', { class: 'mb-logo', html: K.logo().replace(/#fff/g, '#000') }), m.ver),
-      K.el('span', { class: 'mb-foot-tip', title: 'Clique com o botão direito no ícone da bateria, lá em cima, e escolha “Sair do Kamurafy”.' },
-        'Pra sair: botão direito no ícone.'));
+      K.el('span', { class: 'mb-foot-tip', title: K.t('Clique com o botão direito no ícone da bateria, lá em cima, e escolha “Sair do Kamurafy”.') },
+        K.t('Pra sair: botão direito no ícone.')));
   }
 
   function paintVersion(m, v) {
     if (!v || !v.version) return;
-    setText(m.ver, `Kamurafy ${v.version}`);
-    m.ver.title = `Versão ${v.version} (${v.build || '0'})`;
+    setText(m.ver, K.t('Kamurafy {0}', v.version));
+    m.ver.title = K.t('Versão {0} ({1})', v.version, v.build || '0');
   }
 
   /* ================= dados ================= */
@@ -696,7 +696,7 @@
     root.textContent = '';
     K.tooltip.hide();
     if (!K.inApp) {
-      root.appendChild(K.el('div', { class: 'empty' }, 'Abra pelo Kamurafy.app.'));
+      root.appendChild(K.el('div', { class: 'empty' }, K.t('Abra pelo Kamurafy.app.')));
       return;
     }
     const m = M = { first: true, b: null, s: null, info: undefined, mode: null };

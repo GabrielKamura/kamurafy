@@ -81,10 +81,10 @@ K.fmt = {
     const lg = ok(c.cores), fis = ok(c.physicalCores), p = ok(c.performanceCores), e = ok(c.efficiencyCores);
     const n = fis || (p && e ? p + e : null) || lg;
     if (!n) return '';
-    const base = `${K.fmt.num(n)} ${n === 1 ? 'núcleo' : 'núcleos'}`;
+    const base = `${K.fmt.num(n)} ${n === 1 ? K.t('núcleo') : K.t('núcleos')}`;
     if (curto) return base;
-    if (p && e) return `${base} (${K.fmt.num(p)} de desempenho + ${K.fmt.num(e)} de eficiência)`;
-    if (fis && lg && lg > fis) return `${base} (${K.fmt.num(lg)} linhas de execução)`;
+    if (p && e) return K.t('{0} ({1} de desempenho + {2} de eficiência)', base, K.fmt.num(p), K.fmt.num(e));
+    if (fis && lg && lg > fis) return K.t('{0} ({1} linhas de execução)', base, K.fmt.num(lg));
     return base;
   },
   /** minutos → "48 min", "2 h 5 min" (espaço que não quebra: "min" nunca fica sozinho na linha) */
@@ -93,13 +93,13 @@ K.fmt = {
     m = Math.round(m);
     if (m < 60) return m + '\u00a0min';
     const h = Math.floor(m / 60), r = m % 60;
-    return r ? `${h}\u00a0h\u00a0${r}\u00a0min` : `${h}\u00a0h`;
+    return r ? K.t('{0}\u00a0h\u00a0{1}\u00a0min', h, r) : `${h}\u00a0h`;
   },
   /** segundos → "2 dias e 3 h", "5 h 10 min" */
   duration(s) {
     if (s == null) return '—';
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
-    if (d > 0) return `${d}\u00a0${d === 1 ? 'dia' : 'dias'}${h ? ` e ${h}\u00a0h` : ''}`;
+    if (d > 0) return `${d}\u00a0${d === 1 ? K.t('dia') : K.t('dias')}${h ? K.t(' e {0}\u00a0h', h) : ''}`;
     if (h > 0) return `${h}\u00a0h${m ? `\u00a0${m}\u00a0min` : ''}`;
     return `${m}\u00a0min`;
   },
@@ -136,13 +136,13 @@ K.fmt = {
   /** energia da bateria em número + verbo: {value: "14 W", verb: "saindo da bateria", dir} */
   flow(w, plugged) {
     if (typeof w !== 'number' || !isFinite(w)) return null;
-    if (Math.abs(w) < 0.3) return { value: '0 W', verb: plugged ? 'a bateria está descansando' : 'quase nada saindo', dir: plugged ? 'direct' : 'idle' };
-    return w > 0 ? { value: K.fmt.watts(w), verb: 'entrando na bateria', dir: 'in' } : { value: K.fmt.watts(w), verb: 'saindo da bateria', dir: 'out' };
+    if (Math.abs(w) < 0.3) return { value: K.t('0 W'), verb: plugged ? K.t('a bateria está descansando') : K.t('quase nada saindo'), dir: plugged ? 'direct' : 'idle' };
+    return w > 0 ? { value: K.fmt.watts(w), verb: K.t('entrando na bateria'), dir: 'in' } : { value: K.fmt.watts(w), verb: K.t('saindo da bateria'), dir: 'out' };
   },
   /** temperatura sem casa decimal (a casa seria precisão falsa): 30.9 → "31 °C" */
   temp(c) {
     if (c == null) return '—';
-    return K.fmt.num(c, 0) + ' °C';
+    return K.fmt.num(c, 0) + K.t(' °C');
   },
   /** "MacBook Pro (16-inch, 2019)" → "MacBook Pro 16″ (2019)"; o resto passa como veio */
   model(m) {
@@ -159,13 +159,13 @@ K.fmt = {
 
 /* ===== status de bateria (vem do Swift em battery.now.status) ===== */
 K.batteryStatus = {
-  'saudavel': { label: 'Saudável', tone: 'good', icon: 'check' },
-  'de-olho': { label: 'De olho', tone: 'warn', icon: 'eye' },
-  'gasta': { label: 'Gasta', tone: 'serious', icon: 'alert' },
-  'trocar': { label: 'Hora de trocar', tone: 'crit', icon: 'alert' },
-  'sem-bateria': { label: 'Sem bateria', tone: 'warn', icon: 'plug' },
+  'saudavel': { label: K.t('Saudável'), tone: 'good', icon: 'check' },
+  'de-olho': { label: K.t('De olho'), tone: 'warn', icon: 'eye' },
+  'gasta': { label: K.t('Gasta'), tone: 'serious', icon: 'alert' },
+  'trocar': { label: K.t('Hora de trocar'), tone: 'crit', icon: 'alert' },
+  'sem-bateria': { label: K.t('Sem bateria'), tone: 'warn', icon: 'plug' },
   /* o Mac não mediu a saúde agora: não dá pra dizer que está saudável */
-  'desconhecida': { label: 'Sem leitura', tone: 'none', icon: 'info' },
+  'desconhecida': { label: K.t('Sem leitura'), tone: 'none', icon: 'info' },
 };
 
 /** Status que a interface mostra. Sem leitura de saúde, "saudavel" vira "desconhecida"
@@ -199,33 +199,34 @@ K.isLaptop = (info) => /macbook/i.test(String((info && (info.model || info.model
  */
 K.procName = (function () {
   const T = {
-    WindowServer: 'Tela e janelas (WindowServer)', kernel_task: 'Núcleo do macOS (kernel_task)',
-    mds: 'Spotlight (mds)', mds_stores: 'Spotlight (mds_stores)', mdworker: 'Spotlight (mdworker)',
-    mdworker_shared: 'Spotlight (mdworker)', corespotlightd: 'Spotlight (corespotlightd)', Spotlight: 'Spotlight',
-    coreaudiod: 'Som do sistema (coreaudiod)', deleted: 'Limpeza automática do macOS (deleted)',
-    bluetoothd: 'Bluetooth (bluetoothd)', backupd: 'Time Machine (backupd)', photoanalysisd: 'Fotos: análise (photoanalysisd)',
-    cloudd: 'iCloud (cloudd)', bird: 'iCloud Drive (bird)', softwareupdated: 'Atualização do macOS',
-    launchd: 'Sistema (launchd)', hidd: 'Teclado e trackpad (hidd)', TouchBarServer: 'Touch Bar',
-    coreduetd: 'Sugestões do sistema (coreduetd)', containermanagerd: 'Apps em contêiner (containermanagerd)',
-    trustd: 'Certificados (trustd)', nsurlsessiond: 'Downloads em segundo plano (nsurlsessiond)',
-    powerd: 'Energia (powerd)', tccd: 'Privacidade (tccd)', SystemUIServer: 'Barra de menus (SystemUIServer)',
-    'com.apple.WebKit.WebContent': 'Páginas da web (WebKit)', 'com.apple.WebKit.GPU': 'Páginas da web: vídeo (WebKit)',
-    'com.apple.WebKit.Networking': 'Páginas da web: rede (WebKit)', ContainerMetadataExtractor: 'Arquivos: leitura de metadados',
+    WindowServer: K.t('Tela e janelas (WindowServer)'), kernel_task: K.t('Núcleo do macOS (kernel_task)'),
+    mds: K.t('Spotlight (mds)'), mds_stores: K.t('Spotlight (mds_stores)'), mdworker: K.t('Spotlight (mdworker)'),
+    mdworker_shared: K.t('Spotlight (mdworker)'), corespotlightd: K.t('Spotlight (corespotlightd)'), Spotlight: K.t('Spotlight'),
+    coreaudiod: K.t('Som do sistema (coreaudiod)'), deleted: K.t('Limpeza automática do macOS (deleted)'),
+    bluetoothd: K.t('Bluetooth (bluetoothd)'), backupd: K.t('Time Machine (backupd)'), photoanalysisd: K.t('Fotos: análise (photoanalysisd)'),
+    cloudd: K.t('iCloud (cloudd)'), bird: K.t('iCloud Drive (bird)'), softwareupdated: K.t('Atualização do macOS'),
+    launchd: K.t('Sistema (launchd)'), hidd: K.t('Teclado e trackpad (hidd)'), TouchBarServer: K.t('Touch Bar'),
+    coreduetd: K.t('Sugestões do sistema (coreduetd)'), containermanagerd: K.t('Apps em contêiner (containermanagerd)'),
+    trustd: K.t('Certificados (trustd)'), nsurlsessiond: K.t('Downloads em segundo plano (nsurlsessiond)'),
+    powerd: K.t('Energia (powerd)'), tccd: K.t('Privacidade (tccd)'), SystemUIServer: K.t('Barra de menus (SystemUIServer)'),
+    'com.apple.WebKit.WebContent': K.t('Páginas da web (WebKit)'), 'com.apple.WebKit.GPU': K.t('Páginas da web: vídeo (WebKit)'),
+    'com.apple.WebKit.Networking': K.t('Páginas da web: rede (WebKit)'), ContainerMetadataExtractor: K.t('Arquivos: leitura de metadados'),
     /* só aqui (ainda não estão no Swift) */
-    fontd: 'Fontes (fontd)', lsd: 'Abrir com (lsd)', launchservicesd: 'Abrir com (launchservicesd)',
-    runningboardd: 'Controle de apps (runningboardd)', swcd: 'Links de apps (swcd)', logd: 'Registros do sistema (logd)',
-    cfprefsd: 'Preferências (cfprefsd)', XProtectPluginService: 'Proteção contra vírus (XProtect)', XprotectService: 'Proteção contra vírus (XProtect)',
-    syspolicyd: 'Segurança de apps (syspolicyd)', opendirectoryd: 'Contas de usuário (opendirectoryd)', configd: 'Rede (configd)',
-    mDNSResponder: 'Rede: nomes (mDNSResponder)', airportd: 'Wi-Fi (airportd)', locationd: 'Localização (locationd)',
-    sharingd: 'AirDrop e Handoff (sharingd)', rapportd: 'Aparelhos por perto (rapportd)', loginwindow: 'Tela de entrada (loginwindow)',
-    ControlCenter: 'Central de Controle', NotificationCenter: 'Central de Notificações', UserEventAgent: 'Eventos do sistema (UserEventAgent)',
-    distnoted: 'Avisos internos (distnoted)', secd: 'Chaves (secd)', securityd: 'Chaves (securityd)', notifyd: 'Avisos internos (notifyd)',
-    thermalmonitord: 'Temperatura (thermalmonitord)', diskarbitrationd: 'Discos (diskarbitrationd)', fseventsd: 'Mudanças em arquivos (fseventsd)',
-    'com.apple.AppleUserHIDDrivers': 'Teclado e mouse (drivers HID)', WindowManager: 'Janelas (WindowManager)', universalaccessd: 'Acessibilidade (universalaccessd)',
+    fontd: K.t('Fontes (fontd)'), lsd: K.t('Abrir com (lsd)'), launchservicesd: K.t('Abrir com (launchservicesd)'),
+    runningboardd: K.t('Controle de apps (runningboardd)'), swcd: K.t('Links de apps (swcd)'), logd: K.t('Registros do sistema (logd)'),
+    cfprefsd: K.t('Preferências (cfprefsd)'), XProtectPluginService: K.t('Proteção contra vírus (XProtect)'), XprotectService: K.t('Proteção contra vírus (XProtect)'),
+    syspolicyd: K.t('Segurança de apps (syspolicyd)'), opendirectoryd: K.t('Contas de usuário (opendirectoryd)'), configd: K.t('Rede (configd)'),
+    mDNSResponder: K.t('Rede: nomes (mDNSResponder)'), airportd: K.t('Wi-Fi (airportd)'), locationd: K.t('Localização (locationd)'),
+    sharingd: K.t('AirDrop e Handoff (sharingd)'), rapportd: K.t('Aparelhos por perto (rapportd)'), loginwindow: K.t('Tela de entrada (loginwindow)'),
+    ControlCenter: K.t('Central de Controle'), NotificationCenter: K.t('Central de Notificações'), UserEventAgent: K.t('Eventos do sistema (UserEventAgent)'),
+    distnoted: K.t('Avisos internos (distnoted)'), secd: K.t('Chaves (secd)'), securityd: K.t('Chaves (securityd)'), notifyd: K.t('Avisos internos (notifyd)'),
+    thermalmonitord: K.t('Temperatura (thermalmonitord)'), diskarbitrationd: K.t('Discos (diskarbitrationd)'), fseventsd: K.t('Mudanças em arquivos (fseventsd)'),
+    'com.apple.AppleUserHIDDrivers': K.t('Teclado e mouse (drivers HID)'), WindowManager: K.t('Janelas (WindowManager)'), universalaccessd: K.t('Acessibilidade (universalaccessd)'),
   };
   return function (nome) {
     const s = String(nome == null ? '' : nome).trim();
-    return Object.prototype.hasOwnProperty.call(T, s) ? T[s] : s;
+    /* nome que o Swift já mandou amigável (em português) também passa pelo catálogo */
+    return Object.prototype.hasOwnProperty.call(T, s) ? T[s] : K.t(s);
   };
 })();
 
@@ -259,11 +260,11 @@ K.procName = (function () {
       let key;
       const web = /^Conteúdo da Internet de (.+)$/i.exec(name) || /^(.+?) Web Content$/i.exec(name);
       if (web) { name = web[1].trim(); note = null; }
-      if (a.isSelf || /^kamurafy$/i.test(name)) { name = 'Kamurafy'; note = 'este app'; key = 'kamurafy'; }
+      if (a.isSelf || /^kamurafy$/i.test(name)) { name = K.t('Kamurafy'); note = 'este app'; key = 'kamurafy'; }
       else if (!name || /^[\d.]+$/.test(name)) {
-        note = name ? `versão ${name}` : null;
+        note = name ? K.t('versão {0}', name) : null;
         key = 'pid:' + a.pid;
-        name = 'Processo sem nome';
+        name = K.t('Processo sem nome');
       } else key = name.toLowerCase();
       const cur = by.get(key);
       if (cur) {
@@ -305,7 +306,7 @@ K.toneIcon = (tone) => ({ good: 'check', warn: 'eye', serious: 'alert', crit: 'a
 /** Valor que pode faltar: número formatado, ou "sem leitura" apagado (nunca um "—" preto). */
 K.readOr = function (node, v, fmt, missing) {
   node.classList.toggle('no-read', v == null || (typeof v === 'number' && !isFinite(v)));
-  node.textContent = v == null || (typeof v === 'number' && !isFinite(v)) ? (missing || 'sem leitura') : fmt(v);
+  node.textContent = v == null || (typeof v === 'number' && !isFinite(v)) ? (missing || K.t('sem leitura')) : fmt(v);
   return node;
 };
 
@@ -392,8 +393,8 @@ K.confirm = (function () {
     return new Promise((resolve) => {
       const id = 'kmodal-' + Math.random().toString(36).slice(2, 8);
       const okBtn = K.el('button', { class: 'btn ' + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
-        o.ok || 'Confirmar');
-      const cancelBtn = K.el('button', { class: 'btn kmodal-cancel', type: 'button', onclick: () => close(false) }, o.cancel || 'Cancelar');
+        o.ok || K.t('Confirmar'));
+      const cancelBtn = K.el('button', { class: 'btn kmodal-cancel', type: 'button', onclick: () => close(false) }, o.cancel || K.t('Cancelar'));
       let ackBox = null;
       if (o.ack) {
         okBtn.disabled = true;
@@ -421,7 +422,7 @@ K.confirm = (function () {
       },
         K.el('div', { class: 'kmodal-head' },
           K.el('span', { class: 'kmodal-ic' + (danger ? ' crit' : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
-          K.el('h2', { id: id + '-t' }, o.title || 'Tem certeza?')),
+          K.el('h2', { id: id + '-t' }, o.title || K.t('Tem certeza?'))),
         K.el('div', { class: 'kmodal-body' }, body),
         note,
         ackBox,
@@ -475,21 +476,21 @@ K.confirm = (function () {
 K.errorCard = function (o) {
   o = o || {};
   const reason = String(o.reason == null ? '' : o.reason).trim().replace(/[.!\s]+$/, '');
-  const text = o.text != null ? o.text : `O motivo: ${reason || 'erro desconhecido'}. Nada foi mexido.`;
+  const text = o.text != null ? o.text : K.t('O motivo: {0}. Nada foi mexido.', reason || K.t('erro desconhecido'));
   const act = o.retry ? K.el('div', { class: 'kerr-act' },
     K.el('button', { class: 'btn gold' + (o.compact ? ' small' : ''), type: 'button', html: K.icon('cycle'),
-      onclick: (e) => { if (K.sound) K.sound.plop(); o.retry(e); } }, o.retryLabel || 'Tentar de novo'),
+      onclick: (e) => { if (K.sound) K.sound.plop(); o.retry(e); } }, o.retryLabel || K.t('Tentar de novo')),
     o.retryHint ? K.el('span', { class: 'kerr-hint' }, o.retryHint) : null) : null;
   const art = o.compact ? K.el('span', { class: 'head-ic crit kerr-ic', html: K.icon('alert') }) : K.el('div', { class: 'kerr-art', 'aria-hidden': 'true' });
   const node = K.el('section', { class: 'card kerr' + (o.compact ? ' is-compact' : '') + (o.class ? ' ' + o.class : ''), role: 'alert' },
     art,
     K.el('div', { class: 'kerr-text' },
-      K.el(o.compact ? 'h3' : 'h2', null, o.title || 'Não consegui ler agora'),
+      K.el(o.compact ? 'h3' : 'h2', null, o.title || K.t('Não consegui ler agora')),
       K.el('p', null, text),
       act));
   if (!o.compact && K.mascot) {
     /* o.mascot muda o estado (ex.: {pct: null, tone: 'none'} quando o que falhou foi a leitura da bateria) */
-    try { K.mascot(art, { size: o.mascotSize || 124, state: Object.assign({ pct: 62, tone: 'good', face: 'worried', label: 'Mascote do Kamurafy preocupado' }, o.mascot || {}) }); } catch (e) { /* sem mascote */ }
+    try { K.mascot(art, { size: o.mascotSize || 124, state: Object.assign({ pct: 62, tone: 'good', face: 'worried', label: K.t('Mascote do Kamurafy preocupado') }, o.mascot || {}) }); } catch (e) { /* sem mascote */ }
   }
   return node;
 };
@@ -527,8 +528,8 @@ K.keepFocus = function (root, paint, fallback) {
 
 /* ===== textos dos avisos (Bateria e Ajustes dizem igual) ===== */
 K.avisosTxt = {
-  carga: (lim) => `Me avisa quando chegar em ${lim}%`,
-  cargaSub: 'Uma vez por carga, com o carregador ligado. Parar antes dos 100% ajuda a bateria a durar mais.',
-  quente: 'Me avisa se a bateria esquentar',
-  quenteSub: 'Acima de 45 °C em duas leituras seguidas. Só aviso de novo depois que ela esfriar.',
+  carga: (lim) => K.t('Me avisa quando chegar em {0}%', lim),
+  cargaSub: K.t('Uma vez por carga, com o carregador ligado. Parar antes dos 100% ajuda a bateria a durar mais.'),
+  quente: K.t('Me avisa se a bateria esquentar'),
+  quenteSub: K.t('Acima de 45 °C em duas leituras seguidas. Só aviso de novo depois que ela esfriar.'),
 };

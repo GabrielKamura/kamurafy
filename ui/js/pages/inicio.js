@@ -35,18 +35,18 @@
   const FLY_CHECK_MS = 1500;     // espera antes de conferir se os apps fecharam mesmo
 
   const STEPS = [
-    { id: 'bateria', name: 'Bateria', icon: 'battery', desc: 'saúde, ciclos e carga', doing: 'Olhando a bateria…', route: 'bateria', run: stepBattery },
-    { id: 'energia', name: 'Energia', icon: 'bolt', desc: 'quem mais gasta agora', doing: 'Vendo quem gasta energia…', route: 'bateria', run: stepEnergy },
-    { id: 'memoria', name: 'Memória', icon: 'memory', desc: 'folgada ou apertada', doing: 'Medindo a memória…', route: 'painel', run: stepMemory },
-    { id: 'cpu', name: 'Processador', icon: 'cpu', desc: 'uso e temperatura', doing: 'Sentindo o processador…', route: 'painel', run: stepCpu },
-    { id: 'velocidade', name: 'Velocidade', icon: 'gauge', desc: 'o que deixa lento agora', doing: 'Vendo o que pesa…', route: 'otimizar?aba=lento', run: stepSpeed },
-    { id: 'disco', name: 'Disco', icon: 'disk', desc: 'quanto espaço sobra', doing: 'Medindo o disco…', route: 'painel', run: stepDisk },
-    { id: 'sujeira', name: 'Sujeira', icon: 'broom', desc: 'caches e registros sobrando', doing: 'Procurando sujeira…', route: 'faxina', run: stepDirt,
+    { id: 'bateria', name: K.t('Bateria'), icon: 'battery', desc: K.t('saúde, ciclos e carga'), doing: K.t('Olhando a bateria…'), route: 'bateria', run: stepBattery },
+    { id: 'energia', name: K.t('Energia'), icon: 'bolt', desc: K.t('quem mais gasta agora'), doing: K.t('Vendo quem gasta energia…'), route: 'bateria', run: stepEnergy },
+    { id: 'memoria', name: K.t('Memória'), icon: 'memory', desc: K.t('folgada ou apertada'), doing: K.t('Medindo a memória…'), route: 'painel', run: stepMemory },
+    { id: 'cpu', name: K.t('Processador'), icon: 'cpu', desc: K.t('uso e temperatura'), doing: K.t('Sentindo o processador…'), route: 'painel', run: stepCpu },
+    { id: 'velocidade', name: K.t('Velocidade'), icon: 'gauge', desc: K.t('o que deixa lento agora'), doing: K.t('Vendo o que pesa…'), route: 'otimizar?aba=lento', run: stepSpeed },
+    { id: 'disco', name: K.t('Disco'), icon: 'disk', desc: K.t('quanto espaço sobra'), doing: K.t('Medindo o disco…'), route: 'painel', run: stepDisk },
+    { id: 'sujeira', name: K.t('Sujeira'), icon: 'broom', desc: K.t('caches e registros sobrando'), doing: K.t('Procurando sujeira…'), route: 'faxina', run: stepDirt,
       max: DIRT_CAT_MS * 3 + 2000 },
   ];
   const DIRT_STEP = STEPS.find((s) => s.id === 'sujeira');
   const SPEED_STEP = STEPS.find((s) => s.id === 'velocidade');
-  const COUNT_PT = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+  const COUNT_PT = ['zero', 'uma', 'duas', K.t('três'), 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
 
   let host = null;
   let mode = 'idle';             // idle | scanning | result
@@ -73,9 +73,9 @@
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   /** motivo que o Swift mandou → pedaço de frase (sem UUID, sem ponto final, minúscula) */
   function whyTxt(m) {
-    let s = String(m || '').replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim().replace(/[.!]+$/, '');
-    if (/não está mais na lista/i.test(s)) s = 'a lista mudou: escaneie de novo';
-    if (!s) return 'motivo desconhecido';
+    let s = String(K.t(String(m || ''))).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim().replace(/[.!]+$/, '');
+    if (/não está mais na lista/i.test(s)) s = K.t('a lista mudou: escaneie de novo');
+    if (!s) return K.t('motivo desconhecido');
     return s.charAt(0).toLowerCase() + s.slice(1);
   }
 
@@ -85,14 +85,14 @@
 
   function greeting() {
     const h = new Date().getHours();
-    if (h < 5) return 'Boa noite, coruja!';
-    if (h < 12) return 'Bom dia!';
-    if (h < 18) return 'Boa tarde!';
-    return 'Boa noite!';
+    if (h < 5) return K.t('Boa noite, coruja!');
+    if (h < 12) return K.t('Bom dia!');
+    if (h < 18) return K.t('Boa tarde!');
+    return K.t('Boa noite!');
   }
 
   function withTimeout(p, ms) {
-    return Promise.race([p, K.sleep(ms).then(() => { throw new Error('demorou demais pra responder'); })]);
+    return Promise.race([p, K.sleep(ms).then(() => { throw new Error(K.t('demorou demais pra responder')); })]);
   }
 
   /* ================= sujeira: olhada rápida pra Varredura e pro Painel =================
@@ -106,7 +106,7 @@
      K.dirt.gen muda e quem guardou um número sabe que ele ficou velho. */
   K.dirt = (function () {
     const CATS = ['caches', 'dev', 'logs'];
-    const NAMES = { caches: 'caches de apps', dev: 'caches de programação', logs: 'registros' };
+    const NAMES = { caches: K.t('caches de apps'), dev: K.t('caches de programação'), logs: 'registros' };
     let last = null, running = null, gen = 0;
 
     async function run(onCat) {
@@ -116,7 +116,7 @@
         if (onCat) { try { onCat(id, NAMES[id]); } catch (e) { /* só aviso de progresso */ } }
         try {
           const c = await withTimeout(K.api('cleanup.scan', { categoria: id }), DIRT_CAT_MS);
-          if (!c || num(c.bytes) == null) throw new Error('resposta vazia');
+          if (!c || num(c.bytes) == null) throw new Error(K.t('resposta vazia'));
           /* o que vem marcado segue a mesma regra da Faxina (K.cleanSuggested), pra o número bater */
           const pick = K.cleanSuggested || ((it) => !!it && it.selecionado);
           const list = Array.isArray(c.itens) ? c.itens : null;
@@ -143,7 +143,7 @@
       out.at = Date.now();
       if (!out.cats.length) {
         const e = out.errs.find((x) => x.msg);
-        throw new Error(e ? e.msg : 'o Mac não respondeu');
+        throw new Error(e ? e.msg : K.t('o Mac não respondeu'));
       }
       if (my === gen) last = out;
       return out;
@@ -198,7 +198,7 @@
     return ctx.disk;
   }
   async function stepDirt(ctx) {
-    const d = await K.dirt.check({ fresh: true, onCat: (id, nome) => ctx.progress && ctx.progress(`Olhando ${nome}…`) });
+    const d = await K.dirt.check({ fresh: true, onCat: (id, nome) => ctx.progress && ctx.progress(K.t('Olhando {0}…', nome)) });
     ctx.dirtGen = K.dirt.gen;
     return anDirt(d, ctx.disk);
   }
@@ -212,7 +212,7 @@
     const box = { done: false, value: null, p: null };
     box.p = withTimeout(K.api('optimize.startup'), STARTUP_MS)
       .then(anStartup)
-      .catch((e) => { console.warn('varredura/itens de início: ' + (e && e.message)); return null; })
+      .catch((e) => { console.warn(K.t('varredura/itens de início: ') + (e && e.message)); return null; })
       .then((v) => { box.done = true; box.value = v; return v; });
     return box;
   }
@@ -235,13 +235,13 @@
   }
 
   function chargeText(b) {
-    const p = num(b.percent) != null ? K.fmt.pct(b.percent, 0) : 'carga sem leitura';
-    if (b.isCharging == null && b.pluggedIn == null) return `${p}, sem leitura da tomada`;
-    if (b.isCharging) return `${p}, carregando` + (num(b.minutesToFull) ? ` (cheia em ${K.fmt.mins(b.minutesToFull)})` : '');
-    if (K.batTopping(b)) return `${p}, terminando de encher`;
-    if (b.pluggedIn && (b.fullyCharged || b.percent >= 99)) return `${p}, cheia na tomada`;
-    if (b.pluggedIn) return `${p}, na tomada sem carregar`;
-    return `${p}, na bateria` + (num(b.minutesToEmpty) ? ` (uns ${K.fmt.mins(b.minutesToEmpty)})` : '');
+    const p = num(b.percent) != null ? K.fmt.pct(b.percent, 0) : K.t('carga sem leitura');
+    if (b.isCharging == null && b.pluggedIn == null) return K.t('{0}, sem leitura da tomada', p);
+    if (b.isCharging) return K.t('{0}, carregando', p) + (num(b.minutesToFull) ? K.t(' (cheia em {0})', K.fmt.mins(b.minutesToFull)) : '');
+    if (K.batTopping(b)) return K.t('{0}, terminando de encher', p);
+    if (b.pluggedIn && (b.fullyCharged || b.percent >= 99)) return K.t('{0}, cheia na tomada', p);
+    if (b.pluggedIn) return K.t('{0}, na tomada sem carregar', p);
+    return K.t('{0}, na bateria', p) + (num(b.minutesToEmpty) ? K.t(' (uns {0})', K.fmt.mins(b.minutesToEmpty)) : '');
   }
 
   function anBattery(b) {
@@ -250,13 +250,13 @@
       if (K.isLaptop(machine && machine.info)) {
         /* notebook sem bateria à vista: é leitura que faltou (ou bateria removida), não Mac de mesa */
         return Object.assign(r, {
-          unknown: true, missing: true, tone: 'none', key: 'desconhecida', pill: { label: 'Sem leitura', icon: 'info' }, snippet: 'bateria sem leitura',
-          say: 'Não consegui ler a bateria deste MacBook. Se continuar assim, vale uma assistência autorizada.',
+          unknown: true, missing: true, tone: 'none', key: 'desconhecida', pill: { label: K.t('Sem leitura'), icon: 'info' }, snippet: K.t('bateria sem leitura'),
+          say: K.t('Não consegui ler a bateria deste MacBook. Se continuar assim, vale uma assistência autorizada.'),
         });
       }
       return Object.assign(r, {
-        none: true, tone: null, pill: { label: 'Mac de mesa', icon: 'desktop' }, snippet: 'sem bateria',
-        say: 'Este Mac vive na tomada: não tem bateria pra medir.',
+        none: true, tone: null, pill: { label: K.t('Mac de mesa'), icon: 'desktop' }, snippet: K.t('sem bateria'),
+        say: K.t('Este Mac vive na tomada: não tem bateria pra medir.'),
       });
     }
     const key = K.batStatusKey(b);
@@ -266,27 +266,27 @@
     const cyc = num(b.cycles), dc = num(b.designCycles);
     const hot = num(b.temperatureC) != null && b.temperatureC >= 40;
     let tone = st.tone, pill = { label: st.label, icon: st.icon };
-    if (hot && !(RANK[tone] >= RANK.warn)) { tone = 'warn'; pill = { label: 'Com calor', icon: 'thermo' }; }
+    if (hot && !(RANK[tone] >= RANK.warn)) { tone = 'warn'; pill = { label: K.t('Com calor'), icon: 'thermo' }; }
 
     let say;
-    if (key === 'trocar') say = 'O macOS pede revisão. Vale levar numa assistência autorizada.';
-    else if (key === 'gasta') say = 'Abaixo dos 80% que a Apple usa como limite: a carga dura menos.';
-    else if (key === 'de-olho' && dc && cyc != null && cyc >= dc * 0.8) say = `Já são ${K.fmt.num(cyc)} de ${K.fmt.num(dc)} ciclos previstos. Vale acompanhar.`;
-    else if (key === 'de-olho') say = 'Funciona bem, mas vale acompanhar: abaixo de 80% a Apple considera gasta.';
-    else if (key === 'desconhecida') say = 'O Mac não informou a saúde agora. Tente de novo daqui a pouco.';
-    else say = 'A Apple só considera gasta abaixo de 80%. Está tranquilo.';
+    if (key === 'trocar') say = K.t('O macOS pede revisão. Vale levar numa assistência autorizada.');
+    else if (key === 'gasta') say = K.t('Abaixo dos 80% que a Apple usa como limite: a carga dura menos.');
+    else if (key === 'de-olho' && dc && cyc != null && cyc >= dc * 0.8) say = K.t('Já são {0} de {1} ciclos previstos. Vale acompanhar.', K.fmt.num(cyc), K.fmt.num(dc));
+    else if (key === 'de-olho') say = K.t('Funciona bem, mas vale acompanhar: abaixo de 80% a Apple considera gasta.');
+    else if (key === 'desconhecida') say = K.t('O Mac não informou a saúde agora. Tente de novo daqui a pouco.');
+    else say = K.t('A Apple só considera gasta abaixo de 80%. Está tranquilo.');
 
     let tip = null;
-    if (hot) tip = { icon: 'thermo', text: `Está quente (${K.fmt.temp(b.temperatureC)}). Deixe as saídas de ar livres: calor é o que mais gasta bateria.` };
-    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { id: 'otimizado', icon: 'leaf', text: 'Ficar sempre em 100% desgasta mais. Ligue o Carregamento otimizado (Ajustes do Sistema › Bateria).' };
+    if (hot) tip = { icon: 'thermo', text: K.t('Está quente ({0}). Deixe as saídas de ar livres: calor é o que mais gasta bateria.', K.fmt.temp(b.temperatureC)) };
+    else if (b.pluggedIn && b.percent >= 99 && !b.optimizedChargingEngaged) tip = { id: 'otimizado', icon: 'leaf', text: K.t('Ficar sempre em 100% desgasta mais. Ligue o Carregamento otimizado (Ajustes do Sistema › Bateria).') };
 
     const side = [];
-    side.push({ icon: b.isCharging ? 'bolt' : b.pluggedIn ? 'plug' : 'battery', label: 'Carga agora',
+    side.push({ icon: b.isCharging ? 'bolt' : b.pluggedIn ? 'plug' : 'battery', label: K.t('Carga agora'),
       value: num(b.percent) != null ? K.fmt.pct(b.percent, 0) : null, sub: chargeText(b).replace(/^[^,]*,\s*/, '') });
-    side.push({ icon: 'cycle', label: 'Ciclos', value: cyc != null ? K.fmt.num(cyc) : null, sub: cyc == null ? 'o Mac não informou' : dc ? `de ${K.fmt.num(dc)} previstos` : 'contados pelo Mac' });
+    side.push({ icon: 'cycle', label: K.t('Ciclos'), value: cyc != null ? K.fmt.num(cyc) : null, sub: cyc == null ? K.t('o Mac não informou') : dc ? K.t('de {0} previstos', K.fmt.num(dc)) : K.t('contados pelo Mac') });
     const t = num(b.temperatureC);
-    side.push({ icon: 'thermo', label: 'Temperatura', value: t != null ? K.fmt.temp(t) : null, sub: t == null ? 'o Mac não informou' : hot ? 'da bateria, quente' : t >= 35 ? 'da bateria, morna' : 'da bateria, tranquila' });
-    return Object.assign(r, { tone, pill, key, unknown: key === 'desconhecida', health: h, snippet: hTxt ? `${hTxt} de saúde` : 'saúde sem leitura', say, tip, side });
+    side.push({ icon: 'thermo', label: K.t('Temperatura'), value: t != null ? K.fmt.temp(t) : null, sub: t == null ? K.t('o Mac não informou') : hot ? K.t('da bateria, quente') : t >= 35 ? K.t('da bateria, morna') : K.t('da bateria, tranquila') });
+    return Object.assign(r, { tone, pill, key, unknown: key === 'desconhecida', health: h, snippet: hTxt ? K.t('{0} de saúde', hTxt) : K.t('saúde sem leitura'), say, tip, side });
   }
 
   function anEnergy(apps, b) {
@@ -296,8 +296,8 @@
     /* o próprio Kamurafy gasta durante a varredura: o veredito olha pro primeiro que não é ele */
     const top = list.find((a) => a.note !== 'este app');
     if (!top) {
-      return Object.assign(r, { tone: 'good', pill: { label: 'Tudo calmo', icon: 'check' }, snippet: 'tudo calmo',
-        say: 'Nenhum app gastando de verdade agora.' });
+      return Object.assign(r, { tone: 'good', pill: { label: K.t('Tudo calmo'), icon: 'check' }, snippet: K.t('tudo calmo'),
+        say: K.t('Nenhum app gastando de verdade agora.') });
     }
     const name = top.label;
     const sys = top.note === 'do sistema';
@@ -306,36 +306,36 @@
     const heavy = top.value >= 60;
     const tone = heavy && onBattery ? 'warn' : 'good';
     let say;
-    if (heavy && onBattery && sys) say = `${name}, do sistema, está puxando bastante. Costuma passar sozinho.`;
-    else if (heavy && onBattery) say = `${name} está puxando bastante. Fechar ajuda a bateria durar mais.`;
-    else if (heavy && desk) say = sys ? `${name}, do sistema, é quem mais gasta. Num Mac de mesa, só esquenta um pouco.` : `${name} é quem mais gasta. Num Mac de mesa, só esquenta um pouco.`;
-    else if (heavy) say = sys ? `${name}, do sistema, é quem mais gasta. Na tomada, não pesa na bateria.` : `${name} é quem mais gasta. Na tomada, não pesa na bateria.`;
-    else say = sys ? `${name}, do sistema, é quem mais gasta. Nada fora do normal.` : `${name} é quem mais gasta. Nada fora do normal.`;
+    if (heavy && onBattery && sys) say = K.t('{0}, do sistema, está puxando bastante. Costuma passar sozinho.', name);
+    else if (heavy && onBattery) say = K.t('{0} está puxando bastante. Fechar ajuda a bateria durar mais.', name);
+    else if (heavy && desk) say = sys ? K.t('{0}, do sistema, é quem mais gasta. Num Mac de mesa, só esquenta um pouco.', name) : K.t('{0} é quem mais gasta. Num Mac de mesa, só esquenta um pouco.', name);
+    else if (heavy) say = sys ? K.t('{0}, do sistema, é quem mais gasta. Na tomada, não pesa na bateria.', name) : K.t('{0} é quem mais gasta. Na tomada, não pesa na bateria.', name);
+    else say = sys ? K.t('{0}, do sistema, é quem mais gasta. Nada fora do normal.', name) : K.t('{0} é quem mais gasta. Nada fora do normal.', name);
     return Object.assign(r, {
       tone, say, top: name, heavy,
-      pill: tone === 'warn' ? { label: 'Tem app puxando', icon: 'flame' } : { label: 'Tranquilo', icon: 'check' },
-      snippet: `${name} na frente`,
-      note: 'Impacto energético do macOS: serve pra comparar, não é watt.',
+      pill: tone === 'warn' ? { label: K.t('Tem app puxando'), icon: 'flame' } : { label: K.t('Tranquilo'), icon: 'check' },
+      snippet: K.t('{0} na frente', name),
+      note: K.t('Impacto energético do macOS: serve pra comparar, não é watt.'),
     });
   }
 
   const PRESSURE = {
-    normal: { tone: 'good', label: 'Folgada', icon: 'check',
-      say: 'Usar bastante memória é normal. O que conta é a pressão, e ela está baixa.' },
-    atencao: { tone: 'warn', label: 'Apertada', icon: 'eye',
-      say: 'O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.' },
-    critica: { tone: 'serious', label: 'No limite', icon: 'alert',
-      say: 'Sem folga: o Mac usa o disco no lugar dela. Feche o que não estiver usando.' },
+    normal: { tone: 'good', label: K.t('Folgada'), icon: 'check',
+      say: K.t('Usar bastante memória é normal. O que conta é a pressão, e ela está baixa.') },
+    atencao: { tone: 'warn', label: K.t('Apertada'), icon: 'eye',
+      say: K.t('O Mac já usa o disco pra dar conta. Fechar abas e apps parados alivia.') },
+    critica: { tone: 'serious', label: K.t('No limite'), icon: 'alert',
+      say: K.t('Sem folga: o Mac usa o disco no lugar dela. Feche o que não estiver usando.') },
   };
 
   function anMemory(m) {
-    if (!m || !num(m.totalBytes)) throw new Error('o macOS não informou a memória');
+    if (!m || !num(m.totalBytes)) throw new Error(K.t('o macOS não informou a memória'));
     const p = PRESSURE[m.pressure] || PRESSURE.normal;
     const used = num(m.usedBytes);
     const pct = used != null ? (used / m.totalBytes) * 100 : null;
     return {
       id: 'memoria', tone: p.tone, pill: { label: p.label, icon: p.icon }, say: p.say,
-      value: used, valueFmt: (v) => gib(v), sub: `em uso, de ${gib(m.totalBytes, 0)}`,
+      value: used, valueFmt: (v) => gib(v), sub: K.t('em uso, de {0}', gib(m.totalBytes, 0)),
       meter: pct, snippet: `${gib(used)} · ${p.label.toLowerCase()}`,
     };
   }
@@ -344,40 +344,40 @@
     normal: { txt: 'fresco', tone: 'good' },   // a mesma régua do Painel: Fresco · Morno · Quente · Crítico
     morno: { txt: 'morno', tone: 'good' },
     quente: { txt: 'quente', tone: 'warn' },
-    critico: { txt: 'muito quente', tone: 'crit' },
+    critico: { txt: K.t('muito quente'), tone: 'crit' },
   };
 
   function anCpu(cpu, thermal) {
     const usage = cpu ? num(cpu.usagePct) : null;
     const th = THERMAL[thermal] || null;
-    if (usage == null && !th) throw new Error('o macOS não informou o processador');
+    if (usage == null && !th) throw new Error(K.t('o macOS não informou o processador'));
     /* processador alto num instante não é defeito: no máximo "atenção", nunca vermelho */
     const busy = usage != null && usage >= 90;
     const working = usage != null && usage >= 60;
     const tone = worst(busy ? 'warn' : 'good', th ? th.tone : 'good');
     let pill, say;
     if (th && th.tone === 'crit') {
-      pill = { label: 'Quente demais', icon: 'flame' };
-      say = 'Muito quente: o Mac já segura a velocidade. Dê uma pausa no que é pesado.';
+      pill = { label: K.t('Quente demais'), icon: 'flame' };
+      say = K.t('Muito quente: o Mac já segura a velocidade. Dê uma pausa no que é pesado.');
     } else if (th && th.tone === 'warn') {
-      pill = { label: 'Esquentando', icon: 'thermo' };
-      say = 'O macOS pode diminuir a velocidade pra esfriar. Deixe as saídas de ar livres.';
+      pill = { label: K.t('Esquentando'), icon: 'thermo' };
+      say = K.t('O macOS pode diminuir a velocidade pra esfriar. Deixe as saídas de ar livres.');
     } else if (busy) {
-      pill = { label: 'A todo vapor', icon: 'eye' };
-      say = 'Normal enquanto algo pesado roda. Se seguir assim parado, veja quem está puxando.';
+      pill = { label: K.t('A todo vapor'), icon: 'eye' };
+      say = K.t('Normal enquanto algo pesado roda. Se seguir assim parado, veja quem está puxando.');
     } else if (working) {
-      pill = { label: 'Trabalhando', icon: 'check' };
-      say = 'Trabalhando, mas com folga.';
+      pill = { label: K.t('Trabalhando'), icon: 'check' };
+      say = K.t('Trabalhando, mas com folga.');
     } else {
-      pill = { label: 'Tranquilo', icon: 'check' };
-      say = 'O processador está folgado.';
+      pill = { label: K.t('Tranquilo'), icon: 'check' };
+      say = K.t('O processador está folgado.');
     }
     const cores = cpu ? K.fmt.cores(cpu, true) : '';
     return {
       id: 'cpu', tone, pill, say, busy,
-      value: usage, valueFmt: (v) => K.fmt.pct(v, 0), sub: 'em uso agora' + (cores ? ` · ${cores}` : ''),
+      value: usage, valueFmt: (v) => K.fmt.pct(v, 0), sub: K.t('em uso agora') + (cores ? ` · ${cores}` : ''),
       meter: usage, meterTone: busy ? 'warn' : null,
-      facts: th ? [{ icon: 'thermo', text: `Calor do Mac: ${th.txt}` }] : [],
+      facts: th ? [{ icon: 'thermo', text: K.t('Calor do Mac: {0}', th.txt) }] : [],
       snippet: [usage != null ? K.fmt.pct(usage, 0) : null, th ? th.txt : null].filter(Boolean).join(' · '),
     };
   }
@@ -385,44 +385,44 @@
   function anDisk(d) {
     const total = d ? num(d.totalBytes) : null;
     const avail = d ? (num(d.availableBytes) != null ? d.availableBytes : num(d.freeBytes)) : null;
-    if (!total || avail == null) throw new Error('o macOS não informou o disco');
+    if (!total || avail == null) throw new Error(K.t('o macOS não informou o disco'));
     const free = clamp((avail / total) * 100, 0, 100);
     const tone = free < 10 ? 'crit' : free < 20 ? 'warn' : 'good';
     let pill, say;
     if (tone === 'crit') {
-      pill = { label: 'Quase cheio', icon: 'alert' };
-      say = 'Quase sem espaço. Vale tirar arquivos grandes que você não usa.';
+      pill = { label: K.t('Quase cheio'), icon: 'alert' };
+      say = K.t('Quase sem espaço. Vale tirar arquivos grandes que você não usa.');
     } else if (tone === 'warn') {
-      pill = { label: 'Ficando cheio', icon: 'eye' };
-      say = 'Abaixo de 10% livre, o Mac pode ficar lento.';
+      pill = { label: K.t('Ficando cheio'), icon: 'eye' };
+      say = K.t('Abaixo de 10% livre, o Mac pode ficar lento.');
     } else if (free >= 40) {
-      pill = { label: 'Espaço de sobra', icon: 'check' };
-      say = 'Bem acima dos 10 a 20% que o macOS gosta de ter livres.';
+      pill = { label: K.t('Espaço de sobra'), icon: 'check' };
+      say = K.t('Bem acima dos 10 a 20% que o macOS gosta de ter livres.');
     } else {
-      pill = { label: 'Espaço ok', icon: 'check' };
-      say = 'O macOS gosta de ter de 10 a 20% livres. Por enquanto, ok.';
+      pill = { label: K.t('Espaço ok'), icon: 'check' };
+      say = K.t('O macOS gosta de ter de 10 a 20% livres. Por enquanto, ok.');
     }
     return {
       id: 'disco', tone, pill, say,
-      value: avail, valueFmt: (v) => K.fmt.bytes(v), sub: `livres de ${K.fmt.bytes(total)} (${K.fmt.num(free, 0)}%)`,
-      meter: 100 - free, meterLabel: 'ocupado',
+      value: avail, valueFmt: (v) => K.fmt.bytes(v), sub: K.t('livres de {0} ({1}%)', K.fmt.bytes(total), K.fmt.num(free, 0)),
+      meter: 100 - free, meterLabel: K.t('ocupado'),
       snippet: `${K.fmt.bytes(avail)} livres`,
     };
   }
 
   /* ---------- velocidade (speed.diagnose): o veredito manda no tom ---------- */
   const SPEED = {
-    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: 'Só coisa leve rodando agora.' },
-    deboa: { tone: 'good', label: 'De boa', icon: 'check', say: 'Uma coisinha ou outra pesando, nada que trave.' },
-    pesado: { tone: 'warn', label: 'Tá pesado', icon: 'eye', say: 'Dá pra aliviar sem reiniciar o Mac.' },
-    travando: { tone: 'serious', label: 'Tá travando', icon: 'alert', say: 'Comece pelo primeiro da lista: é o que mais ajuda.' },
+    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: K.t('Só coisa leve rodando agora.') },
+    deboa: { tone: 'good', label: K.t('De boa'), icon: 'check', say: K.t('Uma coisinha ou outra pesando, nada que trave.') },
+    pesado: { tone: 'warn', label: K.t('Tá pesado'), icon: 'eye', say: K.t('Dá pra aliviar sem reiniciar o Mac.') },
+    travando: { tone: 'serious', label: K.t('Tá travando'), icon: 'alert', say: K.t('Comece pelo primeiro da lista: é o que mais ajuda.') },
   };
   const FUNDO = {
-    spotlight: { icon: 'scan', text: 'Spotlight indexando' },
-    timemachine: { icon: 'clock', text: 'Time Machine copiando' },
-    fotos: { icon: 'screen', text: 'Fotos analisando' },
-    icloud: { icon: 'cloud', text: 'iCloud sincronizando' },
-    atualizacao: { icon: 'cycle', text: 'macOS atualizando' },
+    spotlight: { icon: 'scan', text: K.t('Spotlight indexando') },
+    timemachine: { icon: 'clock', text: K.t('Time Machine copiando') },
+    fotos: { icon: 'screen', text: K.t('Fotos analisando') },
+    icloud: { icon: 'cloud', text: K.t('iCloud sincronizando') },
+    atualizacao: { icon: 'cycle', text: K.t('macOS atualizando') },
   };
   /** ícone de app que veio do Swift: só data:image (nada de endereço de fora) */
   const appIcon = (s) => (typeof s === 'string' && /^data:image\/(png|jpeg|gif|tiff|webp|svg\+xml);base64,/i.test(s) ? s : null);
@@ -430,52 +430,52 @@
   /** um achado em poucas palavras: {icon, img?, text, sub, tone}. Nome vem de fora: textContent. */
   function speedLine(f, rep) {
     const tone = ['warn', 'serious', 'crit'].includes(f.tom) ? f.tom : 'warn';
-    const nm = safeName(f.nome) || 'Um app';
+    const nm = safeName(f.nome) || K.t('Um app');
     const out = (o) => Object.assign({ tone, sub: '' }, o);
     switch (f.tipo) {
       case 'processo':
       case 'navegador':
         if (f.detalhe === 'memoria') {
-          return out({ icon: 'memory', img: appIcon(f.icon), text: `${nm} enchendo a memória`, sub: num(f.memBytes) ? `${gib(f.memBytes)} de memória` : 'ocupando bastante memória' });
+          return out({ icon: 'memory', img: appIcon(f.icon), text: K.t('{0} enchendo a memória', nm), sub: num(f.memBytes) ? K.t('{0} de memória', gib(f.memBytes)) : K.t('ocupando bastante memória') });
         }
-        return out({ icon: 'cpu', img: appIcon(f.icon), text: `${nm} no talo`, sub: num(f.cpu) != null ? `${K.fmt.pct(f.cpu, 0)} de CPU no último minuto` : 'puxando o processador' });
+        return out({ icon: 'cpu', img: appIcon(f.icon), text: K.t('{0} no talo', nm), sub: num(f.cpu) != null ? K.t('{0} de CPU no último minuto', K.fmt.pct(f.cpu, 0)) : K.t('puxando o processador') });
       case 'memoria':
-        if (f.detalhe === 'critica') return out({ icon: 'memory', text: 'Memória no limite', sub: 'o Mac usa o disco no lugar dela' });
-        if (f.detalhe === 'swap') return out({ icon: 'memory', text: 'Memória usando o disco', sub: num(f.valor) ? `${gib(f.valor)} guardados no disco` : 'o Mac guarda parte no disco' });
-        return out({ icon: 'memory', text: 'Memória apertada', sub: 'o Mac já começou a comprimir' });
+        if (f.detalhe === 'critica') return out({ icon: 'memory', text: K.t('Memória no limite'), sub: K.t('o Mac usa o disco no lugar dela') });
+        if (f.detalhe === 'swap') return out({ icon: 'memory', text: K.t('Memória usando o disco'), sub: num(f.valor) ? K.t('{0} guardados no disco', gib(f.valor)) : K.t('o Mac guarda parte no disco') });
+        return out({ icon: 'memory', text: K.t('Memória apertada'), sub: K.t('o Mac já começou a comprimir') });
       case 'fundo': {
-        const x = FUNDO[f.detalhe] || { icon: 'cycle', text: 'macOS trabalhando' };
-        return out({ icon: x.icon, text: x.text, sub: 'passa sozinho' });
+        const x = FUNDO[f.detalhe] || { icon: 'cycle', text: K.t('macOS trabalhando') };
+        return out({ icon: x.icon, text: x.text, sub: K.t('passa sozinho') });
       }
       case 'calor': {
         const lim = num(rep && rep.limiteCPU);
-        const sub = lim != null && lim < 100 ? `processador segurado em ${K.fmt.pct(lim, 0)}`
-          : f.detalhe === 'critico' ? 'o Mac está muito quente' : f.detalhe === 'quente' ? 'o Mac está quente' : 'o macOS segura pra esfriar';
-        return out({ icon: 'thermo', text: 'Calor freando', sub });
+        const sub = lim != null && lim < 100 ? K.t('processador segurado em {0}', K.fmt.pct(lim, 0))
+          : f.detalhe === 'critico' ? K.t('o Mac está muito quente') : f.detalhe === 'quente' ? K.t('o Mac está quente') : K.t('o macOS segura pra esfriar');
+        return out({ icon: 'thermo', text: K.t('Calor freando'), sub });
       }
-      case 'economia': return out({ icon: 'leaf', text: 'Pouca Energia ligado', sub: 'deixa o Mac mais lento de propósito' });
-      case 'disco': return out({ icon: 'disk', text: 'Disco quase cheio', sub: num(f.valor) ? `${K.fmt.bytes(f.valor)} livres` : 'pouco espaço sobrando' });
-      case 'reiniciar': return out({ icon: 'cycle', text: num(f.valor) ? `Ligado há ${K.fmt.num(f.valor, 0)} dias` : 'Muito tempo sem reiniciar', sub: 'reiniciar alivia' });
-      case 'inicio': return out({ icon: 'rocket', text: `${num(f.processos) || 'Vários'} itens abrem com o Mac`, sub: 'dá pra desligar em Velocidade' });
-      default: return out({ icon: 'gauge', text: 'Algo pesando', sub: '' });
+      case 'economia': return out({ icon: 'leaf', text: K.t('Pouca Energia ligado'), sub: K.t('deixa o Mac mais lento de propósito') });
+      case 'disco': return out({ icon: 'disk', text: K.t('Disco quase cheio'), sub: num(f.valor) ? `${K.fmt.bytes(f.valor)} livres` : K.t('pouco espaço sobrando') });
+      case 'reiniciar': return out({ icon: 'cycle', text: num(f.valor) ? K.t('Ligado há {0} dias', K.fmt.num(f.valor, 0)) : K.t('Muito tempo sem reiniciar'), sub: K.t('reiniciar alivia') });
+      case 'inicio': return out({ icon: 'rocket', text: K.t('{0} itens abrem com o Mac', num(f.processos) || K.t('Vários')), sub: K.t('dá pra desligar em Velocidade') });
+      default: return out({ icon: 'gauge', text: K.t('Algo pesando'), sub: '' });
     }
   }
 
   function anSpeed(rep) {
     const v = rep && SPEED[rep.veredito];
-    if (!v) throw new Error('o Mac não disse o que pesa');
+    if (!v) throw new Error(K.t('o Mac não disse o que pesa'));
     const finds = (Array.isArray(rep.achados) ? rep.achados : []).filter((f) => f && typeof f === 'object');
     const lines = finds.slice(0, 2).map((f) => speedLine(f, rep));
     return {
       id: 'velocidade', rep, tone: v.tone, pill: { label: v.label, icon: v.icon }, lines,
-      say: finds.length ? v.say : 'Nada pesando agora.',
+      say: finds.length ? v.say : K.t('Nada pesando agora.'),
       snippet: v.label + (lines.length ? ' · ' + lines[0].text : ''),
-      note: 'Média do último minuto.',
+      note: K.t('Média do último minuto.'),
     };
   }
 
   const DIRT_COLOR = { caches: K.charts.palette[0], dev: K.charts.palette[1], logs: K.charts.palette[2] };
-  const DIRT_SHORT = { caches: 'Caches de apps', dev: 'Caches de programação', logs: 'Registros' };
+  const DIRT_SHORT = { caches: K.t('Caches de apps'), dev: K.t('Caches de programação'), logs: K.t('Registros') };
   /** "3,2 GB" com espaço que não quebra (a unidade nunca fica sozinha na linha) */
   const gbNb = (v) => K.fmt.bytes(v).replace(' ', '\u00a0');
 
@@ -491,43 +491,43 @@
     const selTxt = gbNb(d.sel);
     r.tight = tight;
     r.facts = [];
-    if (top && d.sel > 0 && top.bytes >= 1e7) r.facts.push({ icon: 'box', text: `O maior: ${top.nome}, ${gbNb(top.bytes)}` });
-    if (d.errs.length) r.facts.push({ icon: 'info', text: `Não deu pra ver: ${listPt(d.errs.map((e) => e.nome))}` });
-    else if (d.incompleto) r.facts.push({ icon: 'info', text: 'Parei de contar no meio: o número é o mínimo' });
-    r.note = 'Em Espaço você revisa item por item, e tudo vai pra Lixeira.';
+    if (top && d.sel > 0 && top.bytes >= 1e7) r.facts.push({ icon: 'box', text: K.t('O maior: {0}, {1}', top.nome, gbNb(top.bytes)) });
+    if (d.errs.length) r.facts.push({ icon: 'info', text: K.t('Não deu pra ver: {0}', listPt(d.errs.map((e) => e.nome))) });
+    else if (d.incompleto) r.facts.push({ icon: 'info', text: K.t('Parei de contar no meio: o número é o mínimo') });
+    r.note = K.t('Em Espaço você revisa item por item, e tudo vai pra Lixeira.');
 
     if (d.bytes <= 0) {
-      return Object.assign(r, { tone: 'good', pill: { label: 'Limpinho', icon: 'check' }, snippet: 'nada sobrando', value: null, note: null,
-        say: 'Não achei cache nem registro sobrando.' });
+      return Object.assign(r, { tone: 'good', pill: { label: K.t('Limpinho'), icon: 'check' }, snippet: K.t('nada sobrando'), value: null, note: null,
+        say: K.t('Não achei cache nem registro sobrando.') });
     }
     if (d.sel <= 0) {
       /* sem nada marcado, a barra seria 100% "pra você decidir": não diz nada, fica de fora */
-      return Object.assign(r, { tone: 'good', pill: { label: 'Nada marcado', icon: 'check' }, snippet: 'nada pra tirar sozinho', value: null, noStack: true,
-        say: r.partial ? `Achei pelo menos ${gbNb(d.bytes)}, mas nada que eu tiraria sozinho.` : `Achei ${gbNb(d.bytes)}, mas nada que eu tiraria sozinho.` });
+      return Object.assign(r, { tone: 'good', pill: { label: K.t('Nada marcado'), icon: 'check' }, snippet: K.t('nada pra tirar sozinho'), value: null, noStack: true,
+        say: r.partial ? K.t('Achei pelo menos {0}, mas nada que eu tiraria sozinho.', gbNb(d.bytes)) : K.t('Achei {0}, mas nada que eu tiraria sozinho.', gbNb(d.bytes)) });
     }
-    const out = { value: d.sel, snippet: `${selTxt} pra liberar`, sub: r.partial ? 'pra liberar, pelo menos' : 'pra liberar com segurança' };
+    const out = { value: d.sel, snippet: K.t('{0} pra liberar', selTxt), sub: r.partial ? K.t('pra liberar, pelo menos') : K.t('pra liberar com segurança') };
     if (d.sel < DIRT_TIP) {
-      return Object.assign(r, out, { tone: 'good', pill: { label: 'Tranquilo', icon: 'check' },
-        say: 'Pouca coisa: dá pra deixar pra outro dia.' });
+      return Object.assign(r, out, { tone: 'good', pill: { label: K.t('Tranquilo'), icon: 'check' },
+        say: K.t('Pouca coisa: dá pra deixar pra outro dia.') });
     }
     const bigName = K.dirt.NAMES[big.id], bigGb = gbNb(big.sel);
     const say = tight
-      ? `Quem mais pesa: ${bigName}, ${bigGb}. Com o disco apertado, é um bom começo.`
-      : `Quem mais pesa: ${bigName}, ${bigGb}. Não é urgente: é só espaço de volta.`;
-    return Object.assign(r, out, { tone: 'tip', pill: { label: 'Dá pra liberar', icon: 'sparkle' }, say });
+      ? K.t('Quem mais pesa: {0}, {1}. Com o disco apertado, é um bom começo.', bigName, bigGb)
+      : K.t('Quem mais pesa: {0}, {1}. Não é urgente: é só espaço de volta.', bigName, bigGb);
+    return Object.assign(r, out, { tone: 'tip', pill: { label: K.t('Dá pra liberar'), icon: 'sparkle' }, say });
   }
 
   function errResult(step, e) {
     const msg = e && e.message ? String(e.message) : '';
     if (step.id === 'sujeira') {
       return {
-        id: step.id, error: true, tone: null, pill: { label: 'Não consegui ver', icon: 'info' }, snippet: 'não consegui ver',
-        say: `Não consegui ver a sujeira agora${msg ? ` (${msg})` : ''}. Não mexi em nada.`,
+        id: step.id, error: true, tone: null, pill: { label: K.t('Não consegui ver'), icon: 'info' }, snippet: K.t('não consegui ver'),
+        say: K.t('Não consegui ver a sujeira agora{0}. Não mexi em nada.', msg ? ` (${msg})` : ''),
       };
     }
     return {
-      id: step.id, error: true, tone: null, pill: { label: 'Sem leitura', icon: 'info' }, snippet: 'não deu pra ler',
-      say: `Não consegui ler agora${msg ? ` (${msg})` : ''}. Tente de novo daqui a pouco.`,
+      id: step.id, error: true, tone: null, pill: { label: K.t('Sem leitura'), icon: 'info' }, snippet: K.t('não deu pra ler'),
+      say: K.t('Não consegui ler agora{0}. Tente de novo daqui a pouco.', msg ? ` (${msg})` : ''),
     };
   }
 
@@ -562,7 +562,7 @@
     const chip = info.chip || (sys.cpu && sys.cpu.chip);
     if (chip) bits.push(chip);
     if (sys.macOS) bits.push('macOS ' + sys.macOS);
-    if (num(sys.uptimeSec)) bits.push('ligado há ' + K.fmt.duration(sys.uptimeSec));
+    if (num(sys.uptimeSec)) bits.push(K.t('ligado há ') + K.fmt.duration(sys.uptimeSec));
     if (!bits.length) return null;
     const desk = m.b && m.b.present === false && !K.isLaptop(m.info);
     const strip = K.el('footer', { class: 'kz-mac', html: K.icon(desk ? 'desktop' : 'laptop') });
@@ -574,7 +574,7 @@
   }
 
   function sparkles(n) {
-    const star = 'M12 1.5c.9 6 3.6 8.7 9.5 9.8v1.4c-5.9 1.1-8.6 3.8-9.5 9.8h-1c-.9-6-3.6-8.7-9.5-9.8v-1.4C7.4 10.2 10.1 7.5 11 1.5Z';
+    const star = K.t('M12 1.5c.9 6 3.6 8.7 9.5 9.8v1.4c-5.9 1.1-8.6 3.8-9.5 9.8h-1c-.9-6-3.6-8.7-9.5-9.8v-1.4C7.4 10.2 10.1 7.5 11 1.5Z');
     const out = [];
     for (let i = 0; i < n; i++) {
       out.push(K.el('span', {
@@ -589,16 +589,16 @@
 
   /** o que o mascote diz na entrada: a saúde da bateria (a estrela do app) já aparece aqui */
   function idleLine(b) {
-    if (!b) return 'Bora dar uma geral?';
-    if (b.present === false) return K.isLaptop(machine && machine.info) ? 'Não achei minha bateria.\nBora ver o resto?' : 'Sem bateria por aqui.\nBora dar uma geral?';
+    if (!b) return K.t('Bora dar uma geral?');
+    if (b.present === false) return K.isLaptop(machine && machine.info) ? K.t('Não achei minha bateria.\nBora ver o resto?') : K.t('Sem bateria por aqui.\nBora dar uma geral?');
     const key = K.batStatusKey(b);
     const h = num(b.healthPct);
     const hTxt = h != null ? K.fmt.pct(h, h % 1 ? 1 : 0) : null;
-    if (key === 'trocar') return 'O macOS pediu revisão da bateria.\nBora ver o resto?';
-    if (key === 'desconhecida' || !hTxt) return 'Não consegui medir minha saúde agora.\nBora ver o resto?';
-    if (key === 'gasta') return `Tô com ${hTxt} de saúde, já guardo menos.\nBora ver o resto?`;
-    if (key === 'de-olho') return `Tô com ${hTxt} de saúde.\nBora conferir o resto?`;
-    return `Tô com ${hTxt} de saúde.\nBora ver o resto?`;
+    if (key === 'trocar') return K.t('O macOS pediu revisão da bateria.\nBora ver o resto?');
+    if (key === 'desconhecida' || !hTxt) return K.t('Não consegui medir minha saúde agora.\nBora ver o resto?');
+    if (key === 'gasta') return K.t('Tô com {0} de saúde, já guardo menos.\nBora ver o resto?', hTxt);
+    if (key === 'de-olho') return K.t('Tô com {0} de saúde.\nBora conferir o resto?', hTxt);
+    return K.t('Tô com {0} de saúde.\nBora ver o resto?', hTxt);
   }
 
   function paintIdle() {
@@ -609,18 +609,18 @@
     ui = {};
 
     ui.hello = K.el('span', { class: 'sticker kz-hello' }, greeting());
-    ui.h1 = K.el('h1', null, K.el('span', null, 'Bora dar uma geral'), ' ', K.el('span', null, 'no seu Mac?'));
-    ui.p = K.el('p', null, `Confiro ${COUNT_PT[STEPS.length] || STEPS.length} coisas em uns segundos. Só olho, não apago nada.`);
+    ui.h1 = K.el('h1', null, K.el('span', null, K.t('Bora dar uma geral')), ' ', K.el('span', null, K.t('no seu Mac?')));
+    ui.p = K.el('p', null, K.t('Confiro {0} coisas em uns segundos. Só olho, não apago nada.', COUNT_PT[STEPS.length] || STEPS.length));
     host.appendChild(K.el('header', { class: 'page-head kz-head', 'data-drag': true },
       K.el('div', { class: 'kz-head-text' }, ui.hello, ui.h1, ui.p)));
 
     /* botão enorme + anel (escondido até começar) */
-    ui.go = K.el('button', { class: 'kz-go', type: 'button', 'aria-label': 'Escanear o Mac', onclick: () => runScan() },
+    ui.go = K.el('button', { class: 'kz-go', type: 'button', 'aria-label': K.t('Escanear o Mac'), onclick: () => runScan() },
       /* reflexo só no alto do botão: o texto ocupa de 50% a 63% da altura */
       K.el('span', { class: 'kz-go-shine', 'aria-hidden': 'true', html: '<svg viewBox="0 0 100 100"><path d="M18 35 Q22 21 36 14"/><circle cx="14.5" cy="43" r="2.3"/></svg>' }),
       K.el('span', { class: 'kz-go-ic', html: K.icon('scan') }),
-      K.el('span', { class: 'kz-go-label' }, 'Escanear'),
-      K.el('span', { class: 'kz-go-sub' }, 'leva uns 10 segundos'));
+      K.el('span', { class: 'kz-go-label' }, K.t('Escanear')),
+      K.el('span', { class: 'kz-go-sub' }, K.t('leva uns 10 segundos')));
     ui.ringBox = K.el('div', { class: 'kz-ring' });
     ui.ringIc = K.el('span', { class: 'kz-ring-ic', html: K.icon('battery') });
     ui.ringPct = K.el('span', { class: 'kz-ring-pct num' }, '0%');
@@ -646,7 +646,7 @@
     ui.go.addEventListener('mouseenter', () => { if (mode === 'idle') mascot.set({ face: 'joy' }); });
     ui.go.addEventListener('mouseleave', () => { if (mode === 'idle') mascot.set({ face: null }); });
 
-    ui.listHead = K.el('b', null, 'O que eu confiro');
+    ui.listHead = K.el('b', null, K.t('O que eu confiro'));
     ui.listCount = K.el('span', { class: 'kz-count num' }, '');
     const ol = K.el('ol', { class: 'kz-steps' });
     ui.steps = STEPS.map((s, i) => {
@@ -703,14 +703,14 @@
 
     const size = ui.go.offsetWidth || 220;
     ui.stage.classList.add('is-scanning');
-    ui.hello.textContent = 'Varrendo…';
-    ui.h1.textContent = 'Dando uma geral…';
-    ui.p.textContent = 'Só olhando, sem mexer em nada.';
+    ui.hello.textContent = K.t('Varrendo…');
+    ui.h1.textContent = K.t('Dando uma geral…');
+    ui.p.textContent = K.t('Só olhando, sem mexer em nada.');
     if (ui.bubble) ui.bubble.hidden = true;
-    ui.listHead.textContent = 'Conferindo';
+    ui.listHead.textContent = K.t('Conferindo');
     ui.mascot.set({ face: 'happy' });
     ui.steps.forEach((s, i) => setStep(i, 'wait'));
-    const ring = K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: 'Escaneando o Mac', busy: true, size, thickness: 13 });
+    const ring = K.charts.ring(ui.ringBox, { value: 0, tone: 'gold', text: '', label: K.t('Escaneando o Mac'), busy: true, size, thickness: 13 });
     charts.push(ring);
 
     const ctx = {};
@@ -748,7 +748,7 @@
     ring.update({ value: 100, busy: false, tone: 'good' });
     ui.ringIc.innerHTML = K.icon('check');
     ui.now.textContent = 'Pronto!';
-    ui.p.textContent = 'Juntando o que achei…';
+    ui.p.textContent = K.t('Juntando o que achei…');
     await K.sleep(650);
     if (my !== token) return;
     last = { results, at: nowS(), took: (performance.now() - t0) / 1000, dirtGen: ctx.dirtGen != null ? ctx.dirtGen : K.dirt.gen,
@@ -774,7 +774,7 @@
 
   /* ---------- resultado ---------- */
 
-  const lower = (id) => ({ bateria: 'saúde da bateria' }[id] || STEPS.find((s) => s.id === id).name.toLowerCase());
+  const lower = (id) => ({ bateria: K.t('saúde da bateria') }[id] || STEPS.find((s) => s.id === id).name.toLowerCase());
   const listPt = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1]);
 
   /** título, texto e rosto do resumo: nunca diz "tudo certo" do que não conseguiu ler */
@@ -789,32 +789,32 @@
     const out = { att, errs, w };
     if (!read.length) {
       out.kind = 'fail';
-      out.title = 'Não consegui ler o Mac agora';
-      out.sub = 'Nenhuma leitura respondeu. Às vezes o macOS demora logo depois de acordar.';
+      out.title = K.t('Não consegui ler o Mac agora');
+      out.sub = K.t('Nenhuma leitura respondeu. Às vezes o macOS demora logo depois de acordar.');
       out.face = 'worried';
       return out;
     }
     if (att.length) {
       out.kind = 'att';
-      out.title = att.length === 1 ? 'Achei 1 ponto de atenção' : `Achei ${att.length} pontos de atenção`;
-      out.sub = 'Nada de pânico: cada cartão diz o que fazer.';
+      out.title = att.length === 1 ? K.t('Achei 1 ponto de atenção') : K.t('Achei {0} pontos de atenção', att.length);
+      out.sub = K.t('Nada de pânico: cada cartão diz o que fazer.');
       out.face = RANK[w] >= RANK.serious ? 'worried' : 'happy';
     } else if (missing.length) {
       out.kind = 'partial';
       const n = total - missing.length;
-      out.title = `Li ${n} de ${total} coisas`;
-      out.sub = 'O que deu pra ler está em ordem.';
+      out.title = K.t('Li {0} de {1} coisas', n, total);
+      out.sub = K.t('O que deu pra ler está em ordem.');
       out.face = 'happy';
     } else {
       out.kind = 'ok';
-      out.title = 'Tudo certo por aqui!';
-      out.sub = 'Nada pede sua atenção agora.';
+      out.title = K.t('Tudo certo por aqui!');
+      out.sub = K.t('Nada pede sua atenção agora.');
       /* sujeira não é problema: vira só um "se quiser" no fim */
       const dirt = results.find((r) => r.id === 'sujeira' && r.tone === 'tip');
-      if (dirt) out.sub = `Nada pede sua atenção. Se quiser, dá pra liberar ${gbNb(dirt.sel)} em Espaço.`;
+      if (dirt) out.sub = K.t('Nada pede sua atenção. Se quiser, dá pra liberar {0} em Espaço.', gbNb(dirt.sel));
       out.face = 'joy';
     }
-    if (missing.length) out.sub += ` Sem leitura: ${listPt(missing.map((r) => lower(r.id)))}.`;
+    if (missing.length) out.sub += K.t(' Sem leitura: {0}.', listPt(missing.map((r) => lower(r.id))));
     return out;
   }
 
@@ -829,7 +829,7 @@
     const sm = summaryOf(results);
 
     /* o resumo é pintado por paintSum (resultado normal, "deixando voando…" ou a comemoração) */
-    ui.sumWhenTxt = fresh ? `Feita agora, em ${K.fmt.num(last.took, 0)} s` : `Feita às ${K.fmt.time(last.at)}`;
+    ui.sumWhenTxt = fresh ? K.t('Feita agora, em {0} s', K.fmt.num(last.took, 0)) : K.t('Feita às {0}', K.fmt.time(last.at));
     const art = K.el('div', { class: 'kz-sum-art' });
     ui.sumWhen = K.el('span', { class: 'sticker kz-when' }, ui.sumWhenTxt);
     ui.sumTitle = K.el('h1', { tabindex: '-1' }, sm.title);
@@ -883,7 +883,7 @@
 
   function markAtt(node) {
     node.classList.add('is-att');
-    node.appendChild(K.el('span', { class: 'sticker kz-look', 'aria-hidden': 'true' }, 'olhe aqui'));
+    node.appendChild(K.el('span', { class: 'sticker kz-look', 'aria-hidden': 'true' }, K.t('olhe aqui')));
   }
 
   /* ---------- o resumo: resultado · "deixando voando…" · comemoração ---------- */
@@ -900,24 +900,24 @@
     ui.sum.classList.toggle('no-sparks', working || (flew ? !F.ok : !(sm.kind === 'ok' || sm.kind === 'att')));
     ui.sumAct.textContent = '';
     const again = K.el('button', { class: 'btn ink kz-again', type: 'button', html: K.icon('cycle'), onclick: () => runScan() },
-      !F && (sm.kind === 'fail' || sm.kind === 'partial') ? 'Tentar de novo' : 'Escanear de novo');
+      !F && (sm.kind === 'fail' || sm.kind === 'partial') ? K.t('Tentar de novo') : K.t('Escanear de novo'));
     let face;
     if (working) {
-      ui.sumWhen.textContent = 'Fazendo agora';
-      ui.sumTitle.textContent = 'Deixando o Mac voando…';
+      ui.sumWhen.textContent = K.t('Fazendo agora');
+      ui.sumTitle.textContent = K.t('Deixando o Mac voando…');
       /* a lista já mostra o passo da vez: o subtítulo não repete (o leitor de tela ouve pelo status) */
-      ui.sumSub.textContent = F.checking ? 'Conferindo como ficou…' : 'Um de cada vez. Já já termino.';
+      ui.sumSub.textContent = F.checking ? K.t('Conferindo como ficou…') : K.t('Um de cada vez. Já já termino.');
       ui.sumAct.appendChild(flyList(F));
       ui.sumAct.appendChild(K.el('span', { class: 'kz-sr', role: 'status' }, F.now || ''));
       face = 'happy';
     } else if (flew) {
-      ui.sumWhen.textContent = `Feito às ${K.fmt.time(F.at)}`;
+      ui.sumWhen.textContent = K.t('Feito às {0}', K.fmt.time(F.at));
       ui.sumTitle.textContent = F.title;
       ui.sumSub.textContent = F.text;
       ui.sumAct.appendChild(again);
       if (F.moved) {
         ui.sumAct.appendChild(K.el('button', { class: 'kz-link', type: 'button', html: K.icon('kzUndo'), onclick: () => go('faxina?aba=lixeira') },
-          'Desfazer no Espaço'));
+          K.t('Desfazer no Espaço')));
       }
       face = F.ok ? 'joy' : 'worried';
     } else {
@@ -928,7 +928,7 @@
       if (plan && plan.any) {
         /* o principal é o "Deixar voando"; o escanear de novo vira secundário (branco) */
         again.className = 'btn kz-again';
-        ui.sumAct.appendChild(K.el('button', { class: 'btn gold kz-fly', type: 'button', html: K.icon('rocket'), onclick: () => askFly() }, 'Deixar voando'));
+        ui.sumAct.appendChild(K.el('button', { class: 'btn gold kz-fly', type: 'button', html: K.icon('rocket'), onclick: () => askFly() }, K.t('Deixar voando')));
       }
       ui.sumAct.appendChild(again);
       face = sm.face;
@@ -957,7 +957,7 @@
       for (const f of sp.rep.achados) {
         if (!f || f.acao !== 'encerrar' || f.detalhe !== 'cpu' || typeof f.alvo !== 'string' || !f.alvo || seen.has(f.alvo)) continue;
         seen.add(f.alvo);
-        plan.apps.push({ alvo: f.alvo, nome: safeName(f.nome) || 'app sem nome', cpu: num(f.cpu), icon: appIcon(f.icon) });
+        plan.apps.push({ alvo: f.alvo, nome: safeName(f.nome) || K.t('app sem nome'), cpu: num(f.cpu), icon: appIcon(f.icon) });
       }
     }
     const bat = byId.bateria;
@@ -994,23 +994,23 @@
     const list = K.el('ul', { class: 'kz-fly-list' });
     if (plan.caches) {
       const n = plan.caches.ids.length;
-      list.appendChild(row({ key: 'caches', on: true, icon: 'broom', label: 'Mandar os caches pra Lixeira',
-        title: 'Caches pra Lixeira', sub: `${K.fmt.num(n)} ${n === 1 ? 'item' : 'itens'} que os apps recriam sozinhos`, value: gbNb(plan.caches.bytes) }));
+      list.appendChild(row({ key: 'caches', on: true, icon: 'broom', label: K.t('Mandar os caches pra Lixeira'),
+        title: K.t('Caches pra Lixeira'), sub: K.t('{0} {1} que os apps recriam sozinhos', K.fmt.num(n), n === 1 ? K.t('item') : K.t('itens')), value: gbNb(plan.caches.bytes) }));
     }
     for (const a of plan.apps) {
-      list.appendChild(row({ key: 'app', app: a, on: false, icon: 'cpu', img: a.icon, label: `Fechar ${a.nome}`,
-        title: `Fechar ${a.nome}`, sub: `No talo${a.cpu != null ? `: ${K.fmt.pct(a.cpu, 0)} de CPU` : ' agora'} · pode pedir pra salvar` }));
+      list.appendChild(row({ key: 'app', app: a, on: false, icon: 'cpu', img: a.icon, label: K.t('Fechar {0}', a.nome),
+        title: K.t('Fechar {0}', a.nome), sub: K.t('No talo{0} · pode pedir pra salvar', a.cpu != null ? K.t(': {0} de CPU', K.fmt.pct(a.cpu, 0)) : ' agora') }));
     }
     if (plan.aviso) {
-      list.appendChild(row({ key: 'aviso', on: true, icon: 'bell', label: `Ligar o aviso dos ${plan.aviso.limite}%`,
-        title: `Ligar o aviso dos ${plan.aviso.limite}%`, sub: 'Te chamo quando a carga chegar lá' }));
+      list.appendChild(row({ key: 'aviso', on: true, icon: 'bell', label: K.t('Ligar o aviso dos {0}%', plan.aviso.limite),
+        title: K.t('Ligar o aviso dos {0}%', plan.aviso.limite), sub: K.t('Te chamo quando a carga chegar lá') }));
     }
     const asking = K.confirm({
-      title: 'Deixar o Mac voando?',
-      text: 'Marque o que eu faço agora.',
+      title: K.t('Deixar o Mac voando?'),
+      text: K.t('Marque o que eu faço agora.'),
       body: list,
-      note: plan.caches ? { icon: 'kzUndo', tone: 'good', text: 'Os caches vão pra Lixeira: dá pra desfazer no Espaço.' } : null,
-      ok: 'Fazer agora', cancel: 'Agora não', icon: 'rocket', mascot: 'happy',
+      note: plan.caches ? { icon: 'kzUndo', tone: 'good', text: K.t('Os caches vão pra Lixeira: dá pra desfazer no Espaço.') } : null,
+      ok: K.t('Fazer agora'), cancel: K.t('Agora não'), icon: 'rocket', mascot: 'happy',
     });
     /* o modal já está na tela (monta na hora): o botão só libera com algo marcado */
     const dlg = list.closest('.kmodal');
@@ -1032,13 +1032,13 @@
     const F = { phase: 'working', tasks: [], now: '', at: 0 };
     if (pick.caches) {
       const g = gbNb(pick.caches.bytes);
-      F.tasks.push({ key: 'caches', icon: 'broom', text: `Mandar ${g} de caches pra Lixeira`, doing: `Mandando ${g} de caches pra Lixeira…`, state: 'wait' });
+      F.tasks.push({ key: 'caches', icon: 'broom', text: K.t('Mandar {0} de caches pra Lixeira', g), doing: K.t('Mandando {0} de caches pra Lixeira…', g), state: 'wait' });
     }
     for (const a of pick.apps) {
-      F.tasks.push({ key: 'app', app: a, icon: 'cpu', img: a.icon, text: `Fechar ${a.nome}`, doing: `Pedindo pra ${inl(a.nome)} fechar…`, state: 'wait' });
+      F.tasks.push({ key: 'app', app: a, icon: 'cpu', img: a.icon, text: K.t('Fechar {0}', a.nome), doing: K.t('Pedindo pra {0} fechar…', inl(a.nome)), state: 'wait' });
     }
     if (pick.aviso) {
-      F.tasks.push({ key: 'aviso', icon: 'bell', text: `Ligar o aviso dos ${pick.aviso.limite}%`, doing: `Ligando o aviso dos ${pick.aviso.limite}%…`, state: 'wait' });
+      F.tasks.push({ key: 'aviso', icon: 'bell', text: K.t('Ligar o aviso dos {0}%', pick.aviso.limite), doing: K.t('Ligando o aviso dos {0}%…', pick.aviso.limite), state: 'wait' });
     }
     L.fly = F;
     const here = () => last === L && L.fly === F && mode === 'result' && !!host && !!ui.sum;
@@ -1068,7 +1068,7 @@
             (/já tinha fechado/i.test(res.mensagem || '') ? out.closed : out.asked).push(t.app);
             t.state = 'done';
           } else {
-            out.appFails.push({ app: t.app, why: whyTxt(res && res.mensagem) || 'o app não quis fechar' });
+            out.appFails.push({ app: t.app, why: whyTxt(res && res.mensagem) || K.t('o app não quis fechar') });
             t.state = 'err';
           }
         } else if (t.key === 'aviso') {
@@ -1092,7 +1092,7 @@
     /* pedir pra fechar não é fechar: confere se saíram mesmo (e relê a velocidade) */
     let rep2 = null;
     if (out.asked.length || out.closed.length) {
-      F.now = 'Conferindo como ficou…';
+      F.now = K.t('Conferindo como ficou…');
       F.checking = true;
       paint();
       await K.sleep(FLY_CHECK_MS);
@@ -1121,31 +1121,31 @@
     /* a sujeira mudou: o número guardado (Varredura, Painel) ficou velho */
     if (out.cleaned) {
       K.dirt.forget();
-      if (here()) refreshDirt('depois de mandar os caches pra Lixeira');
+      if (here()) refreshDirt(K.t('depois de mandar os caches pra Lixeira'));
     }
   }
 
   /** "Pronto! Mandei 2,1 GB de caches pra Lixeira, fechei 1 app e liguei o aviso dos 80%." Só o que aconteceu. */
   function flyText(out, pick) {
     const done = [];
-    if (out.movedN) done.push(`mandei ${gbNb(out.moved)} de caches pra Lixeira`);
-    if (out.closed.length) done.push(out.closed.length === 1 ? 'fechei 1 app' : `fechei ${out.closed.length} apps`);
-    if (out.asked.length) done.push(out.asked.length === 1 ? `pedi pra ${inl(out.asked[0].nome)} fechar` : `pedi pra ${out.asked.length} apps fecharem`);
-    if (out.aviso) done.push(`liguei o aviso dos ${pick.aviso.limite}%`);
+    if (out.movedN) done.push(K.t('mandei {0} de caches pra Lixeira', gbNb(out.moved)));
+    if (out.closed.length) done.push(out.closed.length === 1 ? K.t('fechei 1 app') : K.t('fechei {0} apps', out.closed.length));
+    if (out.asked.length) done.push(out.asked.length === 1 ? K.t('pedi pra {0} fechar', inl(out.asked[0].nome)) : K.t('pedi pra {0} apps fecharem', out.asked.length));
+    if (out.aviso) done.push(K.t('liguei o aviso dos {0}%', pick.aviso.limite));
     const fails = [];
-    if (out.cacheErr) fails.push(`mandar os caches pra Lixeira (${out.cacheErr})`);
-    else if (out.cleaned && !out.movedN) fails.push(`mandar os caches pra Lixeira (${out.cacheFails.length ? whyTxt(out.cacheFails[0].motivo) : 'nada saiu do lugar'})`);
+    if (out.cacheErr) fails.push(K.t('mandar os caches pra Lixeira ({0})', out.cacheErr));
+    else if (out.cleaned && !out.movedN) fails.push(K.t('mandar os caches pra Lixeira ({0})', out.cacheFails.length ? whyTxt(out.cacheFails[0].motivo) : K.t('nada saiu do lugar')));
     else if (out.cacheFails.length) {
       const n = out.cacheFails.length;
-      fails.push(`mandar ${n === 1 ? '1 item' : `${K.fmt.num(n)} itens`} de cache (${whyTxt(out.cacheFails[0].motivo)})`);
+      fails.push(K.t('mandar {0} de cache ({1})', n === 1 ? K.t('1 item') : `${K.fmt.num(n)} itens`, whyTxt(out.cacheFails[0].motivo)));
     }
-    for (const f of out.appFails) fails.push(`fechar ${inl(f.app.nome)} (${f.why})`);
-    if (out.avisoErr) fails.push(`ligar o aviso (${out.avisoErr})`);
+    for (const f of out.appFails) fails.push(K.t('fechar {0} ({1})', inl(f.app.nome), f.why));
+    if (out.avisoErr) fails.push(K.t('ligar o aviso ({0})', out.avisoErr));
     const ok = done.length > 0;
-    let text = ok ? cap(listPt(done)) + '.' : 'Nada foi mexido.';
-    if (fails.length) text += ` Não consegui ${listPt(fails)}.`;
-    if (out.asked.length) text += out.asked.length === 1 ? ' Se ele perguntar se quer salvar, responda na janela dele.' : ' Se algum perguntar se quer salvar, responda na janela dele.';
-    return { ok, title: ok ? 'Pronto!' : 'Não consegui fazer nada agora', text };
+    let text = ok ? cap(listPt(done)) + '.' : K.t('Nada foi mexido.');
+    if (fails.length) text += K.t(' Não consegui {0}.', listPt(fails));
+    if (out.asked.length) text += out.asked.length === 1 ? K.t(' Se ele perguntar se quer salvar, responda na janela dele.') : K.t(' Se algum perguntar se quer salvar, responda na janela dele.');
+    return { ok, title: ok ? 'Pronto!' : K.t('Não consegui fazer nada agora'), text };
   }
 
   /** andamento dentro do resumo: um passo por linha (espera · fazendo · feito · não deu) */
@@ -1155,7 +1155,7 @@
       const bub = K.el('span', { class: 'kz-fly-bub', 'aria-hidden': 'true' });
       if (t.img && (t.state === 'wait' || t.state === 'on')) bub.appendChild(K.el('img', { src: t.img, alt: '' }));
       else bub.innerHTML = K.icon(icon);
-      const st = { wait: 'na fila', on: 'fazendo', done: 'feito', err: 'não deu' }[t.state] || '';
+      const st = { wait: K.t('na fila'), on: 'fazendo', done: 'feito', err: K.t('não deu') }[t.state] || '';
       return K.el('li', { class: 'kz-fly-step', dataset: { state: t.state } }, bub,
         K.el('span', null, t.text), K.el('span', { class: 'kz-sr' }, ` (${st})`));
     }));
@@ -1168,7 +1168,7 @@
     c.appendChild(cardHead(step, r));
     c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
     if (!r.error && r.lines && r.lines.length) {
-      c.appendChild(K.el('div', { class: 'kz-res-kicker' }, 'O que mais pesa agora'));
+      c.appendChild(K.el('div', { class: 'kz-res-kicker' }, K.t('O que mais pesa agora')));
       c.appendChild(K.el('ul', { class: 'kz-sf-row' }, r.lines.map((l) => {
         const bub = K.el('span', { class: `kz-sf-bub t-${l.tone}`, 'aria-hidden': 'true' });
         if (l.img) bub.appendChild(K.el('img', { src: l.img, alt: '' })); else bub.innerHTML = K.icon(l.icon);
@@ -1179,7 +1179,7 @@
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note && !r.error ? K.el('p', { class: 'kz-note kz-speed-note' }, r.note) : null,
       K.el('button', { class: 'btn small' + (isAttention(r) ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
-        'Ver o que pesa', K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
+        K.t('Ver o que pesa'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
   }
 
@@ -1200,42 +1200,42 @@
     const out = [];
     const bat = byId.bateria, en = byId.energia, cpu = byId.cpu, disk = byId.disco, mem = byId.memoria;
     const dirt = byId.sujeira && !byId.sujeira.error && byId.sujeira.sel >= DIRT_TIP ? byId.sujeira : null;
-    const freeUp = dirt ? `Liberar ${gbNb(dirt.sel)}` : null;
+    const freeUp = dirt ? K.t('Liberar {0}', gbNb(dirt.sel)) : null;
     const b = bat && !bat.error && !bat.none && !bat.missing ? bat.b : null;
     if (b && (bat.key === 'trocar' || bat.key === 'gasta')) {
-      out.push({ icon: 'btWrench', tone: bat.tone, title: 'Trocar a bateria', text: 'A Apple mostra preço e onde levar pro seu modelo.',
-        btn: 'Ver opções de troca', run: () => K.api('open.url', { url: 'https://support.apple.com/pt-br/mac/repair' }).catch(() => {}) });
+      out.push({ icon: 'btWrench', tone: bat.tone, title: K.t('Trocar a bateria'), text: K.t('A Apple mostra preço e onde levar pro seu modelo.'),
+        btn: K.t('Ver opções de troca'), run: () => K.api('open.url', { url: 'https://support.apple.com/pt-br/mac/repair' }).catch(() => {}) });
     }
     /* só quando algo está puxando de verdade: com tudo tranquilo, "ver quem está puxando" com fogo
        desmentiria o "nada pede sua atenção" lá de cima */
     if (en && !en.error && en.top && (en.tone !== 'good' || (cpu && cpu.busy))) {
-      out.push({ icon: 'flame', tone: en.tone !== 'good' ? en.tone : null, title: 'Ver quem está puxando', text: `${en.top} está na frente agora.`,
-        btn: 'Ver a lista', run: () => go(b ? 'bateria?secao=apps' : 'painel') });
+      out.push({ icon: 'flame', tone: en.tone !== 'good' ? en.tone : null, title: K.t('Ver quem está puxando'), text: K.t('{0} está na frente agora.', en.top),
+        btn: K.t('Ver a lista'), run: () => go(b ? 'bateria?secao=apps' : 'painel') });
     }
     const diskTight = disk && !disk.error && disk.tone !== 'good';
     if (diskTight && dirt) {
       /* disco apertado e sujeira de sobra: a ação do disco já leva pra Faxina */
-      out.push({ icon: 'broom', tone: disk.tone, title: freeUp, text: 'Disco apertado: sai de caches e registros, com segurança.',
-        btn: 'Ver e limpar', run: () => go('faxina') });
+      out.push({ icon: 'broom', tone: disk.tone, title: freeUp, text: K.t('Disco apertado: sai de caches e registros, com segurança.'),
+        btn: K.t('Ver e limpar'), run: () => go('faxina') });
     } else if (diskTight) {
-      out.push({ icon: 'disk', tone: disk.tone, title: 'Liberar espaço', text: 'Veja quanto sobra e o que ocupa.', btn: 'Ver o disco', run: () => go('painel') });
+      out.push({ icon: 'disk', tone: disk.tone, title: K.t('Liberar espaço'), text: K.t('Veja quanto sobra e o que ocupa.'), btn: K.t('Ver o disco'), run: () => go('painel') });
     }
     if (mem && !mem.error && mem.tone !== 'good') {
-      out.push({ icon: 'memory', tone: mem.tone, title: 'Aliviar a memória', text: 'Fechar abas e apps parados é o que mais ajuda.',
-        btn: 'Ver quem pesa', run: () => go('otimizar?aba=pesando') });
+      out.push({ icon: 'memory', tone: mem.tone, title: K.t('Aliviar a memória'), text: K.t('Fechar abas e apps parados é o que mais ajuda.'),
+        btn: K.t('Ver quem pesa'), run: () => go('otimizar?aba=pesando') });
     }
     if (dirt && !diskTight) {
-      out.push({ icon: 'broom', title: freeUp, text: 'Caches e registros que os apps recriam. Tudo vai pra Lixeira.',
-        btn: 'Ver e limpar', run: () => go('faxina') });
+      out.push({ icon: 'broom', title: freeUp, text: K.t('Caches e registros que os apps recriam. Tudo vai pra Lixeira.'),
+        btn: K.t('Ver e limpar'), run: () => go('faxina') });
     }
     if (b && b.pluggedIn) {
       const s = K.settings.value;
       if (s && s.aviso80 === false) {
-        out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá.',
-          btn: 'Ligar o aviso', toggle: true });
+        out.push({ icon: 'bell', title: K.t('Aviso dos {0}%', s.limiteAviso || 80), text: K.t('Te chamo quando a carga chegar lá.'),
+          btn: K.t('Ligar o aviso'), toggle: true });
       } else if (!b.optimizedChargingEngaged && b.percent >= 99) {
-        out.push({ id: 'otimizado', icon: 'btShield', title: 'Carregamento otimizado', text: 'O macOS pode segurar a carga em 80% pra você.',
-          btn: 'Abrir Ajustes', run: () => K.api('open.settings', { painel: 'bateria' }).catch(() => go('bateria?secao=cuidados')) });
+        out.push({ id: 'otimizado', icon: 'btShield', title: K.t('Carregamento otimizado'), text: K.t('O macOS pode segurar a carga em 80% pra você.'),
+          btn: K.t('Abrir Ajustes'), run: () => K.api('open.settings', { painel: 'bateria' }).catch(() => go('bateria?secao=cuidados')) });
       }
     }
     const su = last && last.startup;
@@ -1244,13 +1244,13 @@
       const shown = su.names.slice(0, 2);
       const rest = su.n - shown.length;
       const who = shown.length ? listPt(rest > 0 ? shown.concat([`mais ${rest}`]) : shown) + '. ' : '';
-      out.push({ icon: 'rocket', title: `${su.n} ${su.names.length === su.n ? 'apps abrem' : 'itens abrem'} com o Mac`,
-        text: `${who}Dá pra desligar e religar depois.`,
-        btn: 'Ver em Velocidade', run: () => go('otimizar?aba=login') });
+      out.push({ icon: 'rocket', title: K.t('{0} {1} com o Mac', su.n, su.names.length === su.n ? K.t('apps abrem') : K.t('itens abrem')),
+        text: K.t('{0}Dá pra desligar e religar depois.', who),
+        btn: K.t('Ver em Velocidade'), run: () => go('otimizar?aba=login') });
     }
     if (b && out.length && out.length < 3) {
       const s = K.settings.value;
-      if (s && s.aviso80) out.push({ icon: 'bell', title: `Aviso dos ${s.limiteAviso || 80}%`, text: 'Te chamo quando a carga chegar lá.', done: 'Ligado', btn: 'Mudar', run: () => go('bateria?secao=avisos') });
+      if (s && s.aviso80) out.push({ icon: 'bell', title: K.t('Aviso dos {0}%', s.limiteAviso || 80), text: K.t('Te chamo quando a carga chegar lá.'), done: K.t('Ligado'), btn: K.t('Mudar'), run: () => go('bateria?secao=avisos') });
     }
     return out.slice(0, 3);
   }
@@ -1283,22 +1283,22 @@
           try {
             await K.settings.set({ aviso80: true });
             K.sound.tada();
-            item.querySelector('.kz-act-text span').textContent = 'Ligado! Te chamo quando a carga chegar lá.';
-            item.querySelector('.kz-act-text b').appendChild(K.statusPill('good', 'Ligado', 'check'));
+            item.querySelector('.kz-act-text span').textContent = K.t('Ligado! Te chamo quando a carga chegar lá.');
+            item.querySelector('.kz-act-text b').appendChild(K.statusPill('good', K.t('Ligado'), 'check'));
             btn.remove();
             /* o "Deixar voando" do resumo não oferece mais o aviso (e some, se era só isso) */
             if (!(last && last.fly)) paintSum();
           } catch (e) {
             K.sound.oops();
             btn.disabled = false;
-            item.querySelector('.kz-act-text span').textContent = 'Não consegui ligar agora: ' + ((e && e.message) || 'erro desconhecido');
+            item.querySelector('.kz-act-text span').textContent = K.t('Não consegui ligar agora: ') + ((e && e.message) || K.t('erro desconhecido'));
           }
         });
       } else btn.addEventListener('click', () => { K.sound.plop(); a.run(); });
       row.appendChild(item);
     });
-    return K.el('section', { class: 'kz-acts', 'aria-label': 'O que dá pra fazer agora' },
-      K.el('h2', { class: 'kz-acts-title' }, 'O que dá pra fazer agora'), row);
+    return K.el('section', { class: 'kz-acts', 'aria-label': K.t('O que dá pra fazer agora') },
+      K.el('h2', { class: 'kz-acts-title' }, K.t('O que dá pra fazer agora')), row);
   }
 
   function cardHead(step, r) {
@@ -1313,7 +1313,7 @@
     return K.el('div', { class: 'kz-res-foot' },
       extra || null,
       K.el('button', { class: 'btn small', type: 'button', onclick: () => go(step.route) },
-        label || 'Ver detalhes', K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
+        label || K.t('Ver detalhes'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') })));
   }
 
   function meterEl(pct, tone, mark) {
@@ -1359,10 +1359,10 @@
     } else {
       const main = K.el('div', { class: 'kz-bat-main' },
         r.health == null
-          ? K.el('div', { class: 'kz-hero-none' }, 'Saúde sem leitura agora')
+          ? K.el('div', { class: 'kz-hero-none' }, K.t('Saúde sem leitura agora'))
           : K.el('div', { class: 'kz-hero-row' },
             valueEl(r.health, (v) => K.fmt.pct(v, r.health % 1 ? 1 : 0), 'kz-hero num'),
-            K.el('span', { class: 'kz-hero-lab' }, 'de saúde', K.el('small', null, 'da capacidade de fábrica'))));
+            K.el('span', { class: 'kz-hero-lab' }, K.t('de saúde'), K.el('small', null, K.t('da capacidade de fábrica')))));
       /* a barra da saúde fica na cor da saúde (calor não pinta a saúde de amarelo) */
       const hTone = K.batStatus(r.b).tone;
       if (r.health != null) main.appendChild(meterEl(r.health, hTone, 80));
@@ -1381,7 +1381,7 @@
       ui.batTip.hidden = !!(r.tip.id && ui.actIds && ui.actIds.has(r.tip.id));
       c.appendChild(ui.batTip);
     }
-    c.appendChild(cardFoot(step, 'Ver a bateria'));
+    c.appendChild(cardFoot(step, K.t('Ver a bateria')));
     return c;
   }
 
@@ -1390,16 +1390,16 @@
     const c = K.el('article', { class: 'card kz-res kz-energy pop-in' + (wide ? ' kz-wide' : ''), style });
     c.appendChild(cardHead(step, r));
     if (!r.error && r.apps && r.apps.length) {
-      c.appendChild(K.el('div', { class: 'kz-res-kicker', title: r.note || '' }, 'Quem mais gasta agora ', K.el('span', { class: 'muted' }, '(impacto energético, não é watt)')));
+      c.appendChild(K.el('div', { class: 'kz-res-kicker', title: r.note || '' }, K.t('Quem mais gasta agora '), K.el('span', { class: 'muted' }, K.t('(impacto energético, não é watt)'))));
       const box = K.el('div', { class: 'kz-bars' });
       c.appendChild(box);
       afterMount.push(() => charts.push(K.charts.bars(box, {
         items: r.apps,
-        color: 'var(--s2)', valueName: 'de impacto', labelName: 'App', labelWidth: wide ? 260 : 170, thickness: 14,
+        color: 'var(--s2)', valueName: K.t('de impacto'), labelName: K.t('App'), labelWidth: wide ? 260 : 170, thickness: 14,
         format: (v) => K.fmt.num(v, v < 10 ? 1 : 0),
         table: true,
-        empty: 'Tudo calmo: ninguém gastando agora.',
-        ariaLabel: 'Apps que mais gastam energia agora',
+        empty: K.t('Tudo calmo: ninguém gastando agora.'),
+        ariaLabel: K.t('Apps que mais gastam energia agora'),
       })));
     }
     c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
@@ -1438,14 +1438,14 @@
       if (r.found > 0 && !r.noStack && r.cats && r.cats.length) {
         const box = K.el('div', { class: 'kz-dirt-stack' });
         body.appendChild(K.el('div', { class: 'kz-dirt-side' },
-          K.el('div', { class: 'kz-res-kicker' }, 'Por tipo ', K.el('span', { class: 'muted' }, '(o colorido já vem marcado)')),
+          K.el('div', { class: 'kz-res-kicker' }, K.t('Por tipo '), K.el('span', { class: 'muted' }, K.t('(o colorido já vem marcado)'))),
           box));
         afterMount.push(() => {
           const ch = K.charts.stack(box, {
             segments: r.cats.map((x) => ({ name: DIRT_SHORT[x.id] || x.titulo, value: x.sel, color: DIRT_COLOR[x.id] })),
-            total: r.found, restName: 'Não marcado (você decide)', restColor: 'var(--panel)', restNote: 'app aberto ou vale olhar antes',
+            total: r.found, restName: K.t('Não marcado (você decide)'), restColor: 'var(--panel)', restNote: K.t('app aberto ou vale olhar antes'),
             format: (v) => K.fmt.bytes(v), height: 30,
-            ariaLabel: 'Sujeira por tipo: o que já vem marcado e o que fica pra você decidir',
+            ariaLabel: K.t('Sujeira por tipo: o que já vem marcado e o que fica pra você decidir'),
           });
           charts.push(ch);
           c._chart = ch;
@@ -1455,7 +1455,7 @@
     } else {
       c.appendChild(K.el('p', { class: 'kz-res-say' }, r.say));
     }
-    const label = !r.error && r.sel > 0 ? 'Ver e limpar' : 'Abrir o Espaço';
+    const label = !r.error && r.sel > 0 ? K.t('Ver e limpar') : K.t('Abrir o Espaço');
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note ? K.el('p', { class: 'kz-note kz-dirt-note' }, r.note) : null,
       K.el('button', { class: 'btn small' + (r.tone === 'tip' ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
@@ -1466,7 +1466,7 @@
   function runAfterMount() {
     const todo = afterMount;
     afterMount = [];
-    for (const fn of todo) { try { fn(); } catch (e) { console.error('varredura/gráfico: ' + (e.stack || e.message)); } }
+    for (const fn of todo) { try { fn(); } catch (e) { console.error(K.t('varredura/gráfico: ') + (e.stack || e.message)); } }
   }
 
   /** Voltou da Faxina com um resultado guardado (ou o "Deixar voando" mandou caches pra Lixeira):
@@ -1475,7 +1475,7 @@
   async function refreshDirt(depois) {
     const my = token;
     const old = ui.dirtCard;
-    if (old) old.appendChild(K.el('span', { class: 'sticker kz-look kz-redo', role: 'status' }, 'conferindo de novo…'));
+    if (old) old.appendChild(K.el('span', { class: 'sticker kz-look kz-redo', role: 'status' }, K.t('conferindo de novo…')));
     const byId = () => { const o = {}; for (const r of last.results) o[r.id] = r; return o; };
     let res;
     try {
@@ -1488,7 +1488,7 @@
     }
     if (mode !== 'result' || !host) return;
     /* o resumo diz "Feita às…": o cartão avisa que este número é mais novo */
-    const again = depois ? `Conferi de novo às ${K.fmt.time(nowS())}, ${depois}.` : `Conferi de novo às ${K.fmt.time(nowS())}.`;
+    const again = depois ? K.t('Conferi de novo às {0}, {1}.', K.fmt.time(nowS()), depois) : K.t('Conferi de novo às {0}.', K.fmt.time(nowS()));
     res.note = res.note ? `${again} ${res.note}` : again;
     const i = last.results.findIndex((r) => r.id === 'sujeira');
     if (i >= 0) last.results[i] = res; else last.results.push(res);
@@ -1524,7 +1524,7 @@
   }
 
   K.pages.inicio = {
-    title: 'Início',
+    title: K.t('Início'),
     async render(el) {
       host = el;
       token++;
