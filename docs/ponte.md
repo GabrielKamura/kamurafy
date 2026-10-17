@@ -63,6 +63,14 @@ A permissão é pedida ao abrir o app. O banner aparece mesmo com o Kamurafy na 
 - `avisoQuente`: notifica com duas leituras seguidas ≥ 45 °C; só rearma abaixo de 42 °C.
 - O app acorda a cada mudança de carga/tomada (aviso do macOS) e a cada minuto, também com
   a janela fechada.
+- `vigia` (padrão `true`): a cada minuto o app olha os processos do usuário. Um que fique com 90% ou
+  mais de um núcleo por 10 leituras seguidas vira aviso ("X está no talo há 10 min"), uma vez por
+  processo, e nunca enquanto o app dele está na frente (jogo, exportação). Memória com pressão
+  `critica` em 3 leituras seguidas vira aviso, no máximo um por hora. Processo do macOS não avisa.
+- `vigiaIgnorar` (`[String]`, até 50 nomes): apps que a vigia não avisa mais. O botão "Não avisar
+  mais desse" do próprio aviso põe o nome aqui; a interface manda a lista inteira pra tirar um.
+- Clique num aviso abre a janela na tela certa (`rota`): carga e calor → `bateria`, vigia e
+  memória → `otimizar?aba=lento`.
 
 ## battery.now
 
@@ -291,6 +299,40 @@ Nada aqui apaga arquivo. No terminal e no modo foto, as ações que mudam algo s
   "Mostrar também". `memBytes` vai na tela em base 2 (`K.fmt.mem`), como o Painel.
 - `nome` de processo solto (sem `app`) passa por `K.procName` (util.js), a mesma tabela do
   `Energy.friendly` e mais alguns: "WindowServer" vira "Tela e janelas (WindowServer)".
+
+## speed.* (Por que meu Mac tá lento?)
+
+| comando | args | resposta |
+|---|---|---|
+| `speed.diagnose` | — | `SpeedReport` (~1 s): o que está deixando o Mac lento agora, do que mais pesa pro que menos pesa |
+| `app.weight` | — | `{cpu, memBytes, processos}`: quanto o próprio Kamurafy pesa (app + processos do WebKit dele) |
+
+`SpeedReport`: `{veredito, nota, achados: [SpeedFinding], cpu, pressao, memUsadaBytes, memTotalBytes,
+swapBytes, discoLivreBytes, discoTotalBytes, uptimeSec, termico, limiteCPU?, economia, ms, readAt}`.
+- `nota` = 100 − soma dos `peso` (mínimo 0). `veredito`: `voando` (≥ 85) · `deboa` (≥ 65) ·
+  `pesado` (≥ 40) · `travando`.
+- `limiteCPU`: só no Intel, o quanto o macOS deixa o processador correr (100 = sem freio de calor).
+- `economia`: Modo de Pouca Energia ligado (o macOS deixa o Mac mais lento de propósito).
+
+`SpeedFinding`: `{id, tipo, peso, tom, nome?, icon?, cpu?, memBytes?, processos?, detalhe?, valor?, acao?, alvo?}`.
+`peso` 1–60 (quanto pesa), `tom` `warn` · `serious` · `crit`. `cpu` é % de um núcleo, média do
+último minuto (um pico de um segundo não entra). `nome` vem de fora: só por textContent.
+
+| `tipo` | quando aparece | `detalhe` / `valor` | `acao` |
+|---|---|---|---|
+| `memoria` | pressão `atencao`/`critica`; ou swap ≥ 4 GB com pressão normal (peso 6) | `atencao` · `critica` · `swap` / swap em bytes | — (os apps que mais ocupam vêm como `processo`) |
+| `processo` | app ou processo do usuário com `cpu` ≥ 80; ou, com a memória apertada, ocupando ≥ 1,5 GB e ≥ 8% da RAM | `cpu` · `memoria` / (memoria) fração da RAM | `encerrar` com `alvo` (id do `optimize.quit`); sem ação se for do macOS |
+| `navegador` | igual a `processo`, quando é Chrome, Safari, Firefox, Edge, Brave, Arc… (`processos` ≈ abas + uns 5) | igual | igual |
+| `fundo` | trabalho do macOS com ≥ 25% somados no último minuto | `spotlight` · `timemachine` · `fotos` · `icloud` · `atualizacao` | — (passa sozinho) |
+| `calor` | estado térmico `morno` (só sem `limiteCPU` 100) / `quente` / `critico`, ou `limiteCPU` < 100, ou `kernel_task` ≥ 150% no Intel | estado térmico / `limiteCPU` | — (`cpu` = kernel_task, quando alto) |
+| `economia` | Modo de Pouca Energia ligado | — | `ajustes-bateria` (`open.settings {painel:'bateria'}`) |
+| `disco` | livre < 15% ou < 20 GB (sério < 10%/10 GB, crítico < 5%/5 GB) | — / livre em bytes | `faxina` |
+| `reiniciar` | ≥ 14 dias ligado com memória apertada ou swap ≥ 2 GB (peso 8); ou ≥ 30 dias (peso 4) | — / dias | — (dica: menu Apple › Reiniciar) |
+| `inicio` | 6 ou mais itens do usuário abrindo com o Mac (`processos` = quantos) | — | `inicio` (`otimizar?aba=login`) |
+
+- `alvo` só vale enquanto a lista do `optimize.heavy` não for trocada: o `speed.diagnose` já registra
+  os ids, então dá pra chamar `optimize.quit {id: alvo}` direto.
+- Apps no máximo 5 (os que mais pesam).
 
 ## uninstall.* (Desinstalar)
 

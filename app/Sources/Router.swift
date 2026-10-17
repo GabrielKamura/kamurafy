@@ -73,6 +73,7 @@ enum Commands {
         OptimizeModule.register(r)
         UninstallModule.register(r)
         MenuBarModule.register(r)
+        SpeedModule.register(r)
     }
 }
 

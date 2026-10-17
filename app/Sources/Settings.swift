@@ -10,6 +10,8 @@ struct AppSettings: Codable {
     var porcentagemNaBarra: Bool
     var soNaBarra: Bool        // janela fechada = some do Dock, fica só na barra
     var boasVindas: Bool = false // já viu a tela de boas-vindas
+    var vigia: Bool = true       // avisar de app no talo e de memória no limite
+    var vigiaIgnorar: [String] = [] // nomes que a vigia não avisa mais
 
     static let defaults = AppSettings(aviso80: true, limiteAviso: 80, avisoQuente: true, som: true,
                                       iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false)
@@ -32,6 +34,8 @@ struct AppSettings: Codable {
         porcentagemNaBarra = try c.decodeIfPresent(Bool.self, forKey: .porcentagemNaBarra) ?? d.porcentagemNaBarra
         soNaBarra = try c.decodeIfPresent(Bool.self, forKey: .soNaBarra) ?? d.soNaBarra
         boasVindas = try c.decodeIfPresent(Bool.self, forKey: .boasVindas) ?? false
+        vigia = try c.decodeIfPresent(Bool.self, forKey: .vigia) ?? true
+        vigiaIgnorar = try c.decodeIfPresent([String].self, forKey: .vigiaIgnorar) ?? []
     }
 }
 
@@ -59,6 +63,10 @@ enum Settings {
         if let v = args.bool("porcentagemNaBarra") { s.porcentagemNaBarra = v }
         if let v = args.bool("soNaBarra") { s.soNaBarra = v }
         if let v = args.bool("boasVindas") { s.boasVindas = v }
+        if let v = args.bool("vigia") { s.vigia = v }
+        if let v = args["vigiaIgnorar"] as? [String] {
+            s.vigiaIgnorar = Array(v.map { CleanScan.sanitize(String($0.prefix(80))) }.filter { !$0.isEmpty }.prefix(50))
+        }
         current = s
         return s
     }

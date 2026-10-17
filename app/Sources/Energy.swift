@@ -37,7 +37,8 @@ enum Energy {
             guard let info = procInfo(rawPid) else { continue }           // já terminou
             if info.ppid == me { continue }                               // top/pmset que o Kamurafy disparou
             var pid = rawPid
-            if let resp = responsiblePid(rawPid), resp > 1, resp != rawPid { pid = resp }
+            if let resp = responsiblePid(rawPid), resp > 1, resp != rawPid,
+               !runsInsideHost(path: processPath(rawPid), responsible: resp) { pid = resp }
             guard let o = owner(of: pid, fallbackComm: info.comm) else { continue }
             if var e = byKey[o.key] {
                 e.power += power
@@ -127,6 +128,31 @@ enum Energy {
     }()
 
     static func responsible(_ pid: pid_t) -> pid_t? { responsiblePid(pid) }
+
+    /// Terminais e editores de código: o que roda dentro deles (node, python, um build) é do
+    /// usuário, não do app. Fica separado, com o nome dele, em vez de somar no Terminal.
+    static let hostBundles: Set<String> = [
+        "com.apple.Terminal", "com.googlecode.iterm2", "dev.warp.Warp-Stable", "com.mitchellh.ghostty",
+        "io.alacritty", "org.alacritty", "net.kovidgoyal.kitty", "com.github.wez.wezterm", "co.zeit.hyper",
+        "com.microsoft.VSCode", "com.microsoft.VSCodeInsiders", "com.todesktop.230313mzl4w4u92", "com.exafunction.windsurf",
+        "dev.zed.Zed", "com.sublimetext.4", "com.panic.Nova", "com.apple.dt.Xcode",
+    ]
+
+    /// Nome de um executável pelo caminho. Binário com nome de versão
+    /// (ex.: ~/.local/share/claude/versions/2.1.302) leva o nome da pasta do programa.
+    static func exeName(_ path: String) -> String {
+        let raw = (path as NSString).lastPathComponent
+        guard !raw.isEmpty, raw.allSatisfy({ $0.isNumber || $0 == "." }) else { return raw }
+        let parts = path.split(separator: "/").map(String.init)
+        if let i = parts.lastIndex(of: "versions"), i > 0 { return parts[i - 1] }
+        return parts.count >= 2 ? parts[parts.count - 2] : raw
+    }
+
+    static func runsInsideHost(path: String, responsible: pid_t) -> Bool {
+        guard let app = NSRunningApplication(processIdentifier: responsible), let id = app.bundleIdentifier,
+              hostBundles.contains(id) || id.hasPrefix("com.jetbrains."), let b = app.bundleURL?.path else { return false }
+        return !path.hasPrefix(b + "/")
+    }
 
     private static func responsiblePid(_ pid: pid_t) -> pid_t? {
         guard let f = respPid else { return nil }

@@ -58,6 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNa
             Notifier.shared.setup()
             Sampler.shared.onReading = { b in MenuBar.shared.update(b) }
             Sampler.shared.start()
+            Vigia.shared.start()
             if Settings.current.iconeNaBarra { MenuBar.shared.install() }
             NSApp.activate(ignoringOtherApps: true)
         }

@@ -251,7 +251,7 @@ enum Heavy {
             .contains { path.hasPrefix($0) }
     }
 
-    private static func startTime(_ pid: pid_t) -> UInt64? {
+    static func startTime(_ pid: pid_t) -> UInt64? {
         var kinfo = kinfo_proc()
         var size = MemoryLayout<kinfo_proc>.stride
         var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
@@ -284,7 +284,8 @@ enum Heavy {
             let realPath = Energy.processPath(p.pid)
             // soma no app responsável: pelo "responsável" do kernel ou pelo .app onde o executável mora
             var owner = p.pid
-            if let r = Energy.responsible(p.pid), r > 1 { owner = r }
+            if let r = Energy.responsible(p.pid), r > 1, r != p.pid,
+               !Energy.runsInsideHost(path: realPath, responsible: r) { owner = r }
             var app = running.first { $0.processIdentifier == owner && $0.activationPolicy == .regular }
             if app == nil, let a = appOwning(realPath, running: running) { app = a; owner = a.processIdentifier }
             let key = app?.bundleIdentifier ?? "proc:\(owner)"
@@ -296,7 +297,7 @@ enum Heavy {
                 continue
             }
             let ownerPath = app?.bundleURL?.path ?? (owner == p.pid ? realPath : Energy.processPath(owner))
-            let raw = app?.localizedName ?? (ownerPath as NSString).lastPathComponent
+            let raw = app?.localizedName ?? Energy.exeName(ownerPath)
             let name = app != nil ? raw : (Energy.friendly[raw] ?? raw)
             // app com janela pode ser fechado (Música, Safari...), menos os que seguram o macOS;
             // processo solto só se for do usuário e o executável de verdade estiver fora do sistema

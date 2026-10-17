@@ -69,7 +69,8 @@ final class Sampler {
             avisou80 = true
             Notifier.shared.send(id: "carga",
                                  title: "Chegou em \(b.percent)%!",
-                                 body: "Pode tirar da tomada. Parar por volta de \(s.limiteAviso)% ajuda a bateria a durar mais.")
+                                 body: "Pode tirar da tomada. Parar por volta de \(s.limiteAviso)% ajuda a bateria a durar mais.",
+                                 info: ["rota": "bateria"])
         }
 
         // Aviso de calor: duas leituras seguidas a 45 °C ou mais; só rearma abaixo de 42 °C.
@@ -79,7 +80,8 @@ final class Sampler {
             avisouQuente = true
             Notifier.shared.send(id: "quente",
                                  title: "Bateria quente: \(String(format: "%.0f", t)) °C",
-                                 body: "Tira o Mac de cima de almofada ou cobertor e fecha o que estiver pesado.")
+                                 body: "Tira o Mac de cima de almofada ou cobertor e fecha o que estiver pesado.",
+                                 info: ["rota": "bateria"])
         }
     }
 }
@@ -100,6 +102,9 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         guard available else { return }
         let c = UNUserNotificationCenter.current()
         c.delegate = self
+        // aviso da vigia: "Não avisar mais desse" sem precisar abrir o app
+        let ignorar = UNNotificationAction(identifier: "ignorar", title: "Não avisar mais desse", options: [])
+        c.setNotificationCategories([UNNotificationCategory(identifier: "vigia", actions: [ignorar], intentIdentifiers: [], options: [])])
         c.requestAuthorization(options: [.alert, .sound]) { _, err in
             if let err { NSLog("Kamurafy: permissão de notificação: \(err.localizedDescription)") }
         }
@@ -108,6 +113,20 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .list])
+    }
+
+    /// Clique no aviso abre o Kamurafy na tela certa; "Não avisar mais desse" ignora o app na vigia.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let info = response.notification.request.content.userInfo
+        let rota = info["rota"] as? String
+        let nome = info["nome"] as? String
+        let acao = response.actionIdentifier
+        DispatchQueue.main.async {
+            if acao == "ignorar", let nome { Vigia.shared.ignore(nome) }
+            else if acao == UNNotificationDefaultActionIdentifier { AppDelegate.shared?.showWindow(route: rota) }
+            completionHandler()
+        }
     }
 
     func status() async -> Status {
@@ -122,7 +141,7 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    func send(id: String, title: String, body: String) {
+    func send(id: String, title: String, body: String, categoria: String? = nil, info: [String: String] = [:]) {
         guard available else { return }
         let c = UNUserNotificationCenter.current()
         c.getNotificationSettings { s in
@@ -134,6 +153,8 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
             content.title = title
             content.body = body
             content.sound = .default
+            if let categoria { content.categoryIdentifier = categoria }
+            content.userInfo = info
             let req = UNNotificationRequest(identifier: "kamurafy.\(id).\(Int(Date().timeIntervalSince1970))",
                                             content: content, trigger: nil)
             c.add(req) { err in if let err { NSLog("Kamurafy: aviso \(id): \(err.localizedDescription)") } }
