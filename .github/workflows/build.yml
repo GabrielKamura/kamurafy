@@ -1,0 +1,67 @@
+# Compila e testa o Kamurafy a cada mudança, num Mac Apple Silicon e num Intel.
+# O dono só tem Mac Intel: é aqui que o código roda em chip da Apple antes de sair.
+name: Compilar e testar
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'site/**'
+      - '**.md'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testar:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Interface sem erro de sintaxe
+        run: for f in ui/js/*.js ui/js/pages/*.js; do node --check "$f"; done
+
+      - name: Catálogos de idioma válidos
+        run: |
+          node -e '
+            const fs = require("fs");
+            for (const l of ["en", "es"]) {
+              const d = JSON.parse(fs.readFileSync(`ui/i18n/${l}.json`, "utf8"));
+              const bad = Object.entries(d).filter(([k, v]) => typeof v !== "string" || !v
+                || (k.match(/\{\d+\}/g) || []).sort().join() !== (v.match(/\{\d+\}/g) || []).sort().join());
+              if (bad.length) { console.error(l, bad.slice(0, 5)); process.exit(1); }
+              console.log(l, Object.keys(d).length, "textos");
+            }'
+
+      - name: Compilar a versão de distribuição
+        run: PUBLICO=1 ARCHS=$(uname -m) BUILD_DIR=build/publico ./build.sh
+
+      - name: Compilar a versão de teste
+        run: ARCHS=$(uname -m) BUILD_DIR=build/dev ./build.sh
+
+      - name: Motor responde (bateria, sistema, velocidade, idioma)
+        run: |
+          K=build/dev/Kamurafy.app/Contents/MacOS/Kamurafy
+          $K --cmd list > /dev/null
+          for c in battery.now system.now speed.diagnose app.locale app.weight optimize.heavy cleanup.categories; do
+            echo "== $c"; $K --cmd "$c" | head -c 600; echo
+          done
+
+      - name: Faxina numa pasta de mentira (nada de fora pode mudar)
+        run: |
+          SB=/private/tmp/kamurafy-ci/caixa
+          mkdir -p build "$(dirname "$SB")"
+          tools/faxina-teste.sh "$SB"
+          antes=$(find "$SB-fora" -type f -print0 | sort -z | xargs -0 shasum | shasum)
+          KAMURAFY_FAXINA_HOME="$SB" build/dev/Kamurafy.app/Contents/MacOS/Kamurafy \
+            --seq '[["cleanup.scan",{"categoria":"caches"}],["cleanup.clean",{"ids":"$sel:0"}]]' | head -c 800; echo
+          depois=$(find "$SB-fora" -type f -print0 | sort -z | xargs -0 shasum | shasum)
+          [ "$antes" = "$depois" ] || { echo "a Faxina mexeu em arquivo de fora da caixa de areia"; exit 1; }
+          echo "pasta de fora intacta: $(find "$SB-fora" -type f | wc -l | tr -d ' ') arquivos"

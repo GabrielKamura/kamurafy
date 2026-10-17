@@ -1,0 +1,36 @@
+# Versão nova: ao subir uma tag v1.2.3, compila a versão universal (Intel + Apple Silicon),
+# monta o Kamurafy.dmg e publica na página de versões, com o SHA-256 junto.
+name: Publicar versão
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: macos-15
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Montar o instalador
+        run: |
+          VERSAO="${GITHUB_REF_NAME#v}"
+          VERSAO="$VERSAO" PUBLICO=1 BUILD_DIR=build/publico ./build.sh
+          VERSAO="$VERSAO" APP=build/publico/Kamurafy.app tools/dmg.sh
+          cp "build/Kamurafy-$VERSAO.dmg" build/Kamurafy.dmg
+          (cd build && shasum -a 256 Kamurafy.dmg > Kamurafy.dmg.sha256 && cat Kamurafy.dmg.sha256)
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTAS=docs/versoes/${GITHUB_REF_NAME}.md
+          if [ -f "$NOTAS" ]; then ARG=(--notes-file "$NOTAS"); else ARG=(--generate-notes); fi
+          gh release create "$GITHUB_REF_NAME" build/Kamurafy.dmg build/Kamurafy.dmg.sha256 \
+            --title "Kamurafy ${GITHUB_REF_NAME#v}" "${ARG[@]}"

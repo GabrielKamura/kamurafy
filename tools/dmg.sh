@@ -14,7 +14,7 @@ fi
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 cp -R "$APP" "$STAGE/Kamurafy.app"
-ln -s /Applications "$STAGE/Aplicativos"
+ln -s /Applications "$STAGE/Applications"
 OUT="build/Kamurafy-$VERSAO.dmg"
 rm -f "$OUT"
 hdiutil create -volname "Kamurafy" -srcfolder "$STAGE" -ov -format UDZO -imagekey zlib-level=9 "$OUT" >/dev/null
