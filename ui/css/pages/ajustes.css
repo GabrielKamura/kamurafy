@@ -306,3 +306,8 @@
   .aj-mb-fade { background-image: repeating-linear-gradient(90deg, transparent 0 18px, rgba(243, 234, 214, .14) 18px 52px, transparent 52px 70px); }
   .aj-mb-ours:not(.is-empty) { --ink: var(--on-gold); color: var(--on-gold); border-color: var(--cream); }
 }
+
+/* aparência e idioma: o rótulo em cima, as opções numa fileira só embaixo */
+.aj-visual .aj-limrow { flex-direction: column; align-items: flex-start; gap: 8px; }
+/* quatro idiomas em duas fileiras certinhas (em vez de um sobrando sozinho) */
+.aj-visual .aj-limrow:last-of-type .aj-lims { display: grid; grid-template-columns: repeat(2, max-content); }

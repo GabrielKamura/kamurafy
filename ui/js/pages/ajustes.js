@@ -20,7 +20,7 @@
     ajDisk: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="12" cy="11.5" r="4"/><path d="M6.5 17h2"/><path d="M14.8 8.7 17.5 6"/>',
   });
 
-  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false, vigia: true };
+  const DEFAULTS = { aviso80: true, limiteAviso: 80, avisoQuente: true, som: true, iconeNaBarra: true, porcentagemNaBarra: true, soNaBarra: false, vigia: true, tema: 'auto', idioma: 'auto' };
   /* o mesmo texto do cartão "Vigia" no Otimizar › Por que tá lento? */
   const VIGIA_T = K.t('Me avisar quando um app ficar no talo ou a memória chegar no limite');
   const LIMITES = [70, 75, 80, 85, 90];
@@ -170,6 +170,45 @@
     V.somTx.textContent = on
       ? K.t('Um plop nos cliques e um tadá no fim da varredura.')
       : K.t('Desligados. Os avisos do macOS têm som próprio.');
+  }
+
+  /* ---------- aparência e idioma ---------- */
+  const TEMAS = [['auto', K.t('Automático')], ['claro', K.t('Claro')], ['escuro', K.t('Escuro')]];
+  /* cada idioma no próprio nome: quem não lê português acha o seu */
+  const IDIOMAS = [['auto', K.t('Automático')], ['pt-BR', 'Português'], ['en', 'English'], ['es', 'Español']];
+
+  function choices(list, key, label, errNode) {
+    const box = K.el('div', { class: 'aj-lims aj-choices', role: 'radiogroup', 'aria-label': label });
+    for (const [v, text] of list) {
+      box.appendChild(K.el('button', {
+        class: 'aj-lim', type: 'button', role: 'radio', dataset: { v },
+        onclick: () => { if ((S[key] || 'auto') !== v) save({ [key]: v }, errNode); },
+      }, text));
+    }
+    return box;
+  }
+
+  function lookCard(delay) {
+    const c = card('visual', 'moon', K.t('Aparência e idioma'), K.t('Automático segue o macOS.'), null, delay);
+    const err = errLine();
+    V.temas = choices(TEMAS, 'tema', K.t('Tema'), err);
+    V.idiomas = choices(IDIOMAS, 'idioma', K.t('Idioma'), err);
+    c.append(
+      K.el('div', { class: 'aj-limrow' }, K.el('span', { class: 'aj-limrow-l' }, K.t('Tema')), V.temas),
+      K.el('div', { class: 'aj-limrow' }, K.el('span', { class: 'aj-limrow-l' }, K.t('Idioma')), V.idiomas),
+      err);
+    return c;
+  }
+  function paintLook() {
+    if (!V.temas) return;
+    for (const [box, key] of [[V.temas, 'tema'], [V.idiomas, 'idioma']]) {
+      for (const b of box.children) {
+        const on = b.dataset.v === (S[key] || 'auto');
+        b.setAttribute('aria-checked', String(on));
+        b.tabIndex = on ? 0 : -1;
+        b.disabled = !loaded;
+      }
+    }
   }
 
   /* ---------- barra de menus ---------- */
@@ -528,6 +567,7 @@
   /* ================= tela ================= */
 
   function paintAll() {
+    paintLook();
     paintSound();
     paintMenubar();
     paintAlerts();
@@ -624,7 +664,7 @@
     /* a bateria é a estrela: os avisos abrem a tela. Na janela estreita vira uma coluna só,
        nesta mesma ordem */
     const colA = K.el('div', { class: 'aj-col' }, alertsCard(d()), soundCard(d()));
-    const colB = K.el('div', { class: 'aj-col' }, menubarCard(d()), loginCard(d()));
+    const colB = K.el('div', { class: 'aj-col' }, menubarCard(d()), loginCard(d()), lookCard(d()));
     host.appendChild(K.el('div', { class: 'aj-grid' }, colA, colB, privacyCard(d()), aboutCard(d())));
     paintAll();
     paintLogin();
