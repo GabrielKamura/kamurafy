@@ -543,7 +543,7 @@
     }
     const rows = [m.optPct, m.optBar, m.optLogin].filter((o) => !o.row.hidden);
     const on = rows.filter((o) => o.sw.getAttribute('aria-checked') === 'true').length;
-    sum.append(`${on} de ${rows.length} ${on === 1 ? K.t('ligado') : K.t('ligados')}`);
+    sum.append(K.t('{0} de {1} {2}', on, rows.length, on === 1 ? K.t('ligado') : K.t('ligados')));
   }
 
   function paintLogin(m, estado) {

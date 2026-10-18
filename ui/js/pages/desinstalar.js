@@ -95,7 +95,8 @@
   const fmtN = (v) => fmtB(v).replace(/ /g, '\u00a0');
   const plural = (n, um, varios) => `${K.fmt.num(n)} ${n === 1 ? um : varios}`;
   const mounted = () => !!host && document.body.contains(host);
-  const errMsg = (e) => (e && e.message ? String(e.message) : K.t('erro desconhecido'));
+  /* original em português (pras regras do WHY); a tela mostra traduzido */
+  const errMsg = (e) => (e && (e.original || e.message) ? String(e.original || e.message) : K.t('erro desconhecido'));
   const sum = (list) => list.reduce((a, it) => a + (it.bytes || 0), 0);
   const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -127,7 +128,7 @@
   function why(m) {
     const s = vis(m || '').replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim();
     for (const [re, to] of WHY) { const g = re.exec(s); if (g) return typeof to === 'function' ? to(g) : to; }
-    return s || K.t('motivo desconhecido');
+    return s ? K.t(s) : K.t('motivo desconhecido');
   }
 
   function withTimeout(p, ms, msg) {
@@ -144,8 +145,8 @@
   function ago(t) {
     if (!isNum(t)) return null;
     const d = daysAgo(t);
-    if (d <= 0) return 'hoje';
-    if (d === 1) return 'ontem';
+    if (d <= 0) return K.t('hoje');
+    if (d === 1) return K.t('ontem');
     if (d < 7) return K.t('há {0} dias', d);
     if (d < 28) { const w = Math.round(d / 7); return w === 1 ? K.t('há 1 semana') : K.t('há {0} semanas', w); }
     const m = Math.max(1, Math.floor(d / 30.44));
@@ -551,7 +552,7 @@
     const slow = K.el('p', { class: 'un-wait-slow muted', hidden: true }, K.t('Demorando mais que o normal. Pode trocar de tela, eu continuo.'));
     const tick = () => {
       const s = Math.max(0, Math.floor((performance.now() - S.t0) / 1000));
-      secs.textContent = K.fmt.num(s, 0) + ' s';
+      secs.textContent = K.fmt.num(s, 0) + K.t(' s');
       msg.textContent = WAIT_MSGS[Math.min(WAIT_MSGS.length - 1, Math.floor(s / 2.2))];
       slow.hidden = s < 20;
     };
@@ -850,7 +851,7 @@
     if (d.incompleto) extra.push(K.el('div', { class: 'tip un-note warn', html: K.icon('clock') }, K.el('p', null, K.t('Parei no meio: pode ter mais.'))));
     if (d.semAcesso > 0) {
       extra.push(K.el('div', { class: 'tip un-note', html: K.icon('lock') },
-        K.el('p', null, K.t('O macOS não me deixou ler {0}. Com Acesso Total ao Disco eu vejo tudo.', d.semAcesso === 1 ? K.t('uma pasta') : `${K.fmt.num(d.semAcesso)} pastas`)),
+        K.el('p', null, K.t('O macOS não me deixou ler {0}. Com Acesso Total ao Disco eu vejo tudo.', d.semAcesso === 1 ? K.t('uma pasta') : K.t('{0} pastas', K.fmt.num(d.semAcesso)))),
         K.el('button', { class: 'btn small', type: 'button', onclick: () => { K.sound.plop(); K.api('open.settings', { painel: 'privacidade-disco' }).catch(() => {}); } }, K.t('Abrir Ajustes'))));
     }
     if (extra.length) sec.appendChild(K.el('div', { class: 'un-d-notes' }, extra));
@@ -1033,7 +1034,7 @@
     if (data.length) {
       const kinds = Array.from(new Set(data.map((it) => kindOf(it).label)));
       bits.push(K.el('b', null, K.t('Os dados do app vão junto ')),
-        K.t('({0}). Se instalar de novo, ele começa do zero.', kinds.join(' e ')));
+        K.t('({0}). Se instalar de novo, ele começa do zero.', kinds.join(K.t(' e '))));
     }
     const named = items.filter(byName);
     if (named.length) {
@@ -1192,7 +1193,7 @@
     if (!u || !undoBack(j).app || undoBack(j).failRest) {
       acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('unTrash'), disabled: !!busy, onclick: () => { goLixeira(); } }, K.t('Ver na Lixeira')));
     }
-    acts.appendChild(K.el('button', { class: 'btn' + (acts.childElementCount ? ' ghost' : ''), type: 'button', html: K.icon('apps'), disabled: !!busy,
+    acts.appendChild(K.el('button', { class: 'btn' + (acts.childElementCount ? K.t(' ghost') : ''), type: 'button', html: K.icon('apps'), disabled: !!busy,
       onclick: () => { K.sound.tick(); closeDrawer(); } }, K.t('Voltar pra lista')));
     const art = K.el('div', { class: 'un-res-art' });
     const sticker = (S.sandbox || (r.restos && r.restos.caixaDeAreia) ? K.t('modo de teste · Lixeira de mentira · ') : '') + K.t('feito às {0}', K.fmt.time(j.at));

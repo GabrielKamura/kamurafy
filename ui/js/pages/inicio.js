@@ -46,7 +46,8 @@
   ];
   const DIRT_STEP = STEPS.find((s) => s.id === 'sujeira');
   const SPEED_STEP = STEPS.find((s) => s.id === 'velocidade');
-  const COUNT_PT = ['zero', 'uma', 'duas', K.t('três'), 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+  /* número por extenso só em português; nos outros idiomas vai o algarismo */
+  const COUNT_PT = K.lang === 'pt-BR' ? ['zero', 'uma', 'duas', K.t('três'), 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'] : [];
 
   let host = null;
   let mode = 'idle';             // idle | scanning | result
@@ -73,8 +74,10 @@
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   /** motivo que o Swift mandou → pedaço de frase (sem UUID, sem ponto final, minúscula) */
   function whyTxt(m) {
-    let s = String(K.t(String(m || ''))).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim().replace(/[.!]+$/, '');
-    if (/não está mais na lista/i.test(s)) s = K.t('a lista mudou: escaneie de novo');
+    const raw = String(m || '').replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim();
+    /* a regra compara o original (português); a tela mostra traduzido */
+    if (/não está mais na lista/i.test(raw)) return K.t('a lista mudou: escaneie de novo');
+    const s = K.t(raw).replace(/[.!]+$/, '');
     if (!s) return K.t('motivo desconhecido');
     return s.charAt(0).toLowerCase() + s.slice(1);
   }
@@ -406,13 +409,13 @@
       id: 'disco', tone, pill, say,
       value: avail, valueFmt: (v) => K.fmt.bytes(v), sub: K.t('livres de {0} ({1}%)', K.fmt.bytes(total), K.fmt.num(free, 0)),
       meter: 100 - free, meterLabel: K.t('ocupado'),
-      snippet: `${K.fmt.bytes(avail)} livres`,
+      snippet: K.t('{0} livres', K.fmt.bytes(avail)),
     };
   }
 
   /* ---------- velocidade (speed.diagnose): o veredito manda no tom ---------- */
   const SPEED = {
-    voando: { tone: 'good', label: 'Voando!', icon: 'rocket', say: K.t('Só coisa leve rodando agora.') },
+    voando: { tone: 'good', label: K.t('Voando!'), icon: 'rocket', say: K.t('Só coisa leve rodando agora.') },
     deboa: { tone: 'good', label: K.t('De boa'), icon: 'check', say: K.t('Uma coisinha ou outra pesando, nada que trave.') },
     pesado: { tone: 'warn', label: K.t('Tá pesado'), icon: 'eye', say: K.t('Dá pra aliviar sem reiniciar o Mac.') },
     travando: { tone: 'serious', label: K.t('Tá travando'), icon: 'alert', say: K.t('Comece pelo primeiro da lista: é o que mais ajuda.') },
@@ -454,7 +457,7 @@
         return out({ icon: 'thermo', text: K.t('Calor freando'), sub });
       }
       case 'economia': return out({ icon: 'leaf', text: K.t('Pouca Energia ligado'), sub: K.t('deixa o Mac mais lento de propósito') });
-      case 'disco': return out({ icon: 'disk', text: K.t('Disco quase cheio'), sub: num(f.valor) ? `${K.fmt.bytes(f.valor)} livres` : K.t('pouco espaço sobrando') });
+      case 'disco': return out({ icon: 'disk', text: K.t('Disco quase cheio'), sub: num(f.valor) ? K.t('{0} livres', K.fmt.bytes(f.valor)) : K.t('pouco espaço sobrando') });
       case 'reiniciar': return out({ icon: 'cycle', text: num(f.valor) ? K.t('Ligado há {0} dias', K.fmt.num(f.valor, 0)) : K.t('Muito tempo sem reiniciar'), sub: K.t('reiniciar alivia') });
       case 'inicio': return out({ icon: 'rocket', text: K.t('{0} itens abrem com o Mac', num(f.processos) || K.t('Vários')), sub: K.t('dá pra desligar em Velocidade') });
       default: return out({ icon: 'gauge', text: K.t('Algo pesando'), sub: '' });
@@ -725,7 +728,7 @@
       ui.ringIc.classList.remove('kz-bump');
       void ui.ringIc.offsetWidth;
       ui.ringIc.classList.add('kz-bump');
-      ui.listCount.textContent = `${i + 1} de ${STEPS.length}`;
+      ui.listCount.textContent = K.t('{0} de {1}', i + 1, STEPS.length);
       /* passo comprido (a sujeira lê três categorias) conta o que está olhando no lugar da descrição */
       ctx.progress = (t) => { if (my === token && ui.steps && ui.steps[i]) ui.steps[i].desc.textContent = t; };
       const [out] = await Promise.allSettled([withTimeout(Promise.resolve().then(() => s.run(ctx)), s.max || STEP_MAX), K.sleep(STEP_MIN)]);
@@ -747,7 +750,7 @@
 
     ring.update({ value: 100, busy: false, tone: 'good' });
     ui.ringIc.innerHTML = K.icon('check');
-    ui.now.textContent = 'Pronto!';
+    ui.now.textContent = K.t('Pronto!');
     ui.p.textContent = K.t('Juntando o que achei…');
     await K.sleep(650);
     if (my !== token) return;
@@ -775,7 +778,7 @@
   /* ---------- resultado ---------- */
 
   const lower = (id) => ({ bateria: K.t('saúde da bateria') }[id] || STEPS.find((s) => s.id === id).name.toLowerCase());
-  const listPt = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1]);
+  const listPt = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + K.t(' e ') + a[a.length - 1]);
 
   /** título, texto e rosto do resumo: nunca diz "tudo certo" do que não conseguiu ler */
   function summaryOf(results) {
@@ -999,7 +1002,7 @@
     }
     for (const a of plan.apps) {
       list.appendChild(row({ key: 'app', app: a, on: false, icon: 'cpu', img: a.icon, label: K.t('Fechar {0}', a.nome),
-        title: K.t('Fechar {0}', a.nome), sub: K.t('No talo{0} · pode pedir pra salvar', a.cpu != null ? K.t(': {0} de CPU', K.fmt.pct(a.cpu, 0)) : ' agora') }));
+        title: K.t('Fechar {0}', a.nome), sub: K.t('No talo{0} · pode pedir pra salvar', a.cpu != null ? K.t(': {0} de CPU', K.fmt.pct(a.cpu, 0)) : K.t(' agora')) }));
     }
     if (plan.aviso) {
       list.appendChild(row({ key: 'aviso', on: true, icon: 'bell', label: K.t('Ligar o aviso dos {0}%', plan.aviso.limite),
@@ -1137,7 +1140,7 @@
     else if (out.cleaned && !out.movedN) fails.push(K.t('mandar os caches pra Lixeira ({0})', out.cacheFails.length ? whyTxt(out.cacheFails[0].motivo) : K.t('nada saiu do lugar')));
     else if (out.cacheFails.length) {
       const n = out.cacheFails.length;
-      fails.push(K.t('mandar {0} de cache ({1})', n === 1 ? K.t('1 item') : `${K.fmt.num(n)} itens`, whyTxt(out.cacheFails[0].motivo)));
+      fails.push(K.t('mandar {0} de cache ({1})', n === 1 ? K.t('1 item') : K.t('{0} itens', K.fmt.num(n)), whyTxt(out.cacheFails[0].motivo)));
     }
     for (const f of out.appFails) fails.push(K.t('fechar {0} ({1})', inl(f.app.nome), f.why));
     if (out.avisoErr) fails.push(K.t('ligar o aviso ({0})', out.avisoErr));
@@ -1145,7 +1148,7 @@
     let text = ok ? cap(listPt(done)) + '.' : K.t('Nada foi mexido.');
     if (fails.length) text += K.t(' Não consegui {0}.', listPt(fails));
     if (out.asked.length) text += out.asked.length === 1 ? K.t(' Se ele perguntar se quer salvar, responda na janela dele.') : K.t(' Se algum perguntar se quer salvar, responda na janela dele.');
-    return { ok, title: ok ? 'Pronto!' : K.t('Não consegui fazer nada agora'), text };
+    return { ok, title: ok ? K.t('Pronto!') : K.t('Não consegui fazer nada agora'), text };
   }
 
   /** andamento dentro do resumo: um passo por linha (espera · fazendo · feito · não deu) */
@@ -1178,7 +1181,7 @@
     }
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note && !r.error ? K.el('p', { class: 'kz-note kz-speed-note' }, r.note) : null,
-      K.el('button', { class: 'btn small' + (isAttention(r) ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
+      K.el('button', { class: 'btn small' + (isAttention(r) ? K.t(' gold') : ''), type: 'button', onclick: () => go(step.route) },
         K.t('Ver o que pesa'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
   }
@@ -1204,7 +1207,7 @@
     const b = bat && !bat.error && !bat.none && !bat.missing ? bat.b : null;
     if (b && (bat.key === 'trocar' || bat.key === 'gasta')) {
       out.push({ icon: 'btWrench', tone: bat.tone, title: K.t('Trocar a bateria'), text: K.t('A Apple mostra preço e onde levar pro seu modelo.'),
-        btn: K.t('Ver opções de troca'), run: () => K.api('open.url', { url: 'https://support.apple.com/pt-br/mac/repair' }).catch(() => {}) });
+        btn: K.t('Ver opções de troca'), run: () => K.api('open.url', { url: 'https://support.apple.com/mac/repair' }).catch(() => {}) });
     }
     /* só quando algo está puxando de verdade: com tudo tranquilo, "ver quem está puxando" com fogo
        desmentiria o "nada pede sua atenção" lá de cima */
@@ -1243,7 +1246,7 @@
       /* sem alarme: ter alguns é normal. Só mostra quantos são e onde decidir */
       const shown = su.names.slice(0, 2);
       const rest = su.n - shown.length;
-      const who = shown.length ? listPt(rest > 0 ? shown.concat([`mais ${rest}`]) : shown) + '. ' : '';
+      const who = shown.length ? listPt(rest > 0 ? shown.concat([K.t('mais {0}', rest)]) : shown) + '. ' : '';
       out.push({ icon: 'rocket', title: K.t('{0} {1} com o Mac', su.n, su.names.length === su.n ? K.t('apps abrem') : K.t('itens abrem')),
         text: K.t('{0}Dá pra desligar e religar depois.', who),
         btn: K.t('Ver em Velocidade'), run: () => go('otimizar?aba=login') });
@@ -1268,7 +1271,7 @@
   function actionsBlock(acts) {
     const row = K.el('div', { class: 'kz-acts-row' });
     acts.forEach((a, i) => {
-      const btn = K.el('button', { class: 'btn small' + (a.done ? '' : ' gold'), type: 'button' }, a.btn, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
+      const btn = K.el('button', { class: 'btn small' + (a.done ? '' : K.t(' gold')), type: 'button' }, a.btn, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
       const item = K.el('div', { class: 'kz-act pop-in' + (a.tone ? ' t-' + a.tone : ''), style: { animationDelay: 80 + i * 70 + 'ms' } },
         K.el('span', { class: 'head-ic' + (a.tone ? ' ' + a.tone : ''), html: K.icon(K.ICONS[a.icon] ? a.icon : 'sparkle') }),
         K.el('div', { class: 'kz-act-text' },
@@ -1458,7 +1461,7 @@
     const label = !r.error && r.sel > 0 ? K.t('Ver e limpar') : K.t('Abrir o Espaço');
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note ? K.el('p', { class: 'kz-note kz-dirt-note' }, r.note) : null,
-      K.el('button', { class: 'btn small' + (r.tone === 'tip' ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
+      K.el('button', { class: 'btn small' + (r.tone === 'tip' ? K.t(' gold') : ''), type: 'button', onclick: () => go(step.route) },
         label, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
   }

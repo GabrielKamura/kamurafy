@@ -58,7 +58,7 @@
     <td width="50%"><img src="docs/img/en/battery.png" alt="Battery health, cycles, temperature and forecast"></td>
   </tr>
   <tr>
-    <td><img src="docs/img/en/storage.png" alt="Storage: how much can be freed, everything reviewed first"></td>
+    <td><img src="docs/img/en/live.png" alt="Live: CPU, memory and disk, with why freeing RAM does not help"></td>
     <td><img src="docs/img/en/dark.png" alt="Dark mode"></td>
   </tr>
 </table>

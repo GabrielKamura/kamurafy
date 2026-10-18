@@ -182,7 +182,7 @@
     c.body.textContent = '';
     st.paint(c.body);
     c.dots.forEach((d, k) => { d.classList.toggle('on', k === c.i); d.setAttribute('aria-current', k === c.i ? 'step' : 'false'); });
-    c.count.textContent = `${c.i + 1} de ${STEPS.length}`;
+    c.count.textContent = K.t('{0} de {1}', c.i + 1, STEPS.length);
     c.back2.hidden = c.i === 0;
     const last = c.i === STEPS.length - 1;
     c.next.textContent = '';

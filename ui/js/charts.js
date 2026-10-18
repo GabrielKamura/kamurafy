@@ -166,17 +166,17 @@
 
   function agoText(d, prefix) {
     d = Math.max(0, Math.round(d));
-    if (d < 3) return 'agora';
+    if (d < 3) return K.t('agora');
     const p = prefix ? K.t('há ') : '−';
     if (d < 60) return `${p}${d} s`;
     if (d < 3600) {
       /* 90 s vira "1,5 min" (antes arredondava pra "2 min" e repetia o rótulo vizinho) */
       const m = d / 60;
       const inteiro = Math.abs(m - Math.round(m)) < 0.05;
-      return `${p}${inteiro || m >= 10 ? Math.round(m) : fmtNum(m, 1)} min`;
+      return K.t('{0}{1} min', p, inteiro || m >= 10 ? Math.round(m) : fmtNum(m, 1));
     }
     const h = d / 3600;
-    return `${p}${fmtNum(h, h < 10 && Math.abs(h - Math.round(h)) > 0.05 ? 1 : 0)} h`;
+    return K.t('{0}{1} h', p, fmtNum(h, h < 10 && Math.abs(h - Math.round(h)) > 0.05 ? 1 : 0));
   }
 
   function timeLabel(t, step, span, first) {
@@ -739,7 +739,7 @@
       /* rótulo do último ponto */
       const gE = sv('g', { class: 'kc-ends' }, svg);
       for (const e of ends) {
-        const dot = sv('circle', { cx: r1(e.px), cy: r1(e.py), r: 5, class: 'kc-end-dot' + (e.s.dash ? ' hollow' : '') }, gE);
+        const dot = sv('circle', { cx: r1(e.px), cy: r1(e.py), r: 5, class: 'kc-end-dot' + (e.s.dash ? K.t(' hollow') : '') }, gE);
         if (!e.s.dash) dot.style.fill = e.s.color; else dot.style.stroke = e.s.color;
         stext(gE, e.tx, e.ty, e.txt, 'kc-end-label', e.anchor);
       }
@@ -928,7 +928,7 @@
       const twoLines = items.some((i) => textW(i.label || '', 15) > labelW - 2);
       const hasNote = items.some((i) => i.note);
       const rowH = Math.max(thick + 14, (twoLines ? 35 : 18) + (hasNote ? 16 : 0) + 8);
-      const cols = K.t('{0}{1}px {2}px', hasIcon ? iconW + 'px ' : '', labelW, trackW);
+      const cols = K.t('{0}{1}px {2}px', hasIcon ? iconW + K.t('px ') : '', labelW, trackW);
       const ink = col('--ink');
 
       const list = K.el('div', { class: 'kb-list', role: 'list', 'aria-label': opts.ariaLabel || opts.title || null });
@@ -1069,7 +1069,7 @@
       /* ponteiro */
       const needle = sv('g', { class: 'kg-needle' }, svg);
       const L = rm + 2;
-      sv('path', { d: `M${cx + 12},${cy} L${cx},${cy - 6.5} L${cx - L},${cy} L${cx},${cy + 6.5} Z`, class: 'kg-needle-body' }, needle);
+      sv('path', { d: K.t('M{0},{1} L{2},{3} L{4},{5} L{6},{7} Z', cx + 12, cy, cx, cy - 6.5, cx - L, cy, cx, cy + 6.5), class: 'kg-needle-body' }, needle);
       needle.style.transformOrigin = `${cx}px ${cy}px`;
       needle.style.transform = `rotate(${(instant ? t : startT) * 180}deg)`;
       if (!has) needle.style.opacity = '.25';
@@ -1306,7 +1306,7 @@
       const sw = Math.max(1.6, (3 * 100) / size);
       const rm = 50 - sw / 2 - 1.5 - th / 2;
       const circ = 2 * Math.PI * rm;
-      const wrap = K.el('div', { class: 'kr' + (opts.busy ? ' busy' : ''), style: { width: size + 'px', height: size + 'px' } });
+      const wrap = K.el('div', { class: 'kr' + (opts.busy ? K.t(' busy') : ''), style: { width: size + 'px', height: size + 'px' } });
       const svg = sv('svg', { class: 'kr-svg', viewBox: '0 0 100 100', role: 'img', 'aria-label': `${opts.label || K.t('Progresso')}: ${has ? Math.round(t * 100) + '%' : '—'}` });
       const track = sv('circle', { cx: 50, cy: 50, r: rm, class: 'kr-track' }, svg);
       track.style.strokeWidth = th;
@@ -1346,7 +1346,7 @@
 
       svg.addEventListener('pointerenter', () => {
         const r = svg.getBoundingClientRect();
-        h.tip(r.left + r.width / 2, r.top + 6, opts.label || '', [{ value: has ? fmt(v) : '—', name: opts.tipName || (has && opts.max != null && opts.maxFormat ? `de ${opts.maxFormat(max)}` : ''), color: col(opts.tone || 'gold') }]);
+        h.tip(r.left + r.width / 2, r.top + 6, opts.label || '', [{ value: has ? fmt(v) : '—', name: opts.tipName || (has && opts.max != null && opts.maxFormat ? K.t('de {0}', opts.maxFormat(max)) : ''), color: col(opts.tone || 'gold') }]);
       });
       svg.addEventListener('pointerleave', () => h.untip());
     };

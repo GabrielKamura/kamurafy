@@ -91,24 +91,24 @@ K.fmt = {
   mins(m) {
     if (m == null) return '—';
     m = Math.round(m);
-    if (m < 60) return m + '\u00a0min';
+    if (m < 60) return m + K.t('\u00a0min');
     const h = Math.floor(m / 60), r = m % 60;
-    return r ? K.t('{0}\u00a0h\u00a0{1}\u00a0min', h, r) : `${h}\u00a0h`;
+    return r ? K.t('{0}\u00a0h\u00a0{1}\u00a0min', h, r) : K.t('{0}\u00a0h', h);
   },
   /** segundos → "2 dias e 3 h", "5 h 10 min" */
   duration(s) {
     if (s == null) return '—';
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
     if (d > 0) return `${d}\u00a0${d === 1 ? K.t('dia') : K.t('dias')}${h ? K.t(' e {0}\u00a0h', h) : ''}`;
-    if (h > 0) return `${h}\u00a0h${m ? `\u00a0${m}\u00a0min` : ''}`;
-    return `${m}\u00a0min`;
+    if (h > 0) return K.t('{0}\u00a0h{1}', h, m ? K.t('\u00a0{0}\u00a0min', m) : '');
+    return K.t('{0}\u00a0min', m);
   },
   /** segundos → número redondo pra estimativa: "~12 h", "~3 dias" (arredonda, não corta) */
   roughDuration(s) {
     if (s == null || !isFinite(s)) return '—';
-    if (s < 3600) return '~' + Math.max(1, Math.round(s / 60)) + '\u00a0min';
-    if (s < 48 * 3600) return '~' + Math.round(s / 3600) + '\u00a0h';
-    return '~' + Math.round(s / 86400) + '\u00a0dias';
+    if (s < 3600) return '~' + Math.max(1, Math.round(s / 60)) + K.t('\u00a0min');
+    if (s < 48 * 3600) return '~' + Math.round(s / 3600) + K.t('\u00a0h');
+    return '~' + Math.round(s / 86400) + K.t('\u00a0dias');
   },
   /** Unix (s) → "24 set" */
   day(t) {
@@ -299,7 +299,7 @@ K.cleanSuggested = function (it) {
 
 /** Etiqueta de status (ícone + texto). tone: good | warn | serious | crit */
 K.statusPill = function (tone, text, iconName, big) {
-  return K.el('span', { class: `status ${tone}${big ? ' big' : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
+  return K.el('span', { class: `status ${tone}${big ? K.t(' big') : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
 };
 K.toneIcon = (tone) => ({ good: 'check', warn: 'eye', serious: 'alert', crit: 'alert' }[tone] || 'info');
 
@@ -392,7 +392,7 @@ K.confirm = (function () {
     const danger = o.tone === 'danger';
     return new Promise((resolve) => {
       const id = 'kmodal-' + Math.random().toString(36).slice(2, 8);
-      const okBtn = K.el('button', { class: 'btn ' + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
+      const okBtn = K.el('button', { class: K.t('btn ') + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
         o.ok || K.t('Confirmar'));
       const cancelBtn = K.el('button', { class: 'btn kmodal-cancel', type: 'button', onclick: () => close(false) }, o.cancel || K.t('Cancelar'));
       let ackBox = null;
@@ -421,7 +421,7 @@ K.confirm = (function () {
         'aria-labelledby': id + '-t', 'aria-describedby': o.text ? id + '-d' : null,
       },
         K.el('div', { class: 'kmodal-head' },
-          K.el('span', { class: 'kmodal-ic' + (danger ? ' crit' : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
+          K.el('span', { class: 'kmodal-ic' + (danger ? K.t(' crit') : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
           K.el('h2', { id: id + '-t' }, o.title || K.t('Tem certeza?'))),
         K.el('div', { class: 'kmodal-body' }, body),
         note,
@@ -478,7 +478,7 @@ K.errorCard = function (o) {
   const reason = String(o.reason == null ? '' : o.reason).trim().replace(/[.!\s]+$/, '');
   const text = o.text != null ? o.text : K.t('O motivo: {0}. Nada foi mexido.', reason || K.t('erro desconhecido'));
   const act = o.retry ? K.el('div', { class: 'kerr-act' },
-    K.el('button', { class: 'btn gold' + (o.compact ? ' small' : ''), type: 'button', html: K.icon('cycle'),
+    K.el('button', { class: 'btn gold' + (o.compact ? K.t(' small') : ''), type: 'button', html: K.icon('cycle'),
       onclick: (e) => { if (K.sound) K.sound.plop(); o.retry(e); } }, o.retryLabel || K.t('Tentar de novo')),
     o.retryHint ? K.el('span', { class: 'kerr-hint' }, o.retryHint) : null) : null;
   const art = o.compact ? K.el('span', { class: 'head-ic crit kerr-ic', html: K.icon('alert') }) : K.el('div', { class: 'kerr-art', 'aria-hidden': 'true' });

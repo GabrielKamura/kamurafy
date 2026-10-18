@@ -42,7 +42,7 @@
   function wattsTxt(w) {
     if (!isNum(w)) return K.t('sem leitura');
     if (Math.abs(w) < 0.05) return K.t('0 W');
-    return K.fmt.watts(w) + (w > 0 ? ' entrando' : ' saindo');
+    return K.fmt.watts(w) + (w > 0 ? K.t(' entrando') : K.t(' saindo'));
   }
   const hoursTxt = (s) => {
     if (!isNum(s) || s < 60) return K.t('0 min');
@@ -266,7 +266,7 @@
         K.el('div', { class: `bt-hm-fill ${st.tone}`, style: { width: w + '%' } }));
       /* legenda em cima da barra: o que ela guarda e o que já perdeu (nada de "−12%" solto) */
       const cap = K.el('div', { class: 'bt-hm-cap' },
-        K.el('span', null, `guarda ${K.fmt.pct(h, h % 1 ? 1 : 0)}`),
+        K.el('span', null, K.t('guarda {0}', K.fmt.pct(h, h % 1 ? 1 : 0))),
         lost >= 0.5 ? K.el('span', { class: 'bt-hm-capr' }, K.t(' · perdeu {0}% desde nova', K.fmt.num(lost, 0))) : null);
       meterBox.appendChild(K.el('div', { class: 'bt-hm', role: 'img', 'aria-label': K.t('Saúde {0} da capacidade de fábrica; a marca de 80% é onde a Apple considera gasta.', K.fmt.pct(h)) },
         cap,
@@ -310,7 +310,7 @@
         txt.textContent = '';
         if (isNum(b.maxMah) && isNum(b.designMah)) {
           txt.append(K.t('Guarda '), K.el('span', { class: 'bt-strong' }, K.fmt.num(b.maxMah) + ' mAh'),
-            ' dos ', K.el('span', { class: 'bt-strong' }, K.fmt.num(b.designMah) + ' mAh'),
+            K.t(' dos '), K.el('span', { class: 'bt-strong' }, K.fmt.num(b.designMah) + ' mAh'),
             K.t(' de fábrica.'));
         } else if (isNum(h)) {
           txt.append(K.t('Quanto ela ainda guarda da capacidade de fábrica.'));
@@ -361,7 +361,7 @@
         if (!first && c === last) return;
         last = c;
         countTo(n, c, (v) => K.fmt.num(v, 0), first);
-        of.textContent = isNum(d) ? `de ${K.fmt.num(d)}` : '';
+        of.textContent = isNum(d) ? K.t('de {0}', K.fmt.num(d)) : '';
         scaleR.textContent = isNum(d) ? K.fmt.num(d) : '';
         const frac = isNum(c) && isNum(d) && d > 0 ? clamp(c / d, 0, 1) : 0;
         const go = () => { fill.style.width = (frac * 100).toFixed(1) + '%'; };
@@ -823,7 +823,7 @@
       return {
         series, xType: 'num', xMin: 0, xMax,
         xFormat: (v) => K.fmt.num(v),
-        tipTitle: (x) => (x === 0 ? K.t('Nova · 0 ciclos') : `${K.fmt.num(x)} ciclos`),
+        tipTitle: (x) => (x === 0 ? K.t('Nova · 0 ciclos') : K.t('{0} ciclos', K.fmt.num(x))),
         tooltip: (x, hits, def) => {
           const raw = hits[0] && hits[0].raw;
           if (raw && raw.tag === 'nova') def.rows.push({ value: '', name: K.t('quando saiu da fábrica') });
@@ -1048,37 +1048,37 @@
     const out = [];
     const t = b.temperatureC;
     if (b.status === 'trocar') {
-      out.push({ ic: 'btWrench', tone: 'crit', t: K.t('Hora de uma revisão'), d: 'Procure uma assistência autorizada. Se o Mac estufar ou o trackpad levantar, pare de usar e leve logo.' });
+      out.push({ ic: 'btWrench', tone: 'crit', t: K.t('Hora de uma revisão'), d: K.t('Procure uma assistência autorizada. Se o Mac estufar ou o trackpad levantar, pare de usar e leve logo.') });
     } else if (b.status === 'gasta') {
-      out.push({ ic: 'btWrench', tone: 'serious', t: K.t('Ela já guarda menos'), d: 'Dura menos por carga, mas continua segura. Se incomodar, a troca resolve.' });
+      out.push({ ic: 'btWrench', tone: 'serious', t: K.t('Ela já guarda menos'), d: K.t('Dura menos por carga, mas continua segura. Se incomodar, a troca resolve.') });
     }
     if (isNum(t) && t >= 40) {
-      out.push({ ic: 'flame', tone: 'serious', t: K.t('Tá quente agora ({0})', K.fmt.temp(t)), d: 'Deixe as saídas de ar livres e feche o que estiver pesado.' });
+      out.push({ ic: 'flame', tone: 'serious', t: K.t('Tá quente agora ({0})', K.fmt.temp(t)), d: K.t('Deixe as saídas de ar livres e feche o que estiver pesado.') });
     }
     if (b.optimizedChargingEngaged) {
-      out.push({ ic: 'btShield', tone: 'good', t: K.t('Carregamento otimizado em ação'), d: 'O macOS segurou em 80% e completa perto da hora de você sair. Pode deixar.' });
+      out.push({ ic: 'btShield', tone: 'good', t: K.t('Carregamento otimizado em ação'), d: K.t('O macOS segurou em 80% e completa perto da hora de você sair. Pode deixar.') });
     }
     const vive = b.pluggedIn || (isNum(p.plugShare) && p.plugShare >= 0.5);
     if (vive) {
       const share = isNum(p.plugShare) && p.plugShare >= 0.5 ? K.t(' Nos últimos dias: ~{0}% do tempo na tomada.', K.fmt.num(p.plugShare * 100, 0)) : '';
       out.push({ ic: 'plug', t: K.t('Vive na tomada? 20–80% é o ideal'), d: K.t('Ficar parada em 100% o dia todo é o que mais desgasta.') + share });
     } else {
-      out.push({ ic: 'battery', t: K.t('Entre 20% e 80% ela sofre menos'), d: 'Evite zerar sempre e passar dias em 100%.' });
+      out.push({ ic: 'battery', t: K.t('Entre 20% e 80% ela sofre menos'), d: K.t('Evite zerar sempre e passar dias em 100%.') });
     }
     if (!b.optimizedChargingEngaged) {
-      out.push({ ic: 'btShield', t: K.t('Deixe o Carregamento otimizado ligado'), d: 'Segura a carga em 80% quando você fica muito na tomada (Ajustes do Sistema › Bateria).' });
+      out.push({ ic: 'btShield', t: K.t('Deixe o Carregamento otimizado ligado'), d: K.t('Segura a carga em 80% quando você fica muito na tomada (Ajustes do Sistema › Bateria).') });
     }
     if (b.lowPowerMode) {
       out.push({ ic: 'leaf', t: K.t('Modo pouca energia ligado'), d: b.pluggedIn
         ? K.t('Segura o processador e o brilho. Na tomada, pode desligar.')
         : K.t('Boa: segura o processador e o brilho pra carga render.') });
     } else if (!b.pluggedIn && isNum(b.percent) && b.percent <= 30) {
-      out.push({ ic: 'leaf', t: K.t('Carga acabando?'), d: 'O Modo pouca energia (Ajustes do Sistema › Bateria) faz a carga render mais.' });
+      out.push({ ic: 'leaf', t: K.t('Carga acabando?'), d: K.t('O Modo pouca energia (Ajustes do Sistema › Bateria) faz a carga render mais.') });
     }
     if (!(isNum(t) && t >= 40)) {
-      out.push({ ic: 'btSun', t: K.t('Fuja do calor'), d: 'Sol, carro fechado e cobertor são os maiores inimigos da bateria.' });
+      out.push({ ic: 'btSun', t: K.t('Fuja do calor'), d: K.t('Sol, carro fechado e cobertor são os maiores inimigos da bateria.') });
     }
-    out.push({ ic: 'btTarget', t: K.t('Limite automático de carga'), d: 'Por enquanto, o aviso de carga faz esse papel.', soon: true });
+    out.push({ ic: 'btTarget', t: K.t('Limite automático de carga'), d: K.t('Por enquanto, o aviso de carga faz esse papel.'), soon: true });
     return out.slice(0, 5);
   }
 

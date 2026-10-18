@@ -79,7 +79,7 @@
   }
   function ago(sec) {
     sec = Math.round(sec);
-    if (sec <= 1) return 'agora';
+    if (sec <= 1) return K.t('agora');
     if (sec < 60) return K.t('há {0} s', sec);
     const m = Math.floor(sec / 60), s = sec % 60;
     return s ? K.t('há {0} min {1} s', m, s) : K.t('há {0} min', m);
@@ -120,7 +120,7 @@
     holder.textContent = '';
     if (!text) return;
     if (tone) holder.appendChild(K.statusPill(tone, text, icon, big));
-    else holder.appendChild(K.el('span', { class: 'status pn-neutral' + (big ? ' big' : ''), html: K.icon(icon || 'info') }, text));
+    else holder.appendChild(K.el('span', { class: 'status pn-neutral' + (big ? K.t(' big') : ''), html: K.icon(icon || 'info') }, text));
   }
 
   /** guarda o gráfico pra destruir depois e segura a atualização enquanto o mouse está em cima */
@@ -559,7 +559,7 @@
     const used = isNum(m.usedBytes) ? m.usedBytes : parts.length ? parts.reduce((a, b) => a + b, 0) : null;
     txt(R.memSub, K.t('{0} no total', mem(m.totalBytes, 0)));
     tween(R.memUsed, used, (v) => mem(v));
-    txt(R.memOf, `de ${mem(m.totalBytes, 0)}`);
+    txt(R.memOf, K.t('de {0}', mem(m.totalBytes, 0)));
 
     const ready = (isNum(m.freeBytes) || isNum(m.cachedBytes)) ? (num(m.freeBytes) || 0) + (num(m.cachedBytes) || 0) : null;
     tween(R.memReady, ready, (v) => mem(v));
@@ -688,7 +688,7 @@
     K.readOr(R.os, s.macOS || null, macOSName);
     const up = num(s.uptimeSec);
     K.readOr(R.uptime, up, (v) => K.fmt.duration(v));
-    txt(R.uptimeSub, up != null ? 'desde ' + K.fmt.dayTime((isNum(s.readAt) ? s.readAt : Date.now() / 1000) - up) : '');
+    txt(R.uptimeSub, up != null ? K.t('desde ') + K.fmt.dayTime((isNum(s.readAt) ? s.readAt : Date.now() / 1000) - up) : '');
     R.upTip.hidden = !(up != null && up > 7 * 86400);
   }
 

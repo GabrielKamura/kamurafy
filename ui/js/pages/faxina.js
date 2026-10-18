@@ -167,11 +167,11 @@
     const d = new Date(t * 1000), hoje = new Date();
     const dia = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
     const diff = Math.round((dia(hoje) - dia(d)) / 86400000);
-    if (diff === 0) return 'hoje';
-    if (diff === 1) return 'ontem';
+    if (diff === 0) return K.t('hoje');
+    if (diff === 1) return K.t('ontem');
     const o = { day: 'numeric', month: 'short' };
     if (d.getFullYear() !== hoje.getFullYear()) o.year = 'numeric';
-    return 'em ' + d.toLocaleDateString(K.locale || 'pt-BR', o).replace(/\./g, '').replace(/ de /g, ' ');
+    return K.t('em ') + d.toLocaleDateString(K.locale || 'pt-BR', o).replace(/\./g, '').replace(/ de /g, ' ');
   }
 
   function catInfo(id) {
@@ -570,7 +570,7 @@
       já está na Lixeira: some da lista (pelo caminho) e fica um aviso de que a lista mudou */
   function pruneOthers(kind, paths, by) {
     if (!paths.length) return;
-    const label = by || `aba ${TABS.find((t) => t.id === TAB_OF[kind]).label}`;
+    const label = by || K.t('aba {0}', TABS.find((t) => t.id === TAB_OF[kind]).label);
     for (const other of ['suj', 'gra', 'dup']) {
       if (other === kind) continue;
       const st = S[other];
@@ -629,7 +629,7 @@
   function lastCopyWarn(items) {
     const last = items.filter((it) => S.lastCopy.has(it.caminho));
     if (!last.length) return null;
-    const names = last.slice(0, 2).map((it) => `“${inl(it.nome)}”`).join(' e ');
+    const names = last.slice(0, 2).map((it) => `“${inl(it.nome)}”`).join(K.t(' e '));
     return K.el('div', { class: 'tip fx-note warn fx-cf-warn', html: K.icon('fxCopy') },
       K.el('p', null, K.el('b', null, last.length === 1 ? K.t('É a última cópia. ') : K.t('São as últimas cópias. ')),
         K.t('{0}{1}: as outras já estão na Lixeira. Se mandar {2} também, não sobra nenhuma fora dela.', names, last.length > 2 ? K.t(' e mais {0}', K.fmt.num(last.length - 2)) : '', last.length === 1 ? K.t('esta') : K.t('estas'))));
@@ -683,7 +683,7 @@
         const n = ok.filter((it) => st.sel.has(it.id)).length;
         const b = ok.filter((it) => st.sel.has(it.id)).reduce((a, it) => a + (it.bytes || 0), 0);
         if (c.chk) c.chk.set(n === 0 ? false : n === ok.length ? true : 'mixed', !ok.length);
-        c.selTxt.textContent = n ? `${fmtB(b)} marcados` : K.t('nada marcado');
+        c.selTxt.textContent = n ? K.t('{0} marcados', fmtB(b)) : K.t('nada marcado');
         c.card.classList.toggle('has-sel', n > 0);
       }
       paintHero(!V.heroCounting);
@@ -835,7 +835,7 @@
     }
     const done = st.steps.filter((x) => x.state === 'done' || x.state === 'err').length;
     const on = st.steps.findIndex((x) => x.state === 'on');
-    ui.count.textContent = `${Math.min(st.steps.length, (on >= 0 ? on : done - 1) + 1)} de ${st.steps.length}`;
+    ui.count.textContent = K.t('{0} de {1}', Math.min(st.steps.length, (on >= 0 ? on : done - 1) + 1), st.steps.length);
     const pct = Math.round((done / st.steps.length) * 100);
     ui.ringPct.textContent = pct + '%';
     if (ui.ring) ui.ring.update({ value: pct, busy: done < st.steps.length });
@@ -843,7 +843,7 @@
     if (done === st.steps.length) {
       if (ui.ring) ui.ring.update({ value: 100, busy: false, tone: 'good' });
       ui.ringIc.innerHTML = K.icon('check');
-      ui.now.textContent = found ? K.t('Achei {0}!', fmtB(found)) : 'Pronto!';
+      ui.now.textContent = found ? K.t('Achei {0}!', fmtB(found)) : K.t('Pronto!');
       if (ui.mascot) ui.mascot.set({ face: 'joy' });
     }
   }
@@ -981,17 +981,17 @@
     const notes = stateNotes('suj');
     if (errs.length || incompletos.length) {
       const bits = [];
-      if (errs.length) bits.push(K.t('não consegui ler {0}', errs.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')));
-      if (incompletos.length) bits.push(K.t('parei no meio em {0}', incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(' e ')));
+      if (errs.length) bits.push(K.t('não consegui ler {0}', errs.map((s) => catInfo(s.id).titulo.toLowerCase()).join(K.t(' e '))));
+      if (incompletos.length) bits.push(K.t('parei no meio em {0}', incompletos.map((s) => catInfo(s.id).titulo.toLowerCase()).join(K.t(' e '))));
       notes.push(K.el('div', { class: 'tip fx-note warn', html: K.icon('alert') },
-        K.el('p', null, K.el('b', null, K.t('Procura incompleta. ')), K.t('Nessa rodada {0}. Pode ter mais.', bits.join(', e '))),
+        K.el('p', null, K.el('b', null, K.t('Procura incompleta. ')), K.t('Nessa rodada {0}. Pode ter mais.', bits.join(K.t(', e ')))),
         K.el('button', { class: 'btn small', type: 'button', onclick: () => { scanSujeira(); } }, K.t('Tentar de novo'))));
     }
     if (denied > 0) notes.push(permissionTip(denied));
     if (openApps.length) {
       const names = Array.from(new Set(openApps.map((it) => it.app || it.nome))).map(inl);
       const b = openApps.reduce((a, it) => a + (it.bytes || 0), 0);
-      const who = names.length <= 2 ? names.join(' e ') : K.t('{0} e mais {1}', names.slice(0, 2).join(', '), names.length - 2);
+      const who = names.length <= 2 ? names.join(K.t(' e ')) : K.t('{0} e mais {1}', names.slice(0, 2).join(', '), names.length - 2);
       notes.push(K.el('div', { class: 'tip fx-note', html: K.icon('info') },
         K.el('p', null, names.length === 1 ? K.t('{0} está aberto: o cache ({1}) fica de fora. Feche e procure de novo pra incluir.', who, fmtB(b)) : K.t('{0} estão abertos: o cache ({1}) fica de fora. Feche e procure de novo pra incluir.', who, fmtB(b)))));
     }
@@ -1120,7 +1120,7 @@
           st.shown[key] = shown + PAGE * 2;
           fillList(ul, kind, items, key, o);
           refreshSel(kind);
-        } }, K.t('Mostrar mais {0}', K.fmt.num(Math.min(rest, PAGE * 2))), rest > PAGE * 2 ? K.el('span', { class: 'muted' }, ` de ${K.fmt.num(rest)}`) : null));
+        } }, K.t('Mostrar mais {0}', K.fmt.num(Math.min(rest, PAGE * 2))), rest > PAGE * 2 ? K.el('span', { class: 'muted' }, K.t(' de {0}', K.fmt.num(rest))) : null));
       ul.appendChild(more);
     }
   }
@@ -1131,7 +1131,7 @@
       const m = quando(it.modificado);
       if (m) bits.push(K.t('mexido pela última vez {0}', m));
       const u = quando(it.usado);
-      if (u && (!isNum(it.modificado) || Math.abs(it.usado - it.modificado) > 86400)) bits.push(`aberto ${u}`);
+      if (u && (!isNum(it.modificado) || Math.abs(it.usado - it.modificado) > 86400)) bits.push(K.t('aberto {0}', u));
     }
     return bits.join(' · ');
   }
@@ -1260,7 +1260,7 @@
     const ringEl = K.el('div');
     const ringBox = K.el('div', { class: 'fx-search-ring' }, ringEl, K.el('span', { class: 'fx-search-ic', html: K.icon(t.icon) }));
     const secs = K.el('span', { class: 'num' }, '');
-    const tick = () => { secs.textContent = K.fmt.num(Math.max(0, Math.floor((performance.now() - st.t0) / 1000)), 0) + ' s'; };
+    const tick = () => { secs.textContent = K.fmt.num(Math.max(0, Math.floor((performance.now() - st.t0) / 1000)), 0) + K.t(' s'); };
     tick();
     const card = K.el('section', { class: 'card fx-search pop-in', role: 'status', 'aria-live': 'polite' },
       ringBox,
@@ -1377,7 +1377,7 @@
     for (const it of items) { const k = TIPOS[it.tipo] ? it.tipo : 'outro'; byType[k] = (byType[k] || 0) + 1; }
     const chips = K.el('div', { class: 'fx-chips', role: 'group', 'aria-label': K.t('Filtrar por tipo') });
     const chip = (id, label, icon, count) => {
-      const b = K.el('button', { class: 'fx-chip' + (st.filter === id ? ' on' : ''), type: 'button', 'aria-pressed': String(st.filter === id), html: icon ? K.icon(icon) : null,
+      const b = K.el('button', { class: 'fx-chip' + (st.filter === id ? K.t(' on') : ''), type: 'button', 'aria-pressed': String(st.filter === id), html: icon ? K.icon(icon) : null,
         onclick: () => { if (st.filter === id) return; K.sound.tick(); st.filter = id; st.shown = {}; paintTab(); } },
       K.el('span', null, label), K.el('span', { class: 'fx-chip-n num' }, K.fmt.num(count)));
       chips.appendChild(b);
@@ -1452,7 +1452,7 @@
     const sizes = g.itens.map((x) => x.bytes || 0);
     const lo = Math.min(...sizes), hi = Math.max(...sizes);
     const each = fmtB(lo) === fmtB(hi)
-      ? K.el('span', null, `${fmtB(hi)} cada`)
+      ? K.el('span', null, K.t('{0} cada', fmtB(hi)))
       : K.el('span', { title: K.t('Conteúdo idêntico; o espaço no disco pode variar um pouco.') }, K.t('conteúdo igual, de {0} a {1} no disco', fmtB(lo), fmtB(hi)));
     const tie = g.itens.length > 1 && sameAge(g.itens[0], g.itens[1]);
     const card = K.el('article', { class: 'card fx-group pop-in', dataset: { grupo: g.id }, style: { animationDelay: 80 + Math.min(i, 8) * 60 + 'ms' } },
@@ -1940,7 +1940,7 @@
     }
     const lines = [K.el('span', { class: 'fx-item-top' }, K.el('span', { class: 'fx-item-name' }, vis(m.nome)), tags),
       K.el('span', { class: 'fx-item-path', title: vis(m.original) }, vis(m.original)),
-      K.el('span', { class: 'fx-item-meta' }, `mandado ${quando(m.t) || ''}${isNum(m.t) ? K.t(', às ') + K.fmt.time(m.t) : ''}`)];
+      K.el('span', { class: 'fx-item-meta' }, K.t('mandado {0}{1}', quando(m.t) || '', isNum(m.t) ? K.t(', às ') + K.fmt.time(m.t) : ''))];
     const acts = K.el('span', { class: 'fx-row-acts' });
     const row = K.el('li', { class: 'fx-item fx-moved-row' + (m.naLixeira ? '' : ' is-gone') },
       K.el('span', { class: 'fx-item-ic', 'aria-hidden': 'true', html: K.icon(typeIcon(m)) }),
