@@ -1,17 +1,23 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kamurafy · cuida do seu Mac e da sua bateria</title>
-  <meta name="description" content="App de Mac grátis e de código aberto que cuida do Mac e, principalmente, da bateria. Sem assinatura, sem conta, sem anúncio e sem mandar nada pra internet.">
+  <title>Kamurafy · the free CleanMyMac alternative that cares about your battery</title>
+  <meta name="description" content="Free, open-source Mac app: find out why your Mac is slow, look after your battery, free up space and uninstall apps. No subscription, no account, no tracking.">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#fffdf8">
+  <link rel="canonical" href="https://gabrielkamura.github.io/kamurafy/">
+  <link rel="alternate" hreflang="en" href="https://gabrielkamura.github.io/kamurafy/">
+  <link rel="alternate" hreflang="pt-BR" href="https://gabrielkamura.github.io/kamurafy/pt/">
+  <link rel="alternate" hreflang="x-default" href="https://gabrielkamura.github.io/kamurafy/">
   <meta property="og:type" content="website">
-  <meta property="og:locale" content="pt_BR">
-  <meta property="og:title" content="Kamurafy · cuida do seu Mac e da sua bateria">
-  <meta property="og:description" content="Grátis, de código aberto, sem assinatura e sem mandar nada pra internet.">
-  <meta property="og:image" content="https://gabrielkamura.github.io/kamurafy/img/bateria.jpg">
+  <meta property="og:url" content="https://gabrielkamura.github.io/kamurafy/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="pt_BR">
+  <meta property="og:title" content="Kamurafy · the free CleanMyMac alternative that cares about your battery">
+  <meta property="og:description" content="Why is my Mac slow? One click tells you. Free, open source, no account and no tracking.">
+  <meta property="og:image" content="https://gabrielkamura.github.io/kamurafy/img/en/speed.jpg">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="preload" href="fonts/Fredoka-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -19,7 +25,7 @@
 </head>
 <body>
 
-<!-- ícones no mesmo traço do app: viewBox 24, traço 2,3, pontas redondas -->
+<!-- icons in the same stroke as the app: viewBox 24, stroke 2.3, round caps -->
 <svg class="sprite" aria-hidden="true" focusable="false">
   <symbol id="i-baixar" viewBox="0 0 24 24"><path d="M12 3.5v11.5M7 10.5l5 5 5-5"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2"/></symbol>
   <symbol id="i-codigo" viewBox="0 0 24 24"><path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5M13.4 4.5l-2.8 15"/></symbol>
@@ -29,42 +35,38 @@
   <symbol id="i-faxina" viewBox="0 0 24 24"><path d="M19.5 3.5 12.8 10.2"/><path d="M10.4 9.4c1.9-.4 3.6 1.3 3.2 3.2l-.8 3.6c-.3 1.4-1.9 2.2-3.2 1.5l-4.3-2.2c-1.1-.6-1.3-2-.5-2.9Z"/><path d="M6.5 16.6 4 20.5M9.3 18l-1.6 3M4.6 13.9l-2.1 2.2"/></symbol>
   <symbol id="i-otimizar" viewBox="0 0 24 24"><path d="M14.5 4.5c2.8-1.1 5-1 5-1s.1 2.2-1 5l-5.8 5.8-4-4Z"/><path d="M8.7 10.3 5.2 9.9l-2 2 3.7 1.4M13.7 15.3l.4 3.5-2 2-1.4-3.7"/><circle cx="15.3" cy="8.7" r="1.3"/><path d="M5.6 16.9c-1.4.5-2.1 2.6-2.1 3.6 1 0 3.1-.7 3.6-2.1"/></symbol>
   <symbol id="i-caixa" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4Z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/></symbol>
-  <symbol id="i-tela" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12.5" rx="2.2"/><path d="M9.5 20.5h5M12 16.5v4"/><path d="M3 8h18"/></symbol>
-  <symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-8.9-9.2C2.2 7.6 4.3 4.5 7.5 4.5c2 0 3.5 1.2 4.5 2.8 1-1.6 2.5-2.8 4.5-2.8 3.2 0 5.3 3.1 4.4 6.3C19.5 15.4 12 20 12 20Z"/></symbol>
-  <symbol id="i-celulas" viewBox="0 0 24 24"><rect x="3" y="6" width="5" height="13" rx="1.6"/><rect x="9.5" y="6" width="5" height="13" rx="1.6"/><rect x="16" y="6" width="5" height="13" rx="1.6"/><path d="M4.5 4h2M11 4h2M17.5 4h2"/></symbol>
-  <symbol id="i-chama" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.2 0-3.8 3-5.6 3.8-9.3 2.5 1.6 3.4 3.8 3.3 5.8 1-.7 1.6-2 1.7-3.2 2.2 1.7 4.2 4.2 4.2 6.9 0 3.4-2.6 6-6.5 6Z"/></symbol>
   <symbol id="i-sino" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15Z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
   <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M4.5 16.5 9 11l3.5 3.2 7-8.2"/></symbol>
-  <symbol id="i-bola" viewBox="0 0 24 24"><circle cx="12" cy="10.5" r="6.5"/><path d="M7 18.5h10l1.2 2.5H5.8Z"/><path d="M9.3 8.3c.6-1 1.5-1.5 2.6-1.6"/></symbol>
+  <symbol id="i-pena" viewBox="0 0 24 24"><path d="M19.5 4.5C13 4.5 7.5 8.5 7.5 15.5v1l8.5-8.5"/><path d="M19.5 4.5c0 6.5-4.5 11-12 11"/><path d="M7.5 16.5 4 20"/></symbol>
+  <symbol id="i-lua" viewBox="0 0 24 24"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1Z"/></symbol>
   <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m7.8 12.3 2.8 2.8 5.6-6"/></symbol>
-  <symbol id="i-olho" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></symbol>
   <symbol id="i-lixeira" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.5h5V7"/><path d="M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7"/><path d="M10 11v6M14 11v6"/></symbol>
   <symbol id="i-pasta" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path d="M12 12.5v2.5M10.3 12.6h3.4"/></symbol>
   <symbol id="i-duplo" viewBox="0 0 24 24"><path d="m2.5 12.5 4 4 8.5-9.5"/><path d="m11.5 15.5 1 1 8.5-9.5"/></symbol>
-  <symbol id="i-pessoa" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-4 3.8-6 7.5-6s6.7 2 7.5 6"/></symbol>
-  <symbol id="i-janela" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 9h18"/><path d="M6.5 6.8h.01M9.2 6.8h.01"/></symbol>
   <symbol id="i-nuvem-nao" viewBox="0 0 24 24"><path d="M7 18.5h10.5a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7.6 9.2 4.7 4.7 0 0 0 7 18.5Z"/><path d="M4 4l16 16"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9.5a13 13 0 0 1 18 0M6 13a8.5 8.5 0 0 1 12 0M9 16.5a4 4 0 0 1 6 0"/><circle cx="12" cy="19.5" r=".6"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".6"/></symbol>
   <symbol id="i-estrela" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/></symbol>
   <symbol id="i-brilho" viewBox="0 0 24 24"><path d="M12 3c.6 4.2 2.5 6.1 6.5 6.8-4 .7-5.9 2.6-6.5 6.8-.6-4.2-2.5-6.1-6.5-6.8C9.5 9.1 11.4 7.2 12 3Z"/><path d="M19 15.5c.3 1.6 1 2.3 2.5 2.5-1.5.3-2.2 1-2.5 2.5-.3-1.5-1-2.2-2.5-2.5 1.5-.2 2.2-.9 2.5-2.5Z"/></symbol>
-  <symbol id="i-seta" viewBox="0 0 24 24"><path d="M4 12h15.5M14 6.5l5.5 5.5-5.5 5.5"/></symbol>
-  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9.5a13 13 0 0 1 18 0M6 13a8.5 8.5 0 0 1 12 0M9 16.5a4 4 0 0 1 6 0"/><circle cx="12" cy="19.5" r=".6"/></symbol>
+  <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/></symbol>
 </svg>
 
-<a class="pular" href="#conteudo">Pular pro conteúdo</a>
+<a class="pular" href="#conteudo">Skip to content</a>
 
 <header class="topo">
   <div class="wrap">
-    <a class="marca" href="#" aria-label="Kamurafy, início">
+    <a class="marca" href="#" aria-label="Kamurafy, top of the page">
       <img src="img/icone.png" width="40" height="40" alt="">
       <span>Kamurafy</span>
     </a>
-    <nav aria-label="Seções">
+    <nav aria-label="Sections">
       <ul>
-        <li class="link"><a href="#o-que-faz">O que faz</a></li>
-        <li class="link"><a href="#seguranca">Segurança</a></li>
-        <li class="link"><a href="#instalar">Instalar</a></li>
-        <li><a class="btn ouro pequeno" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Baixar</a></li>
+        <li class="link"><a href="#what-it-does">What it does</a></li>
+        <li class="link"><a href="#trust">Why trust it</a></li>
+        <li class="link"><a href="#install">Install</a></li>
+        <li class="link"><a href="https://github.com/GabrielKamura/kamurafy">GitHub</a></li>
+        <li class="idioma"><a href="pt/" hreflang="pt-BR" lang="pt-BR" aria-label="Português (ver o site em português)"><span class="longo">Português</span><span class="curto">PT</span></a></li>
+        <li><a class="btn ouro pequeno" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Download</a></li>
       </ul>
     </nav>
   </div>
@@ -72,27 +74,27 @@
 
 <main id="conteudo">
 
-  <!-- 1. herói -->
+  <!-- 1. hero -->
   <section class="heroi" aria-labelledby="titulo">
     <div class="wrap">
       <div class="heroi-texto">
         <div class="heroi-nome">
-          <img src="img/icone.png" width="112" height="112" alt="Ícone do Kamurafy: uma bateria sorridente">
+          <img src="img/icone.png" width="112" height="112" alt="Kamurafy icon: a smiling battery">
           <h1 id="titulo">Kamurafy</h1>
         </div>
-        <p class="lema">Cuida do seu Mac e,<br> <span class="grifo">principalmente, da sua bateria.</span></p>
-        <p class="sub">Grátis, de código aberto, sem assinatura e sem mandar nada pra internet.</p>
+        <p class="lema">Takes care of your Mac and,<br> <span class="grifo">above all, your battery.</span></p>
+        <p class="sub">The free, open-source alternative to CleanMyMac. No subscription, no account, no ads, no tracking.</p>
         <div class="acoes">
-          <a class="btn ouro grande" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Baixar para Mac</a>
-          <a class="btn" href="https://github.com/GabrielKamura/kamurafy"><svg class="ic"><use href="#i-codigo"/></svg>Ver o código</a>
+          <a class="btn ouro grande" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Download for Mac</a>
+          <a class="btn" href="https://github.com/GabrielKamura/kamurafy"><svg class="ic"><use href="#i-codigo"/></svg>View on GitHub</a>
         </div>
-        <p class="req">macOS 13 ou mais novo · Intel e Apple Silicon</p>
+        <p class="req">macOS 13 or newer · Intel and Apple Silicon</p>
       </div>
 
       <div class="palco">
         <div class="sol" aria-hidden="true"></div>
-        <p class="balao" aria-live="polite">Oi! Deixa a bateria comigo.</p>
-        <div class="mascote" role="img" aria-label="Mascote do Kamurafy: uma bateria sorridente, carregando">
+        <p class="balao" aria-live="polite">Hi! Leave the battery to me.</p>
+        <div class="mascote" role="img" aria-label="Kamurafy mascot: a smiling battery, charging">
           <div class="km" data-face="happy">
             <svg class="km-svg" viewBox="0 0 260 200" aria-hidden="true" focusable="false">
               <defs>
@@ -153,303 +155,248 @@
             </svg>
           </div>
         </div>
-        <span class="adesivo branco a1">grátis de verdade</span>
-        <span class="adesivo tinta a2">código aberto</span>
+        <span class="adesivo branco a1">free for real</span>
+        <span class="adesivo tinta a2">open source</span>
       </div>
     </div>
   </section>
 
-  <!-- 2. a tela da Bateria -->
-  <section class="vitrine" aria-label="A tela da Bateria">
+  <!-- 2. the highlight: Why is my Mac slow? -->
+  <section class="vitrine" id="speed" aria-labelledby="t-lento">
     <div class="wrap">
+      <header class="cabeca centro">
+        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-painel"/></svg></span>Speed</span>
+        <h2 id="t-lento">“Why is my Mac slow?”</h2>
+        <p class="lead">One click shows what is weighing on it right now, worst first, each with its fix. No “free up RAM” button, no fake boost.</p>
+      </header>
       <figure class="vitrine-fig">
-        <span class="adesivo ouro com-ic vitrine-adesivo"><svg class="ic"><use href="#i-estrela"/></svg>a estrela da casa</span>
+        <span class="adesivo ouro com-ic vitrine-adesivo"><svg class="ic"><use href="#i-estrela"/></svg>one click</span>
         <div class="janela">
           <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-          <img src="img/bateria.jpg" width="1400" height="1020" alt="Tela da Bateria do Kamurafy: saúde de 88,2% com o selo Saudável, 7.749 mAh de 8.790 mAh da capacidade de fábrica, o mascote dormindo com 100% de carga na tomada e cartões de ciclos, temperatura, energia e previsão">
+          <img src="img/en/speed.jpg" width="1600" height="1437" alt="Kamurafy's Speed screen: rated Sluggish, 42 out of 100, with five heavy things ranked (memory is tight, Google Chrome is heavy, Spotlight is indexing, the disk is almost full, Low Power Mode is on), each with a button to fix it">
         </div>
-        <figcaption>A tela da Bateria: saúde, carga, ciclos, temperatura, energia e previsão, numa olhada só.</figcaption>
       </figure>
     </div>
   </section>
 
-  <!-- 3. o que ele faz -->
-  <section class="secao" id="o-que-faz" aria-labelledby="t-bateria">
+  <!-- 3. what it does -->
+  <section class="secao" id="what-it-does" aria-labelledby="t-faz">
     <div class="wrap">
-      <header class="cabeca" id="bateria">
-        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-bateria"/></svg></span>Bateria · a estrela</span>
-        <h2 id="t-bateria">Saúde de verdade, explicada em português.</h2>
-        <p class="lead">O Kamurafy lê o que o próprio macOS mede e traduz: quanto a bateria ainda aguenta, o que isso quer dizer e o que dá pra fazer pra ela durar mais.</p>
+      <header class="cabeca">
+        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-brilho"/></svg></span>What it does</span>
+        <h2 id="t-faz">Speed, battery and space, always showing you first.</h2>
+        <p class="lead">Each screen says what it found and what it means, then lets you decide.</p>
       </header>
 
       <ul class="tiles">
         <li class="tile">
-          <span class="tile-ic"><svg class="ic"><use href="#i-coracao"/></svg></span>
-          <h3>Saúde de verdade</h3>
-          <p>Quanto da capacidade de fábrica ela ainda guarda, do jeito que o macOS mede. A Apple considera gasta abaixo de 80%.</p>
+          <span class="tile-ic"><svg class="ic"><use href="#i-painel"/></svg></span>
+          <h3>Speed</h3>
+          <p>Why is your Mac slow? What is heavy right now, each with its fix.</p>
         </li>
         <li class="tile">
-          <span class="tile-ic"><svg class="ic"><use href="#i-celulas"/></svg></span>
-          <h3>Ciclos, calor e células</h3>
-          <p>Ciclos, temperatura, tensão de cada célula e os watts entrando e saindo, ao vivo.</p>
-        </li>
-        <li class="tile">
-          <span class="tile-ic"><svg class="ic"><use href="#i-chama"/></svg></span>
-          <h3>Quem mais gasta</h3>
-          <p>Os apps que mais puxam bateria agora, com as abas e os ajudantes somados no app certo.</p>
+          <span class="tile-ic"><svg class="ic"><use href="#i-otimizar"/></svg></span>
+          <h3>Make it fly</h3>
+          <p>Does the safe fixes in one go, only after you review and confirm.</p>
         </li>
         <li class="tile">
           <span class="tile-ic"><svg class="ic"><use href="#i-sino"/></svg></span>
-          <h3>Aviso em 80%</h3>
-          <p>Um toque quando a carga chega no limite que você escolher e quando a bateria esquenta.</p>
+          <h3>Watchdog</h3>
+          <p>Warns you when an app stays maxed out or memory hits the limit.</p>
+        </li>
+        <li class="tile">
+          <span class="tile-ic"><svg class="ic"><use href="#i-bateria"/></svg></span>
+          <h3>Battery</h3>
+          <p>Real health, cycles, heat, 7 days of charge and an 80% alert.</p>
+        </li>
+        <li class="tile">
+          <span class="tile-ic"><svg class="ic"><use href="#i-faxina"/></svg></span>
+          <h3>Storage</h3>
+          <p>Caches, logs, old downloads, large files and duplicates, to the Trash.</p>
+        </li>
+        <li class="tile">
+          <span class="tile-ic"><svg class="ic"><use href="#i-caixa"/></svg></span>
+          <h3>Uninstall</h3>
+          <p>Removes an app together with the leftovers it scatters around.</p>
+        </li>
+        <li class="tile">
+          <span class="tile-ic"><svg class="ic"><use href="#i-grafico"/></svg></span>
+          <h3>Live</h3>
+          <p>CPU, memory, disk and battery, live. Plus the battery in the menu bar.</p>
+        </li>
+        <li class="tile">
+          <span class="tile-ic"><svg class="ic"><use href="#i-pena"/></svg></span>
+          <h3>Lightweight</h3>
+          <p>About 180 MB idle and next to no CPU. Dark mode and 3 languages.</p>
         </li>
       </ul>
-
-      <div class="destaque">
-        <div class="destaque-texto">
-          <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-grafico"/></svg></span>Últimos 7 dias</span>
-          <h3>Uma semana da sua bateria, sem inventar.</h3>
-          <p>A carga dia a dia vem do registro que o próprio macOS guarda (quando o Mac dorme, acorda ou muda de tomada). Dá pra ver quanto tempo ela passou na tomada e parada em 100%, que, junto com o calor, é o que mais desgasta.</p>
-        </div>
-        <figure class="recorte">
-          <img src="img/bateria-7-dias.jpg" width="1400" height="810" loading="lazy" alt="Gráfico da carga nos últimos 7 dias: a linha azul sobe e desce entre 0% e 100%, com marcas amarelas nos períodos na tomada e três resumos no topo: cerca de 24% do tempo na tomada, cerca de 17 horas parada em 100% e 0% como a carga mais baixa">
-        </figure>
-      </div>
-
-      <div class="destaque inverte">
-        <div class="destaque-texto">
-          <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-bola"/></svg></span>Previsão honesta</span>
-          <h3>Quando ela chega a 80%? Ele mostra a conta.</h3>
-          <p>Com a saúde de hoje e os ciclos já feitos, o Kamurafy calcula o ritmo do desgaste e estima quantos ciclos faltam até 80%, o ponto em que a Apple considera a bateria gasta.</p>
-          <p>E fala com todas as letras: calor e jeito de usar mudam o ritmo, então é estimativa, não promessa.</p>
-        </div>
-        <figure class="recorte estreito">
-          <img src="img/bateria-saude.jpg" width="796" height="1250" loading="lazy" alt="Gráfico da saúde ao longo do tempo: a saúde cai de 100% para 88,2% em 251 ciclos e a linha tracejada estima 80% em cerca de 425 ciclos, com a explicação de como a previsão é calculada">
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <section class="secao secao-resto" aria-labelledby="t-resto">
-    <div class="wrap">
-      <header class="cabeca">
-        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-brilho"/></svg></span>E o resto do Mac</span>
-        <h2 id="t-resto">Cuida do resto também, sempre mostrando antes.</h2>
-        <p class="lead">Nada de botão mágico. Cada tela diz o que achou, o que isso quer dizer e deixa você decidir.</p>
-      </header>
 
       <div class="recursos">
         <article class="recurso">
           <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-scan"/></svg></span>Varredura</span>
-            <h3>Um botão e ele dá uma geral.</h3>
-            <p>Confere bateria, energia, memória, processador, disco e sujeira de uma vez e diz o que dá pra fazer agora. Só olhando: nada é mexido sem você mandar.</p>
+            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-scan"/></svg></span>Home · Make it fly</span>
+            <h3>One scan, one button.</h3>
+            <p>It checks battery, memory, CPU, speed and disk. Then Make it fly does the safe fixes in one go, after you confirm.</p>
           </div>
           <div class="janela">
             <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-            <img src="img/varredura.jpg" width="1200" height="857" loading="lazy" alt="Varredura em andamento: um anel em 83% procurando sujeira e a lista conferindo bateria, energia, memória, processador e disco, todos com sinal de ok">
+            <img src="img/en/home.jpg" width="1600" height="1437" loading="lazy" alt="Home after a scan: found 1 thing to check, with the Make it fly button, cards to free up 2.1 GB and turn on the 80% alert, and Spotify maxed out under Speed">
           </div>
         </article>
 
         <article class="recurso">
           <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-painel"/></svg></span>Painel</span>
-            <h3>O seu Mac agora, ao vivo.</h3>
-            <p>Processador, memória, disco e bateria se atualizando sozinhos, cada número com a explicação do lado. Inclusive por que “liberar RAM” não ajuda: o macOS usa a memória que sobra de propósito, pra deixar as coisas à mão.</p>
+            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-bateria"/></svg></span>Battery · the star</span>
+            <h3>Real battery health, in plain words.</h3>
+            <p>Measured the way macOS does, with cycles, heat, the last 7 days and an honest forecast to 80%.</p>
           </div>
           <div class="janela">
             <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-            <img src="img/painel.jpg" width="1200" height="914" loading="lazy" alt="Painel ao vivo: processador em 7% com o selo Tranquilo, quem está usando, temperatura do Mac fresca e um cartão da bateria com 88,2% de saúde">
+            <img src="img/en/battery.jpg" width="1600" height="1437" loading="lazy" alt="Battery screen: health 87.7%, Healthy, holds 7,710 mAh of 8,790 mAh when new, the mascot asleep at 100% charge, and cards for cycles, temperature, power and forecast">
           </div>
         </article>
 
         <article class="recurso">
           <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-faxina"/></svg></span>Faxina</span>
-            <h3>Faxina que mostra tudo antes.</h3>
-            <p>Caches de apps, caches de programação (npm, pip, Xcode…), registros, downloads esquecidos, arquivos grandes e duplicados. Você vê a lista, marca o que quiser e confirma.</p>
-            <ul class="lista-ok">
-              <li><svg class="ic"><use href="#i-ok"/></svg><span>Tudo vai pra Lixeira, com desfazer.</span></li>
-              <li><svg class="ic"><use href="#i-ok"/></svg><span>Nada pessoal vem marcado: downloads, arquivos grandes e duplicados ficam pra você decidir.</span></li>
-            </ul>
+            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-grafico"/></svg></span>Live</span>
+            <h3>Your Mac, right now.</h3>
+            <p>CPU, memory, disk and battery every 2 seconds, and why “freeing RAM” does not help.</p>
           </div>
           <div class="janela">
             <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-            <img src="img/faxina.jpg" width="1200" height="914" loading="lazy" alt="Faxina: 2,1 GB pra liberar, com 56 itens já marcados por serem seguros, a divisão por tipo e o botão Limpar 2,1 GB, que manda tudo pra Lixeira">
+            <img src="img/en/live.jpg" width="1600" height="1437" loading="lazy" alt="Live screen: CPU at 20% and calm, the Mac warm, memory at 10.6 GB of 16 GB with normal pressure, and a battery card with 87.7% health">
           </div>
         </article>
 
         <article class="recurso">
           <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-otimizar"/></svg></span>Otimizar</span>
-            <h3>O que abre sozinho e o que está pesando.</h3>
-            <p>Veja o que abre quando o Mac liga, quem está pesando agora e umas arrumações do próprio macOS (DNS, Spotlight, “Abrir com”). Você decide cada passo, e nada aqui apaga arquivo seu.</p>
-            <ul class="lista-ok">
-              <li><svg class="ic"><use href="#i-ok"/></svg><span>Desligar um item não apaga nada: o app só deixa de abrir sozinho.</span></li>
-            </ul>
+            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-lua"/></svg></span>Dark mode</span>
+            <h3>Day or night, in your language.</h3>
+            <p>Follows your macOS appearance and speaks English, Portuguese and Spanish.</p>
           </div>
           <div class="janela">
             <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-            <img src="img/otimizar.jpg" width="1200" height="874" loading="lazy" alt="Otimizar: um item abre sozinho quando você entra no Mac, com a lista de ajudantes de apps e um interruptor pra cada um">
-          </div>
-        </article>
-
-        <article class="recurso">
-          <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-caixa"/></svg></span>Desinstalar</span>
-            <h3>Tira o app e as sobras que ele espalha.</h3>
-            <p>Arrastar um app pra Lixeira deixa pra trás cache, preferências e dados na sua pasta. O Kamurafy acha essas sobras e mostra uma por uma antes.</p>
-            <ul class="lista-ok">
-              <li><svg class="ic"><use href="#i-ok"/></svg><span>Só vem marcado o que tem o identificador exato do app. O que ele achou só pelo nome fica pra você conferir.</span></li>
-              <li><svg class="ic"><use href="#i-ok"/></svg><span>App aberto? Ele pede pra fechar antes. E tudo vai pra Lixeira.</span></li>
-            </ul>
-          </div>
-          <div class="janela">
-            <svg class="luzes" viewBox="0 0 58 14" aria-hidden="true"><circle cx="7" cy="7" r="5.6"/><circle cx="29" cy="7" r="5.6"/><circle cx="51" cy="7" r="5.6"/></svg>
-            <img src="img/desinstalar.jpg" width="1200" height="874" loading="lazy" alt="Desinstalar, com apps de exemplo: o painel de um app mostra as sobras na pasta do usuário, como cache e caixa de dados já marcados e dados e configurações desmarcados pra conferir, e o total que vai pra Lixeira">
-          </div>
-        </article>
-
-        <article class="recurso recurso-barra">
-          <div class="recurso-texto">
-            <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-tela"/></svg></span>Barra de menus</span>
-            <h3>A bateria sempre à vista.</h3>
-            <p>Um ícone na barra de menus mostra a carga e, num clique, um resumo: saúde, processador, memória, disco, quem mais gasta agora e atalhos pra escanear ou fazer faxina.</p>
-          </div>
-          <div class="barra-demo">
-            <div class="barrinha" aria-hidden="true">
-              <span class="fantasma f1"></span><span class="fantasma f2"></span><span class="fantasma f3"></span>
-              <svg class="ic"><use href="#i-scan"/></svg>
-              <svg class="ic"><use href="#i-wifi"/></svg>
-              <span class="barrinha-item"><svg viewBox="0 0 48 48"><rect x="5" y="12" width="34" height="26" rx="8" fill="#ffd23f" stroke="#000" stroke-width="3.5"/><path d="M42.5 20.5v9" stroke="#000" stroke-width="3.5" stroke-linecap="round"/><circle cx="16" cy="24" r="2.4" fill="#000"/><circle cx="28" cy="24" r="2.4" fill="#000"/><path d="M17.5 30c2.6 2.4 6.4 2.4 9 0" fill="none" stroke="#000" stroke-width="2.6" stroke-linecap="round"/></svg>100%</span>
-            </div>
-            <div class="popover">
-              <img src="img/menubar.png" width="400" height="753" loading="lazy" alt="Resumo na barra de menus: 100% de carga, cheia na tomada, saúde 88,2% Saudável, uso do processador, memória, disco livre, temperatura, quem mais gasta agora e os botões Abrir o Kamurafy, Escanear e Faxina">
-            </div>
+            <img src="img/en/dark.jpg" width="1600" height="1437" loading="lazy" alt="The Home screen in dark mode, with the same yellow cards on a dark background">
           </div>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- 4. por que confiar -->
-  <section class="secao faixa-tinta" id="seguranca" aria-labelledby="t-confiar">
+  <!-- 4. why trust it -->
+  <section class="secao faixa-tinta" id="trust" aria-labelledby="t-confiar">
     <div class="wrap">
       <header class="cabeca">
-        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-faxina"/></svg></span>Segurança da Faxina</span>
-        <h2 id="t-confiar">Por que dá pra confiar.</h2>
-        <p class="lead">A Faxina foi feita pra nunca apagar o que não devia. Estas regras estão no código, e o código está aberto pra quem quiser conferir.</p>
+        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-ok"/></svg></span>Why trust it</span>
+        <h2 id="t-confiar">Why you can trust it.</h2>
+        <p class="lead">The rules are in the code, and the code is open for anyone to check.</p>
       </header>
 
-      <ul class="regras">
+      <ul class="regras quatro">
         <li class="regra">
-          <span class="tile-ic"><svg class="ic"><use href="#i-olho"/></svg></span>
-          <h3>Você vê tudo antes</h3>
-          <p>Nada sai sem você ver a lista e confirmar.</p>
+          <span class="tile-ic"><svg class="ic"><use href="#i-codigo"/></svg></span>
+          <h3>Open source</h3>
+          <p>All on GitHub under GPL-3.0: read it, check it, build it yourself.</p>
         </li>
         <li class="regra">
           <span class="tile-ic"><svg class="ic"><use href="#i-lixeira"/></svg></span>
-          <h3>Tudo vai pra Lixeira</h3>
-          <p>Dá pra desfazer com um clique. Apagar de vez só acontece se você mandar, com uma confirmação que avisa que não tem volta.</p>
-        </li>
-        <li class="regra">
-          <span class="tile-ic"><svg class="ic"><use href="#i-pasta"/></svg></span>
-          <h3>Só pastas conhecidas</h3>
-          <p>Só pastas conhecidas da sua pasta de usuário. Nada do sistema, sem senha de administrador, sem seguir atalhos pra fora.</p>
+          <h3>Everything goes to the Trash</h3>
+          <p>You review the list and confirm first. One click to undo.</p>
         </li>
         <li class="regra">
           <span class="tile-ic"><svg class="ic"><use href="#i-duplo"/></svg></span>
-          <h3>Conferência dupla</h3>
-          <p>Antes de mover, o app confere de novo se o arquivo é o mesmo da varredura e se continua no lugar permitido.</p>
+          <h3>Cleanup tested on every change</h3>
+          <p>Automated tests run it against a fake home folder full of traps.</p>
         </li>
         <li class="regra">
-          <span class="tile-ic"><svg class="ic"><use href="#i-pessoa"/></svg></span>
-          <h3>Arquivos pessoais nunca vêm marcados</h3>
-          <p>Downloads, arquivos grandes e duplicados ficam pra você decidir. Nos duplicados, sempre sobra uma cópia.</p>
-        </li>
-        <li class="regra">
-          <span class="tile-ic"><svg class="ic"><use href="#i-janela"/></svg></span>
-          <h3>App aberto fica de fora</h3>
-          <p>App aberto não tem o cache limpo. O Kamurafy pede pra fechar antes.</p>
+          <span class="tile-ic"><svg class="ic"><use href="#i-nuvem-nao"/></svg></span>
+          <h3>No account, no tracking</h3>
+          <p>No ads, no telemetry. What it reads stays on your Mac.</p>
         </li>
       </ul>
 
       <div class="confianca">
         <div class="bloco ouro">
-          <span class="tile-ic branco"><svg class="ic"><use href="#i-nuvem-nao"/></svg></span>
+          <span class="tile-ic branco"><svg class="ic"><use href="#i-wifi"/></svg></span>
           <div>
-            <h3>Nada sai do seu Mac</h3>
-            <p>Sem conta, sem anúncio e sem mandar nada pra internet. Tudo o que ele lê (bateria, histórico, arquivos) fica no seu Mac, em <code>~/Library/Application Support/Kamurafy</code>.</p>
+            <h3>The only time it goes online</h3>
+            <p>The new-version alert, off by default. If you turn it on, once a day it asks GitHub for the latest version number, and nothing else.</p>
             <ul class="selos">
-              <li><svg class="ic"><use href="#i-ok"/></svg>grátis</li>
-              <li><svg class="ic"><use href="#i-ok"/></svg>sem conta</li>
-              <li><svg class="ic"><use href="#i-ok"/></svg>sem anúncio</li>
+              <li><svg class="ic"><use href="#i-ok"/></svg>free</li>
+              <li><svg class="ic"><use href="#i-ok"/></svg>no account</li>
+              <li><svg class="ic"><use href="#i-ok"/></svg>no ads</li>
             </ul>
           </div>
         </div>
         <div class="bloco">
-          <span class="tile-ic"><svg class="ic"><use href="#i-codigo"/></svg></span>
+          <span class="tile-ic"><svg class="ic"><use href="#i-pasta"/></svg></span>
           <div>
-            <h3>Código aberto, de verdade</h3>
-            <p>Está tudo no GitHub, sob a GPL-3.0. Dá pra ler, conferir cada regra desta lista e até compilar você mesmo, sem precisar do Xcode.</p>
-            <a class="btn pequeno" href="https://github.com/GabrielKamura/kamurafy"><svg class="ic"><use href="#i-codigo"/></svg>Ver o código</a>
+            <h3>Careful about where it cleans</h3>
+            <p>Only known folders inside your home folder. Nothing from the system, no admin password, and personal files are never pre-selected.</p>
+            <a class="btn pequeno" href="https://github.com/GabrielKamura/kamurafy#cleanup-safety"><svg class="ic"><use href="#i-codigo"/></svg>Read the safety rules</a>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. instalar -->
-  <section class="secao" id="instalar" aria-labelledby="t-instalar">
+  <!-- 5. install -->
+  <section class="secao" id="install" aria-labelledby="t-instalar">
     <div class="wrap">
       <header class="cabeca">
-        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-baixar"/></svg></span>Instalar</span>
-        <h2 id="t-instalar">Três passos e pronto.</h2>
-        <p class="lead">Precisa do macOS 13 (Ventura) ou mais novo. Funciona em Mac Intel e Apple Silicon.</p>
+        <span class="etiqueta"><span class="etiqueta-ic"><svg class="ic"><use href="#i-baixar"/></svg></span>Install</span>
+        <h2 id="t-instalar">Three steps and you’re set.</h2>
+        <p class="lead">macOS 13 (Ventura) or newer, on Intel and Apple Silicon.</p>
       </header>
 
       <ol class="passos">
         <li class="passo">
           <span class="passo-num" aria-hidden="true">1</span>
-          <h3>Baixe e arraste</h3>
-          <p>Baixe o <b>Kamurafy.dmg</b> na <a href="https://github.com/GabrielKamura/kamurafy/releases/latest">última versão</a>, abra e arraste o Kamurafy pra pasta Aplicativos:</p>
-          <p class="caminho"><span class="tecla">Kamurafy</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Aplicativos</span></span></p>
+          <h3>Download and drag</h3>
+          <p><a href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg">Download Kamurafy.dmg</a>, open it and drag Kamurafy to Applications:</p>
+          <p class="caminho"><span class="tecla">Kamurafy</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Applications</span></span></p>
         </li>
         <li class="passo">
           <span class="passo-num" aria-hidden="true">2</span>
-          <h3>Na primeira vez, botão direito</h3>
-          <p>Na pasta Aplicativos, clique no Kamurafy com o botão direito e confirme:</p>
-          <p class="caminho"><span class="tecla">botão direito</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla">Abrir</span></span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Abrir</span></span></p>
-          <p>O macOS pede essa confirmação uma vez só.</p>
+          <h3>macOS 15 or newer</h3>
+          <p>Open Kamurafy, close the warning, then go to:</p>
+          <p class="caminho"><span class="tecla">System Settings</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla">Privacy &amp; Security</span></span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Open Anyway</span></span></p>
         </li>
         <li class="passo">
           <span class="passo-num" aria-hidden="true">3</span>
-          <h3>No macOS 15 ou mais novo</h3>
-          <p>Lá não tem mais o atalho do botão direito. Abra o Kamurafy, feche o aviso e vá em:</p>
-          <p class="caminho"><span class="tecla">Ajustes do Sistema</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla">Privacidade e Segurança</span></span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Abrir Mesmo Assim</span></span></p>
-          <p>O botão fica na parte de Segurança, mais pra baixo.</p>
+          <h3>macOS 13 and 14</h3>
+          <p>In Applications, right-click Kamurafy and confirm:</p>
+          <p class="caminho"><span class="tecla">right-click</span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla">Open</span></span><span class="par"><span class="sep" aria-hidden="true">›</span><span class="tecla ouro">Open</span></span></p>
         </li>
       </ol>
 
+      <div class="brew">
+        <p class="brew-titulo">Prefer Homebrew?</p>
+        <div class="terminal">
+          <code><span class="prompt" aria-hidden="true">$</span>brew install --cask gabrielkamura/tap/kamurafy</code>
+          <button class="btn ouro pequeno copiar" type="button" data-copiar="brew install --cask gabrielkamura/tap/kamurafy" data-ok="Copied!" hidden><svg class="ic"><use href="#i-copiar"/></svg><span>Copy</span></button>
+        </div>
+      </div>
+
       <div class="nota">
         <svg class="ic"><use href="#i-info"/></svg>
-        <p><b>Por que esse aviso?</b> O Kamurafy ainda não é assinado com uma conta de desenvolvedor da Apple, então o macOS não tem como saber quem fez o app e pede que você confirme. É o aviso de sempre pra apps de fora da App Store sem essa assinatura. Se preferir, dá pra ler o código ou compilar você mesmo.</p>
+        <p><b>Why the warning?</b> Kamurafy is not signed with a paid Apple developer account yet, so macOS asks you to confirm once. You can always read the code or build it yourself.</p>
       </div>
     </div>
   </section>
 
-  <!-- chamada final -->
+  <!-- final call -->
   <section class="chamada" aria-labelledby="t-chamada">
     <div class="wrap">
       <div class="chamada-card">
         <img class="chamada-ic" src="img/icone.png" width="140" height="140" alt="" loading="lazy">
         <div class="chamada-texto">
-          <h2 id="t-chamada">Bora cuidar dessa bateria?</h2>
-          <p>Grátis, sem conta e sem anúncio. Nada sai do seu Mac.</p>
+          <h2 id="t-chamada">Give your battery some love.</h2>
+          <p>Free, no account and no ads.</p>
         </div>
         <div class="chamada-acao">
-          <a class="btn tinta grande" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Baixar para Mac</a>
-          <p class="req">macOS 13 ou mais novo · Intel e Apple Silicon</p>
+          <a class="btn tinta grande" href="https://github.com/GabrielKamura/kamurafy/releases/latest/download/Kamurafy.dmg"><svg class="ic"><use href="#i-baixar"/></svg>Download for Mac</a>
+          <p class="req">macOS 13 or newer · Intel and Apple Silicon</p>
         </div>
       </div>
     </div>
@@ -457,25 +404,27 @@
 
 </main>
 
-<!-- 6. rodapé -->
+<!-- 6. footer -->
 <footer class="rodape">
   <div class="wrap">
     <div class="rodape-marca">
-      <a class="marca" href="#" aria-label="Kamurafy, voltar ao topo">
+      <a class="marca" href="#" aria-label="Kamurafy, back to top">
         <img src="img/icone.png" width="40" height="40" alt="" loading="lazy">
         <span>Kamurafy</span>
       </a>
-      <p>Cuida do seu Mac e, principalmente, da sua bateria.</p>
-      <p class="carinho">Feito com carinho por Gabriel Kamura.</p>
+      <p>Takes care of your Mac and, above all, your battery.</p>
+      <p class="carinho">Made with care by Gabriel Kamura.</p>
     </div>
     <div class="rodape-info">
-      <p><b>Software livre.</b> O Kamurafy é distribuído sob a licença <a href="https://github.com/GabrielKamura/kamurafy/blob/main/LICENSE">GPL-3.0</a>: você pode usar, estudar, mudar e distribuir, desde que o que você distribuir também tenha o código aberto sob a mesma licença.</p>
-      <p><b>Créditos.</b> Fonte <a href="https://github.com/hafontia/Fredoka-One">Fredoka</a> (<a href="fonts/Fredoka-OFL.txt">SIL Open Font License 1.1</a>) e biblioteca <a href="https://roughjs.com">Rough.js</a> (MIT).</p>
-      <p>Este site não usa cookie, rastreador nem analytics.</p>
+      <p><b>Free software.</b> Kamurafy is released under the <a href="https://github.com/GabrielKamura/kamurafy/blob/main/LICENSE">GPL-3.0</a>: you can use, study, change and share it, as long as what you share is open source under the same license.</p>
+      <p><b>Credits.</b> <a href="https://github.com/hafontia/Fredoka-One">Fredoka</a> font (<a href="fonts/Fredoka-OFL.txt">SIL Open Font License 1.1</a>) and the <a href="https://roughjs.com">Rough.js</a> library (MIT).</p>
+      <p>Mac and macOS are trademarks of Apple Inc. Kamurafy is not affiliated with Apple or with MacPaw (CleanMyMac).</p>
+      <p>This site uses no cookies, trackers or analytics.</p>
       <ul class="rodape-links">
-        <li><a href="https://github.com/GabrielKamura/kamurafy">Código</a></li>
-        <li><a href="https://github.com/GabrielKamura/kamurafy/releases">Versões</a></li>
-        <li><a href="https://github.com/GabrielKamura/kamurafy/issues">Achou um problema?</a></li>
+        <li><a href="https://github.com/GabrielKamura/kamurafy">Code</a></li>
+        <li><a href="https://github.com/GabrielKamura/kamurafy/releases">Releases</a></li>
+        <li><a href="https://github.com/GabrielKamura/kamurafy/issues">Found a problem?</a></li>
+        <li><a href="pt/" hreflang="pt-BR" lang="pt-BR">Em português</a></li>
       </ul>
     </div>
   </div>

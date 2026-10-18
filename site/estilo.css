@@ -133,6 +133,7 @@ p { margin: 0; }
   background: var(--card);
   box-shadow: var(--shadow-sm);
   color: var(--ink);
+  font-family: inherit;
   font-size: 19px;
   font-weight: 600;
   line-height: 1;
@@ -255,10 +256,36 @@ p { margin: 0; }
   transition: border-color .15s, background .15s;
 }
 .topo .link a:hover { border-color: var(--ink); background: var(--card); }
-.topo .btn { margin-left: 10px; }
-@media (max-width: 760px) {
+.topo .btn { margin-left: 8px; }
+/* troca de idioma: pílula sempre visível (no celular vira a sigla) */
+.topo .idioma { margin-left: 8px; }
+.topo .idioma a {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px 8px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition: background .15s;
+}
+.topo .idioma a:hover { background: var(--gold-soft); }
+.topo .idioma .curto { display: none; }
+@media (max-width: 1000px) {
   .topo .link { display: none; }
-  .topo .btn { margin-left: 0; }
+  .topo .idioma { margin-left: 0; }
+}
+@media (max-width: 640px) {
+  .topo .idioma .longo { display: none; }
+  .topo .idioma .curto { display: inline; }
+  .topo .idioma a { padding: 7px 11px 8px; }
+}
+@media (max-width: 400px) {
+  .topo .btn.pequeno .ic { display: none; }
 }
 
 /* ===== herói ===== */
@@ -451,22 +478,10 @@ p { margin: 0; }
 .luzes circle:nth-child(2) { fill: #febc2e; }
 .luzes circle:nth-child(3) { fill: #28c840; }
 
-/* recorte de um cartão do app, num cartão do site */
-.recorte {
-  margin: 0;
-  padding: 10px;
-  background: var(--card);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--radius);
-  box-shadow: 8px 8px 0 var(--ink);
-}
-.recorte img { border-radius: 10px; }
-
-/* ===== vitrine (captura grande da Bateria) ===== */
-.vitrine-fig { position: relative; margin: 0 auto; max-width: 1100px; }
+/* ===== vitrine (a tela da Velocidade, o destaque) ===== */
+.vitrine-fig { position: relative; margin: 0 auto; max-width: 980px; }
 .vitrine-adesivo { position: absolute; top: -20px; right: 5%; z-index: 2; transform: rotate(4deg); font-size: 19px; padding: 8px 16px 9px 12px; box-shadow: var(--shadow-sm); }
 .vitrine-adesivo .ic { width: 22px; height: 22px; fill: var(--card); }
-.vitrine figcaption { margin-top: 26px; text-align: center; font-size: 17px; color: var(--ink-2); }
 
 /* ===== seções ===== */
 .secao { padding: var(--secao) 0; }
@@ -480,8 +495,10 @@ p { margin: 0; }
   text-wrap: balance;
 }
 .lead { font-size: 21px; line-height: 1.5; color: var(--ink-2); max-width: 36em; }
+.cabeca.centro { margin-inline: auto; text-align: center; }
+.cabeca.centro .lead { margin-inline: auto; }
 
-/* cartõezinhos da Bateria */
+/* cartõezinhos do que ele faz */
 .tiles {
   list-style: none;
   margin: 0;
@@ -501,27 +518,17 @@ p { margin: 0; }
 .tile p, .regra p { font-size: 16px; line-height: 1.45; color: var(--ink-2); }
 
 /* texto + imagem lado a lado */
-.destaque {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 64px;
-  align-items: center;
-  margin-top: 96px;
-}
-.destaque.inverte { grid-template-columns: minmax(0, 410px) minmax(0, 1fr); gap: 80px; }
-.destaque.inverte .destaque-texto { order: 2; max-width: 34em; }
-.destaque.inverte .recorte { width: min(100%, 410px); }
-.destaque h3, .recurso h3 {
+.recurso h3 {
   margin: 18px 0 14px;
   font-size: clamp(28px, 3vw, 38px);
   line-height: 1.08;
   letter-spacing: -.3px;
   text-wrap: balance;
 }
-.destaque-texto p, .recurso-texto p { font-size: 19px; line-height: 1.55; color: var(--ink-2); }
-.destaque-texto p + p { margin-top: 14px; }
+.recurso-texto p { font-size: 19px; line-height: 1.55; color: var(--ink-2); }
 
 .recursos { display: flex; flex-direction: column; gap: 120px; }
+.tiles + .recursos { margin-top: 120px; }
 .recurso {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -530,67 +537,6 @@ p { margin: 0; }
 }
 .recurso:nth-child(even) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
 .recurso:nth-child(even) .recurso-texto { order: 2; }
-.lista-ok { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 12px; }
-.lista-ok li { display: flex; align-items: flex-start; gap: 12px; font-size: 17px; line-height: 1.45; }
-.lista-ok .ic { color: var(--st-good); margin-top: 0; stroke-width: 2.5; }
-
-/* barra de menus de mentirinha + o resumo de verdade */
-.barra-demo { position: relative; padding-bottom: 8px; }
-.barrinha {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  height: 52px;
-  padding: 0 14px 0 20px;
-  border: var(--bw) solid var(--ink);
-  border-radius: 16px;
-  background: var(--card);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink-2);
-}
-.barrinha > .ic { width: 22px; height: 22px; opacity: .55; }
-.fantasma { height: 10px; border-radius: 99px; background: var(--line); }
-.fantasma.f1 { width: 34px; background: #d6d2c8; }
-.fantasma.f2 { width: 52px; }
-.fantasma.f3 { width: 44px; margin-right: auto; }
-@media (max-width: 440px) { .fantasma.f2 { display: none; } }
-.barrinha-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px 5px 8px;
-  border: 2.5px solid var(--ink);
-  border-radius: 10px;
-  background: var(--gold);
-  color: var(--ink);
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1;
-}
-.barrinha-item svg { width: 26px; height: 26px; }
-.popover {
-  position: relative;
-  width: min(100%, 330px);
-  margin: 22px 6px 0 auto;
-  border: var(--bw) solid var(--ink);
-  border-radius: 24px;
-  box-shadow: 8px 8px 0 var(--ink);
-  background: var(--paper);
-}
-.popover::before {
-  content: "";
-  position: absolute;
-  top: -14px;
-  right: 38px;
-  width: 22px;
-  height: 22px;
-  background: var(--gold);
-  border-left: var(--bw) solid var(--ink);
-  border-top: var(--bw) solid var(--ink);
-  border-top-left-radius: 5px;
-  transform: rotate(45deg);
-}
-.popover img { border-radius: 21px; position: relative; }
 
 /* ===== por que confiar (faixa preta) ===== */
 .faixa-tinta { position: relative; isolation: isolate; background: var(--ink); color: #fff; }
@@ -615,6 +561,7 @@ p { margin: 0; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 26px;
 }
+.regras.quatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .regra { color: var(--ink); border-color: var(--ink); box-shadow: 7px 7px 0 var(--gold); }
 .confianca {
   display: grid;
@@ -705,6 +652,25 @@ p { margin: 0; }
   white-space: nowrap;
 }
 .tecla.ouro { background: var(--gold); }
+.brew { margin-top: 34px; }
+.brew-titulo { font-size: 19px; font-weight: 600; margin-bottom: 12px; }
+.terminal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 12px 12px 22px;
+  min-height: 62px;
+  background: var(--ink);
+  color: #fff;
+  border: var(--bw) solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 var(--gold);
+}
+.terminal code { flex: 1; min-width: 0; padding: 0; border-radius: 0; background: none; color: #fff; font-size: 17px; line-height: 1.5; }
+.terminal .prompt { color: var(--gold); margin-right: 12px; user-select: none; }
+.terminal .btn { flex: none; box-shadow: 3px 3px 0 #fff; }
+.terminal .btn:hover { box-shadow: 5px 5px 0 #fff; }
+.terminal .btn:active { box-shadow: 1px 1px 0 #fff; }
 .nota {
   display: flex;
   align-items: flex-start;
@@ -753,7 +719,7 @@ p { margin: 0; }
 @media (max-width: 1080px) {
   .btn.grande { font-size: 24px; padding: 19px 28px 19px 24px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .regras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .regras, .regras.quatro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .chamada-card { grid-template-columns: auto minmax(0, 1fr); }
   .chamada-acao { grid-column: 1 / -1; justify-self: start; text-align: left; }
 }
@@ -762,15 +728,13 @@ p { margin: 0; }
   .heroi { padding-top: 28px; }
   .heroi .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; }
   .palco { width: min(100%, 420px); }
-  .destaque, .destaque.inverte, .recurso, .recurso:nth-child(even) { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .destaque.inverte .destaque-texto, .recurso:nth-child(even) .recurso-texto { order: 0; }
-  .destaque.inverte .recorte { justify-self: center; }
-  .destaque.inverte .destaque-texto { max-width: none; }
+  .recurso, .recurso:nth-child(even) { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .recurso:nth-child(even) .recurso-texto { order: 0; }
   .recursos { gap: 88px; }
+  .tiles + .recursos { margin-top: 96px; }
   .passos { grid-template-columns: minmax(0, 1fr); }
   .confianca { grid-template-columns: minmax(0, 1fr); }
   .rodape .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .barra-demo { max-width: 460px; }
 }
 
 @media (max-width: 640px) {
@@ -791,21 +755,20 @@ p { margin: 0; }
   .balao { font-size: 17px; padding: 9px 14px 10px; left: 0; }
   .palco .adesivo { font-size: 15px; }
   .janela { border-width: var(--bw); border-radius: 14px; box-shadow: 6px 6px 0 var(--ink); }
-  .recorte { padding: 6px; border-radius: 16px; box-shadow: 6px 6px 0 var(--ink); }
-  .recorte img { border-radius: 8px; }
   .vitrine-adesivo { font-size: 16px; top: -18px; right: 4%; }
-  .vitrine figcaption { font-size: 16px; margin-top: 20px; }
   .cabeca { margin-bottom: 36px; }
   .cabeca h2 { font-size: 38px; letter-spacing: -.5px; margin: 16px 0 12px; }
   .lead { font-size: 18px; }
-  .tiles, .regras { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .tiles, .regras, .regras.quatro { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .tile, .regra { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 18px 18px 20px; }
   .tile .tile-ic, .regra .tile-ic { grid-row: span 2; width: 46px; height: 46px; }
   .tile h3, .regra h3 { margin: 2px 0 6px; font-size: 20px; }
-  .destaque { margin-top: 72px; }
-  .destaque h3, .recurso h3 { font-size: 28px; }
-  .destaque-texto p, .recurso-texto p { font-size: 17.5px; }
+  .recurso h3 { font-size: 28px; }
+  .recurso-texto p { font-size: 17.5px; }
   .recursos { gap: 72px; }
+  .tiles + .recursos { margin-top: 72px; }
+  .terminal { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px 16px 14px; }
+  .terminal code { font-size: 15.5px; }
   .bloco { flex-direction: column; gap: 12px; padding: 22px 20px 24px; }
   .passo { padding: 22px 20px 24px; }
   .nota { padding: 16px 16px; }
