@@ -40,6 +40,9 @@ jobs:
               console.log(l, Object.keys(d).length, "textos");
             }'
 
+      - name: Textos sem tradução (só avisa)
+        run: node tools/i18n-faltando.mjs
+
       - name: Compilar a versão de distribuição
         run: PUBLICO=1 ARCHS=$(uname -m) BUILD_DIR=build/publico ./build.sh
 

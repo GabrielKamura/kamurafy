@@ -81,7 +81,7 @@
   function hideErr(node) { if (node) node.hidden = true; }
 
   function extBtn(label, url, cls) {
-    return K.el('button', { class: K.t('btn small ') + (cls || 'ghost') + ' aj-ext', type: 'button', html: K.icon('ajExt'),
+    return K.el('button', { class: 'btn small ' + (cls || 'ghost') + ' aj-ext', type: 'button', html: K.icon('ajExt'),
       title: K.t('Abre no navegador'),
       onclick: () => { K.sound.plop(); K.api('open.url', { url }).catch(() => K.sound.oops()); } }, label);
   }
@@ -463,7 +463,7 @@
     V.notifPill.textContent = '';
     V.notifBtns.textContent = '';
     const testBtn = () => K.el('button', { class: 'btn small', type: 'button', html: K.icon('bell'), onclick: testNotif }, K.t('Mandar um teste'));
-    const paneBtn = (label, gold) => K.el('button', { class: 'btn small' + (gold ? K.t(' gold') : ''), type: 'button', onclick: () => openPane('notificacoes', V.notifErr) }, label);
+    const paneBtn = (label, gold) => K.el('button', { class: 'btn small' + (gold ? ' gold' : ''), type: 'button', onclick: () => openPane('notificacoes', V.notifErr) }, label);
     if (!st) {
       V.notifPill.appendChild(K.statusPill('none', K.t('Sem leitura'), 'info'));
       V.notifTx.textContent = K.t('Não consegui ver se estão liberadas agora.');

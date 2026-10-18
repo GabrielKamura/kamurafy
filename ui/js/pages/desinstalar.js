@@ -1193,7 +1193,7 @@
     if (!u || !undoBack(j).app || undoBack(j).failRest) {
       acts.appendChild(K.el('button', { class: 'btn ink', type: 'button', html: K.icon('unTrash'), disabled: !!busy, onclick: () => { goLixeira(); } }, K.t('Ver na Lixeira')));
     }
-    acts.appendChild(K.el('button', { class: 'btn' + (acts.childElementCount ? K.t(' ghost') : ''), type: 'button', html: K.icon('apps'), disabled: !!busy,
+    acts.appendChild(K.el('button', { class: 'btn' + (acts.childElementCount ? ' ghost' : ''), type: 'button', html: K.icon('apps'), disabled: !!busy,
       onclick: () => { K.sound.tick(); closeDrawer(); } }, K.t('Voltar pra lista')));
     const art = K.el('div', { class: 'un-res-art' });
     const sticker = (S.sandbox || (r.restos && r.restos.caixaDeAreia) ? K.t('modo de teste · Lixeira de mentira · ') : '') + K.t('feito às {0}', K.fmt.time(j.at));

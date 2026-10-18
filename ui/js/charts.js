@@ -739,7 +739,7 @@
       /* rótulo do último ponto */
       const gE = sv('g', { class: 'kc-ends' }, svg);
       for (const e of ends) {
-        const dot = sv('circle', { cx: r1(e.px), cy: r1(e.py), r: 5, class: 'kc-end-dot' + (e.s.dash ? K.t(' hollow') : '') }, gE);
+        const dot = sv('circle', { cx: r1(e.px), cy: r1(e.py), r: 5, class: 'kc-end-dot' + (e.s.dash ? ' hollow' : '') }, gE);
         if (!e.s.dash) dot.style.fill = e.s.color; else dot.style.stroke = e.s.color;
         stext(gE, e.tx, e.ty, e.txt, 'kc-end-label', e.anchor);
       }
@@ -1069,7 +1069,7 @@
       /* ponteiro */
       const needle = sv('g', { class: 'kg-needle' }, svg);
       const L = rm + 2;
-      sv('path', { d: K.t('M{0},{1} L{2},{3} L{4},{5} L{6},{7} Z', cx + 12, cy, cx, cy - 6.5, cx - L, cy, cx, cy + 6.5), class: 'kg-needle-body' }, needle);
+      sv('path', { d: `M${cx + 12},${cy} L${cx},${cy - 6.5} L${cx - L},${cy} L${cx},${cy + 6.5} Z`, class: 'kg-needle-body' }, needle);
       needle.style.transformOrigin = `${cx}px ${cy}px`;
       needle.style.transform = `rotate(${(instant ? t : startT) * 180}deg)`;
       if (!has) needle.style.opacity = '.25';
@@ -1306,7 +1306,7 @@
       const sw = Math.max(1.6, (3 * 100) / size);
       const rm = 50 - sw / 2 - 1.5 - th / 2;
       const circ = 2 * Math.PI * rm;
-      const wrap = K.el('div', { class: 'kr' + (opts.busy ? K.t(' busy') : ''), style: { width: size + 'px', height: size + 'px' } });
+      const wrap = K.el('div', { class: 'kr' + (opts.busy ? ' busy' : ''), style: { width: size + 'px', height: size + 'px' } });
       const svg = sv('svg', { class: 'kr-svg', viewBox: '0 0 100 100', role: 'img', 'aria-label': `${opts.label || K.t('Progresso')}: ${has ? Math.round(t * 100) + '%' : '—'}` });
       const track = sv('circle', { cx: 50, cy: 50, r: rm, class: 'kr-track' }, svg);
       track.style.strokeWidth = th;

@@ -191,7 +191,7 @@
     try {
       await page.render(host, { id, route });
     } catch (e) {
-      console.error(K.t('render ') + id + ': ' + (e && (e.stack || e.message) || e));
+      console.error('render ' + id + ': ' + (e && (e.stack || e.message) || e));
       host.appendChild(K.errorCard({ title: K.t('Algo deu errado nesta tela'), reason: String(e && e.message || e), retry: () => { go(); }, retryHint: K.t('Abro a tela de novo.') }));
     }
     if (!readySent) {

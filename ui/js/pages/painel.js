@@ -120,7 +120,7 @@
     holder.textContent = '';
     if (!text) return;
     if (tone) holder.appendChild(K.statusPill(tone, text, icon, big));
-    else holder.appendChild(K.el('span', { class: 'status pn-neutral' + (big ? K.t(' big') : ''), html: K.icon(icon || 'info') }, text));
+    else holder.appendChild(K.el('span', { class: 'status pn-neutral' + (big ? ' big' : ''), html: K.icon(icon || 'info') }, text));
   }
 
   /** guarda o gráfico pra destruir depois e segura a atualização enquanto o mouse está em cima */

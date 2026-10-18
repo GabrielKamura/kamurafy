@@ -2,7 +2,7 @@
    catálogo ui/i18n/<idioma>.json, que o Swift entrega antes da página (window.KAMURAFY_I18N),
    então até as constantes das páginas saem traduzidas. Sem tradução, fica o português.
      K.t('Bateria')                          → "Battery"
-     K.t('Usa {0} do processador', cores)    → {0}, {1}… viram os argumentos */
+     K.t('Usa {0} do processador', cores)  → {0}, {1}… viram os argumentos */
 'use strict';
 
 window.K = window.K || {};

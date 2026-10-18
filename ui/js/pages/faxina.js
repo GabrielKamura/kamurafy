@@ -1377,7 +1377,7 @@
     for (const it of items) { const k = TIPOS[it.tipo] ? it.tipo : 'outro'; byType[k] = (byType[k] || 0) + 1; }
     const chips = K.el('div', { class: 'fx-chips', role: 'group', 'aria-label': K.t('Filtrar por tipo') });
     const chip = (id, label, icon, count) => {
-      const b = K.el('button', { class: 'fx-chip' + (st.filter === id ? K.t(' on') : ''), type: 'button', 'aria-pressed': String(st.filter === id), html: icon ? K.icon(icon) : null,
+      const b = K.el('button', { class: 'fx-chip' + (st.filter === id ? ' on' : ''), type: 'button', 'aria-pressed': String(st.filter === id), html: icon ? K.icon(icon) : null,
         onclick: () => { if (st.filter === id) return; K.sound.tick(); st.filter = id; st.shown = {}; paintTab(); } },
       K.el('span', null, label), K.el('span', { class: 'fx-chip-n num' }, K.fmt.num(count)));
       chips.appendChild(b);

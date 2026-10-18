@@ -160,7 +160,7 @@
     /* traço: mais grosso no pequeno (como ícone), proporcional no grande */
     const strokePx = 2.2 + size * 0.0115;
     const unit = 260 / size;
-    const wrap = K.el('div', { class: 'km' + (size < 110 ? K.t(' small') : ''), style: { width: size + 'px' } });
+    const wrap = K.el('div', { class: 'km' + (size < 110 ? ' small' : ''), style: { width: size + 'px' } });
     wrap.style.setProperty('--km-sw', (strokePx * unit).toFixed(2) + 'px');
     wrap.style.setProperty('--km-fw', (strokePx * unit * 0.8).toFixed(2) + 'px');
     wrap.style.setProperty('--km-ffw', (strokePx * unit * 0.8 / FACE).toFixed(2) + 'px');

@@ -1181,7 +1181,7 @@
     }
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note && !r.error ? K.el('p', { class: 'kz-note kz-speed-note' }, r.note) : null,
-      K.el('button', { class: 'btn small' + (isAttention(r) ? K.t(' gold') : ''), type: 'button', onclick: () => go(step.route) },
+      K.el('button', { class: 'btn small' + (isAttention(r) ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
         K.t('Ver o que pesa'), K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
   }
@@ -1271,7 +1271,7 @@
   function actionsBlock(acts) {
     const row = K.el('div', { class: 'kz-acts-row' });
     acts.forEach((a, i) => {
-      const btn = K.el('button', { class: 'btn small' + (a.done ? '' : K.t(' gold')), type: 'button' }, a.btn, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
+      const btn = K.el('button', { class: 'btn small' + (a.done ? '' : ' gold'), type: 'button' }, a.btn, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }));
       const item = K.el('div', { class: 'kz-act pop-in' + (a.tone ? ' t-' + a.tone : ''), style: { animationDelay: 80 + i * 70 + 'ms' } },
         K.el('span', { class: 'head-ic' + (a.tone ? ' ' + a.tone : ''), html: K.icon(K.ICONS[a.icon] ? a.icon : 'sparkle') }),
         K.el('div', { class: 'kz-act-text' },
@@ -1461,7 +1461,7 @@
     const label = !r.error && r.sel > 0 ? K.t('Ver e limpar') : K.t('Abrir o Espaço');
     c.appendChild(K.el('div', { class: 'kz-res-foot' },
       r.note ? K.el('p', { class: 'kz-note kz-dirt-note' }, r.note) : null,
-      K.el('button', { class: 'btn small' + (r.tone === 'tip' ? K.t(' gold') : ''), type: 'button', onclick: () => go(step.route) },
+      K.el('button', { class: 'btn small' + (r.tone === 'tip' ? ' gold' : ''), type: 'button', onclick: () => go(step.route) },
         label, K.el('span', { class: 'btn-ic', html: K.icon('arrow') }))));
     return c;
   }

@@ -299,7 +299,7 @@ K.cleanSuggested = function (it) {
 
 /** Etiqueta de status (ícone + texto). tone: good | warn | serious | crit */
 K.statusPill = function (tone, text, iconName, big) {
-  return K.el('span', { class: `status ${tone}${big ? K.t(' big') : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
+  return K.el('span', { class: `status ${tone}${big ? ' big' : ''}`, html: K.icon(iconName || K.toneIcon(tone)) }, text);
 };
 K.toneIcon = (tone) => ({ good: 'check', warn: 'eye', serious: 'alert', crit: 'alert' }[tone] || 'info');
 
@@ -392,7 +392,7 @@ K.confirm = (function () {
     const danger = o.tone === 'danger';
     return new Promise((resolve) => {
       const id = 'kmodal-' + Math.random().toString(36).slice(2, 8);
-      const okBtn = K.el('button', { class: K.t('btn ') + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
+      const okBtn = K.el('button', { class: 'btn ' + (danger ? 'danger' : 'gold') + ' kmodal-ok', type: 'button', onclick: () => close(true) },
         o.ok || K.t('Confirmar'));
       const cancelBtn = K.el('button', { class: 'btn kmodal-cancel', type: 'button', onclick: () => close(false) }, o.cancel || K.t('Cancelar'));
       let ackBox = null;
@@ -421,7 +421,7 @@ K.confirm = (function () {
         'aria-labelledby': id + '-t', 'aria-describedby': o.text ? id + '-d' : null,
       },
         K.el('div', { class: 'kmodal-head' },
-          K.el('span', { class: 'kmodal-ic' + (danger ? K.t(' crit') : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
+          K.el('span', { class: 'kmodal-ic' + (danger ? ' crit' : ''), html: K.icon(o.icon || (danger ? 'alert' : 'info')) }),
           K.el('h2', { id: id + '-t' }, o.title || K.t('Tem certeza?'))),
         K.el('div', { class: 'kmodal-body' }, body),
         note,
@@ -478,7 +478,7 @@ K.errorCard = function (o) {
   const reason = String(o.reason == null ? '' : o.reason).trim().replace(/[.!\s]+$/, '');
   const text = o.text != null ? o.text : K.t('O motivo: {0}. Nada foi mexido.', reason || K.t('erro desconhecido'));
   const act = o.retry ? K.el('div', { class: 'kerr-act' },
-    K.el('button', { class: 'btn gold' + (o.compact ? K.t(' small') : ''), type: 'button', html: K.icon('cycle'),
+    K.el('button', { class: 'btn gold' + (o.compact ? ' small' : ''), type: 'button', html: K.icon('cycle'),
       onclick: (e) => { if (K.sound) K.sound.plop(); o.retry(e); } }, o.retryLabel || K.t('Tentar de novo')),
     o.retryHint ? K.el('span', { class: 'kerr-hint' }, o.retryHint) : null) : null;
   const art = o.compact ? K.el('span', { class: 'head-ic crit kerr-ic', html: K.icon('alert') }) : K.el('div', { class: 'kerr-art', 'aria-hidden': 'true' });

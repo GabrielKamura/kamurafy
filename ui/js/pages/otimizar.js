@@ -502,7 +502,7 @@
     for (const it of list) ul.appendChild(startupRow(it));
     return K.el('section', { class: cls('card ot-group ot-g-' + o), style: delay(d), 'aria-label': g.titulo },
       K.el('div', { class: 'ot-group-head' },
-        K.el('span', { class: 'head-ic' + (o === 'sistema' ? K.t(' none') : ''), html: K.icon(g.icon) }),
+        K.el('span', { class: 'head-ic' + (o === 'sistema' ? ' none' : ''), html: K.icon(g.icon) }),
         K.el('div', { class: 'ot-group-text' }, K.el('h2', null, g.titulo), K.el('p', { class: 'card-sub' }, g.sub)),
         K.el('span', { class: 'ot-count num' }, plural(list.length, K.t('item'), K.t('itens')))),
       ul);
