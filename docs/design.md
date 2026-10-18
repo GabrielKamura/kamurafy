@@ -121,3 +121,21 @@ Português do Brasil, com todos os acentos. Tom de amigo que entende do assunto:
 leve, sem gíria forçada e sem jargão ("capacidade de fábrica", não "design capacity").
 Sempre explique o que um número quer dizer ("A Apple considera gasta abaixo de 80%").
 Nunca prometa milagre (nada de "deixa seu Mac 2× mais rápido").
+
+## Modo escuro ("caderno à noite")
+
+O app segue a aparência do macOS ou a escolha dos Ajustes (`settings.tema`: auto · claro · escuro); o
+Swift muda a aparência do app e o CSS responde em `@media (prefers-color-scheme: dark)`, sempre no fim
+de cada arquivo. Papel `#1c1915`, cartão `#27231d`, tinta creme `#f3ead6`, ouro igual. A sombra dura
+vira creme. Os cartões dourados grandes guardam o visual claro por dentro. Cor nova: use um token do
+`base.css` (com valor no claro e no escuro), nunca hex solto. O balão da barra de menus é sempre claro.
+Foto no escuro: `KAMURAFY_TEMA=escuro tools/foto.sh …`.
+
+## Idiomas
+
+O texto do código é a chave, em português: `K.t('Frase com {0}', valor)` no JS e `L("Frase com {0}", valor)`
+no Swift. A tradução mora em `ui/i18n/en.json` e `ui/i18n/es.json`. Frase inteira com variável, nunca
+pedaços colados. Texto que o código compara (status, id, mensagem do Swift) não passa pelo `K.t` na
+origem: compare o original e traduza só na hora de mostrar. Depois de mexer em texto:
+`node tools/i18n-faltando.mjs` mostra o que falta traduzir. Foto em outro idioma:
+`KAMURAFY_IDIOMA=en tools/foto.sh …`.
